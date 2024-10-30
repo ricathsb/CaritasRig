@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Space
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -62,7 +63,7 @@ import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
 import java.util.UUID
 
-class MainActivity : ComponentActivity() {
+class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -139,16 +140,29 @@ fun LoginScreen(
             },
             visualTransformation = PasswordVisualTransformation(),
             shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (password.isBlank()) {
+                Text(text = "password cannot be blank")
+            }
+                else if (password.length < 8) {
+                Text(text = "Password must be at least 8 characters")
+            }
 
-        )
+        }
+    )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         Button (onClick ={
             autheticationManager.loginWithEmail(email, password)
                 .onEach {
-                    Log.d("authstatus", "Login...")
+                    if (it is AuthResponse.Success) {
+                        val intent = Intent(context, HomeActivity::class.java)
+                        context.startActivity(intent)
+                    } else {
+                        Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 .launchIn(coroutineScope)
         },
@@ -184,7 +198,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth()
         ){
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
+                painter = painterResource(id = R.drawable.logogoogle),
                 contentDescription = null,
                 modifier = Modifier.size(36.dp)
             )
@@ -195,6 +209,7 @@ fun LoginScreen(
         }
     }
 
+
 }
 
 @Preview(showBackground = true)
@@ -204,6 +219,10 @@ private fun Loginpreview(){
         LoginScreen()
     }
 }
+
+
+
+//back-end login
 
 class AuthenticationManager(val context: Context) {
     private val auth = FirebaseAuth.getInstance()
