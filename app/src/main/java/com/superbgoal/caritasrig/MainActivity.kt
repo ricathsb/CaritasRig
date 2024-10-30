@@ -1,6 +1,8 @@
 package com.superbgoal.caritasrig
+import android.app.Activity
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import android.content.Context
+import android.content.Intent
 
 import android.os.Bundle
 import android.util.Log
@@ -147,10 +149,6 @@ fun LoginScreen(
             autheticationManager.loginWithEmail(email, password)
                 .onEach {
                     Log.d("authstatus", "Login...")
-
-                    if (it is AuthResponse.Success) {
-                        Log.d("authstatus", "Login Success")
-                    }
                 }
                 .launchIn(coroutineScope)
         },
@@ -176,7 +174,9 @@ fun LoginScreen(
                 autheticationManager.signInWithGoogle()
                     .onEach {
                         if (it is AuthResponse.Success) {
-
+                            Log.d("tesLogin", "Login...")
+                            val intent = Intent(context, HomeActivity::class.java)
+                            context.startActivity(intent)
                         }
                     }
                     .launchIn(coroutineScope)
