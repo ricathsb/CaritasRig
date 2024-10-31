@@ -18,10 +18,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -44,10 +42,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var firstname by remember { mutableStateOf("") }
-    var lastname by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var dateOfBirth by remember { mutableStateOf("") }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -58,34 +52,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(text = "Sign Up", style = MaterialTheme.typography.titleLarge)
-
-        OutlinedTextField(
-            value = firstname,
-            onValueChange = { firstname = it },
-            label = { Text("First Name") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = lastname,
-            onValueChange = { lastname = it },
-            label = { Text("Last Name") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = dateOfBirth,
-            onValueChange = { dateOfBirth = it },
-            label = { Text("Date of Birth (DD/MM/YYYY)") },
-            modifier = Modifier.fillMaxWidth()
-        )
 
         OutlinedTextField(
             value = email,
@@ -111,7 +77,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
         Button(
             onClick = {
                 coroutineScope.launch {
-                    signUpUser(email, password, firstname, lastname, username, dateOfBirth, confirmPassword, context)
+                    signUpUser(email, password, confirmPassword, context)
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -124,10 +90,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
 suspend fun signUpUser(
     email: String,
     password: String,
-    firstname: String,
-    lastname: String,
-    username: String,
-    dateOfBirth: String,
     confirmPassword: String,
     context: Context
 ) {
@@ -143,27 +105,6 @@ suspend fun signUpUser(
         val userId = result.user?.uid
 
         if (userId != null) {
-            // Simpan data pengguna ke Realtime Database
-            val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-            val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
-
-            val userMap = mapOf(
-                "firstName" to firstname,
-                "lastName" to lastname,
-                "username" to username,
-                "email" to email,
-                "dateOfBirth" to dateOfBirth
-            )
-
-            database.child("users").child(userId).setValue(userMap)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Log.d("Firebase", "Data berhasil disimpan.")
-                    } else {
-                        Log.e("Firebase", "Gagal menyimpan data: ${task.exception?.message}")
-                    }
-                }
-
             result.user?.sendEmailVerification()?.addOnCompleteListener { verificationTask ->
                 if (verificationTask.isSuccessful) {
                     Toast.makeText(context, "Verifikasi email telah dikirim. Periksa email Anda.", Toast.LENGTH_LONG).show()
@@ -172,7 +113,8 @@ suspend fun signUpUser(
                 }
             }
 
-            val intent = Intent(context, LoginActivity::class.java).apply {
+            val intent = Intent(context, RegisterActivity::class.java).apply {
+                putExtra("userId", userId)
                 putExtra("email", email)
             }
             context.startActivity(intent)

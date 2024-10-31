@@ -1,4 +1,5 @@
 package com.superbgoal.caritasrig.activity
+
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import android.content.Context
 import android.content.Intent
@@ -49,9 +50,9 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import kotlinx.coroutines.channels.awaitClose
@@ -100,8 +101,6 @@ fun LoginScreen(
         .fillMaxSize()
         .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
-
-
     ) {
         Text(
             text="Sign-in",
@@ -169,6 +168,8 @@ fun LoginScreen(
                 .onEach { authResponse ->
                     when (authResponse) {
                         is AuthResponse.Success -> {
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            Log.d("HomeActivity", "HomeActivity started")
                             val intent = Intent(context, HomeActivity::class.java)
                             context.startActivity(intent)
                         }
@@ -203,13 +204,6 @@ fun LoginScreen(
         OutlinedButton(
             onClick = {
                 autheticationManager.signInWithGoogle()
-                    .onEach {
-                        if (it is AuthResponse.Success) {
-                            Log.d("tesLogin", "Login...")
-                            val intent = Intent(context, HomeActivity::class.java)
-                            context.startActivity(intent)
-                        }
-                    }
                     .launchIn(coroutineScope)
             },
             modifier = Modifier.fillMaxWidth()
@@ -226,6 +220,7 @@ fun LoginScreen(
         }
         OutlinedButton(
             onClick = {
+                Log.d("SignUpActivity", "SignUpActivity started")
                 val intent = Intent(context, SignUpActivity::class.java)
                 context.startActivity(intent)
             },
@@ -270,8 +265,40 @@ private fun Loginpreview(){
 
 //back-end login
 
-class AuthenticationManager(val context: Context) {
+class AuthenticationManager(private val context: Context) {
     private val auth = FirebaseAuth.getInstance()
+
+    private fun checkUserInDatabase(context: Context, userId: String) {
+        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
+        val database = FirebaseDatabase.getInstance(databaseUrl).reference
+
+        database.child("users").child(userId).get().addOnSuccessListener { snapshot ->
+            // Log snapshot details for debugging
+            Log.d("checkUserInDatabase", "Snapshot value: ${snapshot.value}")
+            Log.d("checkUserInDatabase", "Snapshot exists: ${snapshot.exists()}")
+
+            // Check if the snapshot exists and is not null
+            if (snapshot.exists() && snapshot.value != null) {
+                Log.d("checkUserInDatabase", "User exists in database, redirecting to RegisterActivity")
+                Intent(context, HomeActivity::class.java).also {
+                    it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    it.putExtra("userId", userId)
+                    context.startActivity(it)
+                }
+            } else {
+                Log.d("checkUserInDatabase", "User does not exist in database, redirecting to RegisterActivity")
+                Intent(context, RegisterActivity::class.java).also {
+                    it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    it.putExtra("userId", userId)
+                    context.startActivity(it)
+                }
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("checkUserInDatabase", "Error checking user in database: ${exception.message}")
+        }
+    }
+
+
 
     fun resetPassword(email: String): Flow<AuthResponse> = callbackFlow {
         // Mengirim email reset password
@@ -313,7 +340,7 @@ class AuthenticationManager(val context: Context) {
         awaitClose()
     }
 
-    fun createNonce(): String {
+    private fun createNonce(): String {
         val rawNonce = UUID.randomUUID().toString()
         val bytes = rawNonce.toByteArray()
         val md =MessageDigest.getInstance("SHA-256")
@@ -323,6 +350,7 @@ class AuthenticationManager(val context: Context) {
             str + "%02x".format(it)
         }
     }
+
     fun signInWithGoogle(): Flow<AuthResponse> = callbackFlow  {
         Log.d("signinwithgoogle", "signInWithGoogle:")
         val googleIdOption = GetGoogleIdOption.Builder()
@@ -357,15 +385,12 @@ class AuthenticationManager(val context: Context) {
                                 null
                             )
                         auth.signInWithCredential(firebaseCredential)
-                            .addOnCompleteListener {
-                                if (it.isSuccessful) {
-                                    trySend(AuthResponse.Success)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val userId = auth.currentUser?.uid ?: ""
+                                    checkUserInDatabase(context,userId)
                                 } else {
-                                    trySend(
-                                        AuthResponse.Error(
-                                            it.exception?.message ?: "Unknown Error"
-                                        )
-                                    )
+                                    trySend(AuthResponse.Error(task.exception?.message ?: "Unknown Error"))
                                 }
                             }
 
