@@ -25,7 +25,6 @@
         </activity>
         <activity android:name=".activity.HomeActivity" />
         <activity android:name=".activity.SignUpActivity" />
-        <activity android:name=".activity.TesActivity" />
     </application>
 
 </manifest>
