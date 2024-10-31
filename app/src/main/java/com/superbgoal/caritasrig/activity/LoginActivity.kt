@@ -168,6 +168,7 @@ fun LoginScreen(
                 .onEach { authResponse ->
                     when (authResponse) {
                         is AuthResponse.Success -> {
+                            Log.d("login", "isinya:  $authResponse")
                             Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             Log.d("HomeActivity", "HomeActivity started")
                             val intent = Intent(context, HomeActivity::class.java)
@@ -175,8 +176,10 @@ fun LoginScreen(
                         }
                         is AuthResponse.Error -> {
                             if (authResponse.message == "Please verify your email before logging in.") {
+                                Log.d("login", "isinya:  $authResponse")
                                 Toast.makeText(context, "Please verify your email to proceed.", Toast.LENGTH_SHORT).show()
                             } else {
+                                Log.d("login", "isinya:  $authResponse")
                                 Toast.makeText(context, "Your data is incorrect", Toast.LENGTH_SHORT).show()
                             }
                         }
@@ -334,6 +337,7 @@ class AuthenticationManager(private val context: Context) {
                         auth.signOut()
                     }
                 } else {
+                    Log.d("login", "error")
                     trySend(AuthResponse.Error(task.exception?.message ?: "Unknown Error"))
                 }
             }

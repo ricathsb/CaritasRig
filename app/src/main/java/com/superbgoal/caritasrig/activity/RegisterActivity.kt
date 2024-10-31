@@ -126,13 +126,14 @@ fun saveUserData(
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toast.makeText(context, "Data berhasil disimpan.", Toast.LENGTH_SHORT).show()
-                val intent = if (isGoogleLogin) {
+                val intent = if (email.isNullOrEmpty()) {
+                    Log.d("logingoogle", "emailnya kosong $email")
                     Intent(context, HomeActivity::class.java).apply {
-                        Log.d("Activity", "Starting HomeActivity")
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         putExtra("userId", userId)
                     }
                 } else {
+                    Log.d("logingoogle", "emailnya ada $email")
                     Intent(context, LoginActivity::class.java).apply {
                         putExtra("email", email)
                     }
