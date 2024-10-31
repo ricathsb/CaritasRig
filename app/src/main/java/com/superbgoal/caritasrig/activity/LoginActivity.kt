@@ -2,7 +2,6 @@ package com.superbgoal.caritasrig.activity
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import android.content.Context
 import android.content.Intent
-
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -50,6 +49,8 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
@@ -165,13 +166,19 @@ fun LoginScreen(
             }
 
             autheticationManager.loginWithEmail(email, password)
-                .onEach {
-
-                    if (it is AuthResponse.Success) {
-                        val intent = Intent(context, HomeActivity::class.java)
-                        context.startActivity(intent)
-                    } else {
-                        Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
+                .onEach { authResponse ->
+                    when (authResponse) {
+                        is AuthResponse.Success -> {
+                            val intent = Intent(context, HomeActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                        is AuthResponse.Error -> {
+                            if (authResponse.message == "Please verify your email before logging in.") {
+                                Toast.makeText(context, "Please verify your email to proceed.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Your data is incorrect", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
                 .launchIn(coroutineScope)
@@ -226,8 +233,30 @@ fun LoginScreen(
         ) {
             Text("Sign up")
         }
+        OutlinedButton(
+            onClick = {
+                if (email.isBlank()) {
+                    Toast.makeText(context, "Please enter your email to reset password", Toast.LENGTH_SHORT).show()
+                } else {
+                    autheticationManager.resetPassword(email)
+                        .onEach { authResponse ->
+                            when (authResponse) {
+                                is AuthResponse.Success -> {
+                                    Toast.makeText(context, "Password reset link has been sent to your email.", Toast.LENGTH_SHORT).show()
+                                }
+                                is AuthResponse.Error -> {
+                                    Toast.makeText(context, "Failed to send reset link: ${authResponse.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        .launchIn(coroutineScope)
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Forgot Password?")
+        }
     }
-
 
 }
 
@@ -239,18 +268,44 @@ private fun Loginpreview(){
     }
 }
 
-
-
 //back-end login
 
 class AuthenticationManager(val context: Context) {
     private val auth = FirebaseAuth.getInstance()
 
-    fun createAccountWithEmail(email: String, password: String): Flow<AuthResponse> = callbackFlow {
-        auth.createUserWithEmailAndPassword(email, password)
+    fun resetPassword(email: String): Flow<AuthResponse> = callbackFlow {
+        // Mengirim email reset password
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { resetTask ->
+                if (resetTask.isSuccessful) {
+                    // Email reset berhasil dikirim
+                    trySend(AuthResponse.Success)
+                } else {
+                    // Jika terjadi kesalahan, kirimkan error yang sesuai
+                    if (resetTask.exception is FirebaseAuthInvalidUserException) {
+                        // Jika email tidak terdaftar
+                        trySend(AuthResponse.Error("Email tidak terdaftar"))
+                    } else {
+                        // Mengirimkan error umum
+                        trySend(AuthResponse.Error(resetTask.exception?.message ?: "Error sending reset email"))
+                    }
+                }
+            }
+        awaitClose()
+    }
+
+
+    fun loginWithEmail(email: String, password: String): Flow<AuthResponse> = callbackFlow {
+        auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    trySend(AuthResponse.Success)
+                    val user = auth.currentUser
+                    if (user != null && user.isEmailVerified) {
+                        trySend(AuthResponse.Success)
+                    } else{
+                        trySend(AuthResponse.Error("Please verify your email before logging in."))
+                        auth.signOut()
+                    }
                 } else {
                     trySend(AuthResponse.Error(task.exception?.message ?: "Unknown Error"))
                 }
@@ -258,17 +313,6 @@ class AuthenticationManager(val context: Context) {
         awaitClose()
     }
 
-    fun loginWithEmail(email: String, password: String): Flow<AuthResponse> = callbackFlow {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    trySend(AuthResponse.Success)
-                } else {
-                    trySend(AuthResponse.Error(task.exception?.message ?: "Unknown Error"))
-                }
-            }
-        awaitClose()
-    }
     fun createNonce(): String {
         val rawNonce = UUID.randomUUID().toString()
         val bytes = rawNonce.toByteArray()

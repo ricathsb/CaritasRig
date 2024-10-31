@@ -44,10 +44,10 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var firstname by remember { mutableStateOf("") } // Field untuk Firstname
-    var lastname by remember { mutableStateOf("") } // Field untuk Lastname
-    var username by remember { mutableStateOf("") } // Field untuk Username
-    var dateOfBirth by remember { mutableStateOf("") } // Field untuk Date of Birth
+    var firstname by remember { mutableStateOf("") }
+    var lastname by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
+    var dateOfBirth by remember { mutableStateOf("") }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -59,7 +59,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
     ) {
         Text(text = "Sign Up", style = MaterialTheme.typography.titleLarge)
 
-        // Field untuk Firstname
         OutlinedTextField(
             value = firstname,
             onValueChange = { firstname = it },
@@ -67,7 +66,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Field untuk Lastname
         OutlinedTextField(
             value = lastname,
             onValueChange = { lastname = it },
@@ -75,7 +73,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Field untuk Username
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
@@ -83,7 +80,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Field untuk Date of Birth
         OutlinedTextField(
             value = dateOfBirth,
             onValueChange = { dateOfBirth = it },
@@ -91,7 +87,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Field untuk Email
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -99,8 +94,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
-
-        // Field untuk Password
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -108,7 +101,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Field untuk Confirm Password
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
@@ -141,21 +133,17 @@ suspend fun signUpUser(
 ) {
     val auth = FirebaseAuth.getInstance()
 
-    // Validasi input password
     if (password != confirmPassword) {
         Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
         return
     }
 
     try {
-        // Create account with email and password
         val result = auth.createUserWithEmailAndPassword(email, password).await()
         val userId = result.user?.uid
 
-        Log.d("SignUpActivity", "User created successfully: $userId")
-
         if (userId != null) {
-            // Save user details to Realtime Database
+            // Simpan data pengguna ke Realtime Database
             val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
             val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
 
@@ -175,6 +163,14 @@ suspend fun signUpUser(
                         Log.e("Firebase", "Gagal menyimpan data: ${task.exception?.message}")
                     }
                 }
+
+            result.user?.sendEmailVerification()?.addOnCompleteListener { verificationTask ->
+                if (verificationTask.isSuccessful) {
+                    Toast.makeText(context, "Verifikasi email telah dikirim. Periksa email Anda.", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(context, "Gagal mengirim email verifikasi.", Toast.LENGTH_LONG).show()
+                }
+            }
 
             val intent = Intent(context, LoginActivity::class.java).apply {
                 putExtra("email", email)
