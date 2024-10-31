@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig
+package com.superbgoal.caritasrig.activity
 
 import android.os.Bundle
 import android.util.Log

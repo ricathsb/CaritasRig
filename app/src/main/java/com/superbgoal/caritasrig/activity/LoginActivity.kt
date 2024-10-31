@@ -1,12 +1,10 @@
-package com.superbgoal.caritasrig
-import android.app.Activity
+package com.superbgoal.caritasrig.activity
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import android.content.Context
 import android.content.Intent
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Space
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -53,13 +51,13 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Co
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
 import java.util.UUID
 
@@ -67,11 +65,13 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val emailFromSignUp = intent.getStringExtra("email") ?: ""
         setContent {
             CaritasRigTheme {
                 Scaffold {
                     LoginScreen(
-                        modifier = Modifier.padding(it)
+                        modifier = Modifier.padding(it),
+                        initialEmail = emailFromSignUp
                     )
                 }
             }
@@ -81,10 +81,11 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialEmail: String = ""
 ) {
     var email by remember {
-        mutableStateOf("")
+        mutableStateOf(initialEmail)
     }
     var password by remember {
         mutableStateOf("")
@@ -140,23 +141,32 @@ fun LoginScreen(
             },
             visualTransformation = PasswordVisualTransformation(),
             shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.fillMaxWidth(),
-            supportingText = {
-                if (password.isBlank()) {
-                Text(text = "password cannot be blank")
-            }
-                else if (password.length < 8) {
-                Text(text = "Password must be at least 8 characters")
-            }
-
-        }
+            modifier = Modifier.fillMaxWidth()
     )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         Button (onClick ={
+            if(password.isBlank() and email.isBlank()){
+                Toast.makeText(context, "Email and password cannot be blank", Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+            if (email.isBlank()) {
+                Toast.makeText(context, "Email cannot be blank", Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+            if (password.isBlank()) {
+                Toast.makeText(context, "Password cannot be blank", Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+            if (password.length < 6) {
+                Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+
             autheticationManager.loginWithEmail(email, password)
                 .onEach {
+
                     if (it is AuthResponse.Success) {
                         val intent = Intent(context, HomeActivity::class.java)
                         context.startActivity(intent)
@@ -206,6 +216,15 @@ fun LoginScreen(
             Text(text = "Sign in with Google",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,)
+        }
+        OutlinedButton(
+            onClick = {
+                val intent = Intent(context, SignUpActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Sign up")
         }
     }
 
@@ -298,7 +317,11 @@ class AuthenticationManager(val context: Context) {
                                 if (it.isSuccessful) {
                                     trySend(AuthResponse.Success)
                                 } else {
-                                    trySend(AuthResponse.Error(it.exception?.message ?: "Unknown Error"))
+                                    trySend(
+                                        AuthResponse.Error(
+                                            it.exception?.message ?: "Unknown Error"
+                                        )
+                                    )
                                 }
                             }
 
