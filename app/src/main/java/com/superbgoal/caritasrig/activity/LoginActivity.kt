@@ -26,7 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.auth.AuthResponse
 import com.superbgoal.caritasrig.auth.AuthenticationManager
@@ -49,11 +49,22 @@ import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val auth = FirebaseAuth.getInstance()
+
+        // Tambahkan pengecualian jika datang dari RegisterActivity
+        val fromRegistration = intent.getBooleanExtra("fromRegistration", false)
+
+        if (!fromRegistration && auth.currentUser != null) {
+            val intent = Intent(this, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            return
+        }
+
         val emailFromSignUp = intent.getStringExtra("email") ?: ""
         setContent {
             CaritasRigTheme {
@@ -84,18 +95,19 @@ fun LoginScreen(
         AuthenticationManager(context)
     }
     val coroutineScope = rememberCoroutineScope()
-    Column(modifier = modifier
-        .fillMaxSize()
-        .padding(20.dp),
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
-            text="Sign-in",
+            text = "Sign-in",
             style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text="Please fill in your email and password",
+            text = "Please fill in your email and password",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -112,7 +124,6 @@ fun LoginScreen(
             },
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth()
-
         )
 
         OutlinedTextField(
@@ -129,12 +140,12 @@ fun LoginScreen(
             visualTransformation = PasswordVisualTransformation(),
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth()
-    )
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button (onClick ={
-            if(password.isBlank() and email.isBlank()){
+        Button(onClick = {
+            if (password.isBlank() && email.isBlank()) {
                 Toast.makeText(context, "Email and password cannot be blank", Toast.LENGTH_SHORT).show()
                 return@Button
             }
@@ -155,30 +166,30 @@ fun LoginScreen(
                 .onEach { authResponse ->
                     when (authResponse) {
                         is AuthResponse.Success -> {
-                            Log.d("login", "isinya:  $authResponse")
+                            Log.d("login", "Login successful: $authResponse")
                             Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            Log.d("HomeActivity", "HomeActivity started")
 
-                            val intent = Intent(context, HomeActivity::class.java)
+                            // Navigate to HomeActivity
+                            val intent = Intent(context, HomeActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
                             context.startActivity(intent)
                         }
                         is AuthResponse.Error -> {
                             if (authResponse.message == "Please verify your email before logging in.") {
-                                Log.d("login", "isinya:  $authResponse")
                                 Toast.makeText(context, "Please verify your email to proceed.", Toast.LENGTH_SHORT).show()
                             } else {
-                                Log.d("login", "isinya:  $authResponse")
-                                Toast.makeText(context, "Your data is incorrect", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Incorrect credentials", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
                 }
                 .launchIn(coroutineScope)
         },
-            modifier = Modifier.fillMaxWidth()){
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
-                text = "Sign in" ,
+                text = "Sign in",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(vertical = 4.dp)
@@ -198,16 +209,17 @@ fun LoginScreen(
                     .launchIn(coroutineScope)
             },
             modifier = Modifier.fillMaxWidth()
-        ){
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.logogoogle),
                 contentDescription = null,
                 modifier = Modifier.size(36.dp)
             )
-
-            Text(text = "Sign in with Google",
+            Text(
+                text = "Sign in with Google",
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleMedium,)
+                style = MaterialTheme.typography.titleMedium
+            )
         }
         OutlinedButton(
             onClick = {
@@ -243,15 +255,12 @@ fun LoginScreen(
             Text("Forgot Password?")
         }
     }
-
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun Loginpreview(){
+private fun LoginPreview() {
     CaritasRigTheme {
         LoginScreen()
     }
 }
-
-
