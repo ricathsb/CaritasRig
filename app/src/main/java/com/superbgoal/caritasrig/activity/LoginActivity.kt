@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -155,8 +156,10 @@ fun LoginScreen(
                     when (authResponse) {
                         is AuthResponse.Success -> {
                             Log.d("login", "isinya:  $authResponse")
+                            Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
                             Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             Log.d("HomeActivity", "HomeActivity started")
+
                             val intent = Intent(context, HomeActivity::class.java)
                             context.startActivity(intent)
                         }
@@ -189,7 +192,6 @@ fun LoginScreen(
         ) {
             Text(text = "or continue with")
         }
-
         OutlinedButton(
             onClick = {
                 autheticationManager.signInWithGoogle()

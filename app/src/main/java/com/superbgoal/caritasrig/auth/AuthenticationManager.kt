@@ -40,7 +40,6 @@ class AuthenticationManager(private val context: Context) {
                 Log.d("checkUserInDatabase", "User exists in database, redirecting to RegisterActivity")
                 Intent(context, HomeActivity::class.java).also {
                     it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    it.putExtra("userId", userId)
                     context.startActivity(it)
                 }
             } else {
@@ -86,6 +85,7 @@ class AuthenticationManager(private val context: Context) {
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     if (user != null && user.isEmailVerified) {
+                        Log.d("login", "success")
                         trySend(AuthResponse.Success)
                     } else{
                         trySend(AuthResponse.Error("Please verify your email before logging in."))
