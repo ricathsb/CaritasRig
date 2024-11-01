@@ -1,7 +1,5 @@
 package com.superbgoal.caritasrig.activity
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -17,8 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.superbgoal.caritasrig.data.model.User
+import com.superbgoal.caritasrig.data.saveUserData
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import kotlinx.coroutines.launch
 
@@ -46,7 +44,6 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     val coroutineScope = rememberCoroutineScope()
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
     val email = (context as? RegisterActivity)?.intent?.getStringExtra("email") ?: ""
-    val isGoogleLogin = (context as? RegisterActivity)?.intent?.getBooleanExtra("isGoogleLogin", false) ?: false
 
     Column(
         modifier = modifier
@@ -89,7 +86,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 coroutineScope.launch {
                     if (userId != null) {
                         Log.d("email", "userId: $email")
-                        saveUserData(userId, firstname, lastname, username, dateOfBirth, email, context, isGoogleLogin)
+                        saveUserData(user = User(userId, firstname, lastname, username, dateOfBirth, email),context)
                     } else {
                         Toast.makeText(context, "User ID tidak ditemukan.", Toast.LENGTH_SHORT).show()
                     }
@@ -100,47 +97,4 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             Text("Submit")
         }
     }
-}
-
-fun saveUserData(
-    userId: String,
-    firstname: String,
-    lastname: String,
-    username: String,
-    dateOfBirth: String,
-    email: String,
-    context: Context,
-    isGoogleLogin: Boolean
-) {
-    val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-    val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
-
-    val userMap = mapOf(
-        "firstName" to firstname,
-        "lastName" to lastname,
-        "username" to username,
-        "dateOfBirth" to dateOfBirth
-    )
-
-    database.child("users").child(userId).setValue(userMap)
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toast.makeText(context, "Data berhasil disimpan.", Toast.LENGTH_SHORT).show()
-                val intent = if (email.isNullOrEmpty()) {
-                    Log.d("logingoogle", "emailnya kosong $email")
-                    Intent(context, HomeActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        putExtra("userId", userId)
-                    }
-                } else {
-                    Log.d("logingoogle", "emailnya ada $email")
-                    Intent(context, LoginActivity::class.java).apply {
-                        putExtra("email", email)
-                    }
-                }
-                context.startActivity(intent)
-            } else {
-                Log.e("RegisterActivity", "Gagal menyimpan data: ${task.exception?.message}")
-            }
-        }
 }
