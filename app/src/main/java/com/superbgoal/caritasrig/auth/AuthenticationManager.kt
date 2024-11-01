@@ -29,6 +29,7 @@ class AuthenticationManager(private val context: Context) {
     private fun checkUserInDatabase(context: Context, userId: String) {
         val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
         val database = FirebaseDatabase.getInstance(databaseUrl).reference
+        val imageUrl = auth.currentUser?.photoUrl?.toString()
 
         database.child("users").child(userId).get().addOnSuccessListener { snapshot ->
             // Log snapshot details for debugging
@@ -47,6 +48,9 @@ class AuthenticationManager(private val context: Context) {
                 Intent(context, RegisterActivity::class.java).also {
                     it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     it.putExtra("userId", userId)
+                    it.putExtra("imageUrl", imageUrl)
+                    Log.d("checkUserInDatabase", "imageUrl: $imageUrl")
+
                     context.startActivity(it)
                 }
             }

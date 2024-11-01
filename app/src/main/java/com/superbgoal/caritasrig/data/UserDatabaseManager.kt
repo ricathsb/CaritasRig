@@ -19,9 +19,10 @@ fun saveUserData(user: User, context: Context) {
         "firstName" to user.firstName,
         "lastName" to user.lastName,
         "username" to user.username,
-        "dateOfBirth" to user.dateOfBirth
+        "dateOfBirth" to user.dateOfBirth,
+        "profileImageUrl" to user.profileImageUrl
     )
-
+    Log.d("imageUrl", user.profileImageUrl.toString())
     database.child("users").child(user.userId).setValue(userMap)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {

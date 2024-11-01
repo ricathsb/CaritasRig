@@ -6,11 +6,16 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -52,38 +57,57 @@ class HomeActivity : ComponentActivity() {
 fun HomeScreen(userId: String, onLogout: () -> Unit) {
     var user by remember { mutableStateOf<User?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
     // Firebase database initialization
     val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
     val database = FirebaseDatabase.getInstance(databaseUrl).reference
 
+    // Load user data
     LaunchedEffect(userId) {
         database.child("users").child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                Log.d("HomeScreenData", "Data snapshot: $snapshot")
                 if (snapshot.exists()) {
                     user = snapshot.getValue(User::class.java)
                 } else {
                     errorMessage = "User not found"
-                    Log.e("HomeScreen", "User not found")
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 errorMessage = "Failed to load data: ${error.message}"
-                Log.e("HomeScreen", "Failed to read user data: ${error.message}")
             }
         })
     }
 
-    // UI
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Profile icon in the top-right corner
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.TopEnd),
+                horizontalArrangement = Arrangement.End
+            ) {
+                ProfileIcon(user = user) { isMenuExpanded = true }
+                DropdownMenu(
+                    expanded = isMenuExpanded,
+                    onDismissRequest = { isMenuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Logout") },
+                        onClick = {
+                            isMenuExpanded = false
+                            onLogout()
+                        }
+                    )
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -99,19 +123,33 @@ fun HomeScreen(userId: String, onLogout: () -> Unit) {
                     LoadingScreen()
                 }
             }
-
-            // Logout Button
-            Button(
-                onClick = { onLogout() },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-            ) {
-                Text(text = "Logout")
-            }
         }
     }
 }
+
+@Composable
+fun ProfileIcon(user: User?, onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        if (user != null && user.profileImageUrl != null) {
+            // If the user has a profile image URL, load it using an image loading library like Coil
+            AsyncImage(
+                model = user.profileImageUrl,
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+            )
+        } else {
+            // Show a default icon if no profile image is available
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Default Profile Icon",
+                modifier = Modifier.size(40.dp)
+            )
+        }
+    }
+}
+
 
 @Composable
 fun UserProfile(user: User) {

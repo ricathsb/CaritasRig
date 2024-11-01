@@ -52,6 +52,8 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     val coroutineScope = rememberCoroutineScope()
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
     val email = (context as? RegisterActivity)?.intent?.getStringExtra("email") ?: ""
+    val imageUrl = (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
+    Log.d("imageUrl", imageUrl.toString())
 
     Column(
         modifier = modifier
@@ -94,7 +96,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             onClick = {
                 if (userId != null) {
                     Log.d("email", "userId: $email")
-                    saveUserData(user = User(userId, firstname, lastname, username, dateOfBirth, email), context)
+                    saveUserData(user = User(userId, firstname, lastname, username, dateOfBirth, email,imageUrl), context)
                 } else {
                     Toast.makeText(context, "User ID tidak ditemukan.", Toast.LENGTH_SHORT).show()
                 }
