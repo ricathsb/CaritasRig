@@ -9,12 +9,18 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -25,9 +31,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.transformations
+import coil3.transform.CircleCropTransformation
 import com.superbgoal.caritasrig.auth.LoadingButton
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
@@ -66,24 +79,34 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         onResult = { uri-> imageUri = uri }
     )
     Log.d("imageUrl", imageUrl.toString())
-
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "Register", style = MaterialTheme.typography.titleLarge)
-
-        Button(
-            onClick = {
-                photoprofilelauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+        Text(
+            text = "Register",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Box(
+            modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        Log.d("Modifier", "Long clicked!")
+                    },
+                    onTap = {
+                        photoprofilelauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
                 )
-                Log.d("imageUri", imageUri.toString())
-            }
+            },
+            contentAlignment = Alignment.Center
         ) {
-            Text(text = "Upload Image")
+            RegisterProfileIcon(imageUri, imageUrl)
+
         }
 
         OutlinedTextField(
@@ -127,14 +150,12 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         uploadImageToFirebase(uri) { firebaseImageUrl ->
                             Log.d("firebaseImageUrl", firebaseImageUrl)
 
-                            // Setelah mendapatkan URL dari Firebase Storage, simpan data pengguna
                             saveUserData(
                                 user = User(userId, firstname, lastname, username, dateOfBirth, email, firebaseImageUrl),
                                 context
                             )
                         }
                     } ?: run {
-                        // Jika tidak ada `imageUri`, gunakan `imageUrl` dari `intent` atau null jika tidak ditemukan
                         saveUserData(
                             user = User(userId, firstname, lastname, username, dateOfBirth, email, imageUrl),
                             context
@@ -151,4 +172,46 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
     }
+    }
+
+@Composable
+fun RegisterProfileIcon(imageUri: Uri?, imageUrl: String?) {
+    when {
+        imageUrl != null -> {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .transformations(CircleCropTransformation())
+                    .build(),
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+            )
+            Log.d("ProfileIcon", "Profile Image URL: $imageUrl")
+        }
+        imageUri != null -> {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUri)
+                    .transformations(CircleCropTransformation())
+                    .build(),
+                contentDescription = "Selected Image",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+            )
+            Log.d("ProfileIcon", "Selected Image URI: $imageUri")
+        }
+        else -> {
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = "Default Profile Icon",
+                modifier = Modifier.size(100.dp)
+            )
+        }
+    }
 }
+
+
+

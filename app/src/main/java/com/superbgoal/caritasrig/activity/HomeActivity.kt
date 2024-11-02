@@ -35,8 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.transformations
+import coil3.transform.CircleCropTransformation
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -159,15 +163,17 @@ fun ProfileIcon(user: User?, onClick: () -> Unit) {
     IconButton(onClick = onClick) {
         if (user?.profileImageUrl != null) {
             AsyncImage(
-                model = user.profileImageUrl,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(user.profileImageUrl)
+                    .transformations(CircleCropTransformation())
+                    .build(),
                 contentDescription = "Profile Image",
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
             )
             Log.d("ProfileIcon", "Profile Image URL: ${user.profileImageUrl}")
-        }
-        else {
+        } else {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Default Profile Icon",
@@ -176,6 +182,7 @@ fun ProfileIcon(user: User?, onClick: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 fun UserProfile(user: User) {
