@@ -10,6 +10,7 @@ import com.superbgoal.caritasrig.activity.RegisterActivity
 import kotlinx.coroutines.tasks.await
 
 suspend fun signUpUser(
+
     email: String,
     password: String,
     confirmPassword: String,
@@ -24,6 +25,7 @@ suspend fun signUpUser(
 
     try {
         val result = auth.createUserWithEmailAndPassword(email, password).await()
+        val imageUri = ""
         val userId = result.user?.uid
 
         if (userId != null) {
@@ -38,6 +40,7 @@ suspend fun signUpUser(
             val intent = Intent(context, RegisterActivity::class.java).apply {
                 putExtra("userId", userId)
                 putExtra("email", email)
+                putExtra("imageUri", imageUri)
             }
             context.startActivity(intent)
             if (context is Activity) {

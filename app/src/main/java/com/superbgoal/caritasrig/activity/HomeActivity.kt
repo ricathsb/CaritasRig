@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -164,7 +165,9 @@ fun ProfileIcon(user: User?, onClick: () -> Unit) {
                     .size(40.dp)
                     .clip(CircleShape)
             )
-        } else {
+            Log.d("ProfileIcon", "Profile Image URL: ${user.profileImageUrl}")
+        }
+        else {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Default Profile Icon",
@@ -173,7 +176,6 @@ fun ProfileIcon(user: User?, onClick: () -> Unit) {
         }
     }
 }
-
 
 @Composable
 fun UserProfile(user: User) {

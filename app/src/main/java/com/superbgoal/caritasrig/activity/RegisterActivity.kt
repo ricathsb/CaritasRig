@@ -1,15 +1,20 @@
 package com.superbgoal.caritasrig.activity
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -26,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.superbgoal.caritasrig.auth.LoadingButton
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
+import com.superbgoal.caritasrig.data.uploadImageToFirebase
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 
 class RegisterActivity : ComponentActivity() {
@@ -48,11 +54,17 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     var lastname by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var dateOfBirth by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
     val email = (context as? RegisterActivity)?.intent?.getStringExtra("email") ?: ""
-    val imageUrl = (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
+    Log.d("image", imageUri.toString())
+    val imageUrl = imageUri?.toString() ?: (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
+    val photoprofilelauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri-> imageUri = uri }
+    )
     Log.d("imageUrl", imageUrl.toString())
 
     Column(
@@ -62,6 +74,17 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(text = "Register", style = MaterialTheme.typography.titleLarge)
+
+        Button(
+            onClick = {
+                photoprofilelauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+                Log.d("imageUri", imageUri.toString())
+            }
+        ) {
+            Text(text = "Upload Image")
+        }
 
         OutlinedTextField(
             value = firstname,
@@ -96,10 +119,34 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             onClick = {
                 if (userId != null) {
                     Log.d("email", "userId: $email")
-                    saveUserData(user = User(userId, firstname, lastname, username, dateOfBirth, email,imageUrl), context)
+
+
+
+                    // Cek apakah ada `imageUri`
+                    imageUri?.let { uri ->
+                        uploadImageToFirebase(uri) { firebaseImageUrl ->
+                            Log.d("firebaseImageUrl", firebaseImageUrl)
+
+                            // Setelah mendapatkan URL dari Firebase Storage, simpan data pengguna
+                            saveUserData(
+                                user = User(userId, firstname, lastname, username, dateOfBirth, email, firebaseImageUrl),
+                                context
+                            )
+                        }
+                    } ?: run {
+                        // Jika tidak ada `imageUri`, gunakan `imageUrl` dari `intent` atau null jika tidak ditemukan
+                        saveUserData(
+                            user = User(userId, firstname, lastname, username, dateOfBirth, email, imageUrl),
+                            context
+                        )
+                    }
+
+                    Log.d("imageUri1", imageUrl.toString())
                 } else {
                     Toast.makeText(context, "User ID tidak ditemukan.", Toast.LENGTH_SHORT).show()
                 }
+
+
             },
             modifier = Modifier.fillMaxWidth()
         )
