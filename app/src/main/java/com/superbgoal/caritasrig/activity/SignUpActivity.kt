@@ -68,7 +68,6 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             label = { Text("Password") },
             modifier = Modifier.fillMaxWidth()
         )
-
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
