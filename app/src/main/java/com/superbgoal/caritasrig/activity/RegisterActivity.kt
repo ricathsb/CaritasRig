@@ -128,7 +128,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = {
-                        Log.d("Modifier", "Long clicked!")
+                        Log.d("Modifier", "Long clicked! yeay")
                     },
                     onTap = {
                         imagePickerLauncher.launch("image/*")
