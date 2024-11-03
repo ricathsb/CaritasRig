@@ -5,11 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import com.google.gson.Gson
 import com.superbgoal.caritasrig.activity.HomeActivity
 import com.superbgoal.caritasrig.activity.LoginActivity
@@ -20,42 +20,56 @@ import java.util.UUID
 fun saveUserData(user: User, context: Context) {
     val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
     val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
+    val currentUser = FirebaseAuth.getInstance().currentUser
 
-    // Map data yang akan disimpan, tanpa email
-    val userMap = mapOf(
-        "firstName" to user.firstName,
-        "lastName" to user.lastName,
-        "username" to user.username,
-        "dateOfBirth" to user.dateOfBirth,
-        "profileImageUrl" to user.profileImageUrl
-    )
-    Log.d("imageUrl", user.profileImageUrl.toString())
-    database.child("users").child(user.userId).setValue(userMap)
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toast.makeText(context, "Data berhasil disimpan.", Toast.LENGTH_SHORT).show()
+    // Memuat ulang data pengguna untuk memastikan status verifikasi email terbaru
+    currentUser?.reload()?.addOnCompleteListener { reloadTask ->
+        if (reloadTask.isSuccessful) {
+            val isEmailVerified = currentUser.isEmailVerified
+            Log.d("loginStatus", "data disimpan ${isEmailVerified}")
 
-                // Tentukan intent berdasarkan keberadaan email
-                val intent = if (user.email.isEmpty()) {
-                    Log.d("logingoogle", "emailnya kosong ${user.email}")
-                    Intent(context, HomeActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        putExtra("userId", user.userId)
-
-                    }
-                } else {
-                    Log.d("logingoogle", "emailnya ada ${user.email}")
-                    Intent(context, LoginActivity::class.java).apply {
-                        putExtra("email", user.email)
-                        putExtra("fromRegistration", true)
+            // Map data yang akan disimpan, tanpa email
+            val userMap = mapOf(
+                "firstName" to user.firstName,
+                "lastName" to user.lastName,
+                "username" to user.username,
+                "dateOfBirth" to user.dateOfBirth,
+                "profileImageUrl" to user.profileImageUrl
+            )
+            Log.d("imageUrl", user.profileImageUrl.toString())
+            database.child("users").child(user.userId).setValue(userMap)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        // Tentukan intent berdasarkan status verifikasi email
+                        val intent = if (isEmailVerified) {
+                            Log.d("loginStatus", "Akun terverifikasi ${isEmailVerified}")
+                            Intent(context, HomeActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                putExtra("userId", user.userId)
+                                Toast.makeText(context, "Login Berhasil", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Log.d("loginStatus", "Akun belum terverifikasi ${isEmailVerified}")
+                            Intent(context, LoginActivity::class.java).apply {
+                                putExtra("email", user.email)
+                                putExtra("fromRegistration", true)
+                                putExtra("verificationMessage", "Please verify your account before login")
+                                Toast.makeText(context, "Please verify your account before login", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        context.startActivity(intent)
+                    } else {
+                        Log.e("RegisterActivity", "Gagal menyimpan data: ${task.exception?.message}")
                     }
                 }
-                context.startActivity(intent)
-            } else {
-                Log.e("RegisterActivity", "Gagal menyimpan data: ${task.exception?.message}")
-            }
+        } else {
+            Log.e("loginStatus", "Gagal memuat ulang data pengguna: ${reloadTask.exception?.message}")
         }
+    }
 }
+
+
+
 
 fun <T> loadItemsFromResources(context: Context, resourceId: Int, typeToken: TypeToken<List<T>>): List<T> {
     val inputStream = context.resources.openRawResource(resourceId)

@@ -59,11 +59,22 @@ class LoginActivity : ComponentActivity() {
         val fromRegistration = intent.getBooleanExtra("fromRegistration", false)
 
         if (!fromRegistration && auth.currentUser != null) {
-            val intent = Intent(this, HomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            return
+            val user = auth.currentUser
+            if (user != null) {
+                val userId = user.uid
+                val authenticationManager = AuthenticationManager(this)
+                authenticationManager.checkUserInDatabase(userId)
+
+                authenticationManager.checkUserInDatabase(userId)
+                if (user.isEmailVerified) {
+                    Log.d("cekemail","emailverivied")
+                    authenticationManager.checkUserInDatabase(userId)
+                } else {
+                    Toast.makeText(this, "Please verify your email before proceeding.", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
+
 
         val emailFromSignUp = intent.getStringExtra("email") ?: ""
         setContent {
