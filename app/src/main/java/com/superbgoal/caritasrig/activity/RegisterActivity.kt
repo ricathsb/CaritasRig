@@ -1,5 +1,7 @@
 package com.superbgoal.caritasrig.activity
 
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -7,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +42,9 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import coil3.transform.CircleCropTransformation
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
 import com.superbgoal.caritasrig.auth.LoadingButton
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
@@ -68,19 +72,49 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     var username by remember { mutableStateOf("") }
     var dateOfBirth by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
     val email = (context as? RegisterActivity)?.intent?.getStringExtra("email") ?: ""
     Log.d("image", imageUri.toString())
     val imageUrl = imageUri?.toString() ?: (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
-    val photoprofilelauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri-> imageUri = uri }
+
+    val imageCropLauncher = rememberLauncherForActivityResult(
+        CropImageContract()
     )
+     { result ->
+        if(result.isSuccessful){
+            imageUri = result.uriContent
+        } else {
+            val exception = result.error
+            Log.d("imageCropLauncher", exception.toString())
+        }
+
+     }
+
+    if (imageUri != null) {
+            val source = ImageDecoder.createSource(context.contentResolver,imageUri!!)
+            bitmap = ImageDecoder.decodeBitmap(source)
+        }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+    ) { uri : Uri? ->
+        val cropOptions = CropImageContractOptions(uri, CropImageOptions().apply {
+            aspectRatioX = 1 // Ubah sesuai kebutuhan
+            aspectRatioY = 1
+            fixAspectRatio = true // Untuk mengunci rasio
+        })
+        imageCropLauncher.launch(cropOptions)
+
+    }
+
+
     Log.d("imageUrl", imageUrl.toString())
     Column(
-        modifier = Modifier
+        modifier = modifier
+
             .fillMaxSize()
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -97,9 +131,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         Log.d("Modifier", "Long clicked!")
                     },
                     onTap = {
-                        photoprofilelauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
+                        imagePickerLauncher.launch("image/*")
                     }
                 )
             },

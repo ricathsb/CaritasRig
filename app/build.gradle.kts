@@ -57,7 +57,7 @@ dependencies {
     implementation(libs.google.firebase.auth)
     implementation(libs.gson)
     implementation(libs.play.services.auth)
-
+    implementation("com.github.CanHub:Android-Image-Cropper:4.0.0")
     implementation(libs.play.services.auth.api.phone)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
