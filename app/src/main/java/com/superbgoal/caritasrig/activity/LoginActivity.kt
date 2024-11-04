@@ -63,7 +63,6 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val auth = FirebaseAuth.getInstance()
-
         val fromRegistration = intent.getBooleanExtra("fromRegistration", false)
 
         if (!fromRegistration && auth.currentUser != null) {
