@@ -59,19 +59,15 @@ fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
 }
 
 
-fun <T> loadItemsFromResources(context: Context, resourceId: Int, typeToken: TypeToken<List<T>>): List<T> {
+inline fun <reified T> loadItemsFromResources(
+    context: Context,
+    resourceId: Int
+): T {
     val inputStream = context.resources.openRawResource(resourceId)
-    val jsonString: String
-    try {
-        jsonString = inputStream.bufferedReader().use { it.readText() }
-    } catch (ioException: IOException) {
-        Log.e("loadItemsFromResources", "Error reading JSON file: ${ioException.message}")
-        ioException.printStackTrace()
-        return emptyList()
-    }
-
-    return Gson().fromJson(jsonString, typeToken.type)
+    val reader = inputStream.bufferedReader()
+    return Gson().fromJson(reader, object : TypeToken<T>() {}.type)
 }
+
 
 fun uploadImageToFirebase(uri: Uri, onSuccess: (String) -> Unit) {
     val storageRef = FirebaseStorage.getInstance().reference.child("images/${UUID.randomUUID()}")

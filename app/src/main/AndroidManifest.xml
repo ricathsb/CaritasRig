@@ -34,6 +34,14 @@
         <activity android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"/>
         <activity android:name=".activity.AboutUsActivity" />
+        <activity android:name=".activity.BuildActivity"/>
+        <activity android:name=".activity.build.CasingActivity"/>
+        <activity android:name=".activity.build.CpuActivity"/>
+        <activity android:name=".activity.build.InternalHardDriveActivity"/>
+        <activity android:name=".activity.build.MemoryActivity"/>
+        <activity android:name=".activity.build.MotherboardActivity"/>
+        <activity android:name=".activity.build.PowerSupplyActivity"/>
+        <activity android:name=".activity.build.VideoCardActivity"/>
     </application>
 
 </manifest>

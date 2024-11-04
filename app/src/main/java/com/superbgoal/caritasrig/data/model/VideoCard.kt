@@ -4,7 +4,7 @@ data class VideoCard(
     val name: String,
     val price: Double,
     val chipset: String,
-    val memory: Int, // Memory size in GB
+    val memory: Double, // Memory size in GB
     val coreClock: Int, // Core clock speed in MHz
     val boostClock: Int, // Boost clock speed in MHz
     val color: String,

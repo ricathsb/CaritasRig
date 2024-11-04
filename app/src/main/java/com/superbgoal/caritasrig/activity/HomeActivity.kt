@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
@@ -306,6 +307,8 @@ fun TransparentIconButton(
 
 @Composable
 fun UserProfile(user: User) {
+    val context = LocalContext.current // Memindahkan context ke dalam lingkup fungsi UserProfile
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -343,10 +346,9 @@ fun UserProfile(user: User) {
                 // Trending Card
                 Card(
                     modifier = Modifier
-                        .wrapContentWidth() // Allow width to wrap based on content
-                        .wrapContentHeight() // Allow height to wrap based on content
+                        .wrapContentWidth()
+                        .wrapContentHeight()
 //                        .clickable {
-//                            val context = LocalContext.current
 //                            context.startActivity(Intent(context, TrendingActivity::class.java))
 //                        },
 //                    elevation = 8.dp
@@ -363,12 +365,11 @@ fun UserProfile(user: User) {
                             contentDescription = null,
                             modifier = Modifier.size(40.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
+                        Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
                                 text = "Trending",
                                 style = MaterialTheme.typography.headlineMedium,
-//                                fontWeight = FontWeight.Bold
                             )
                             Text(text = "Find popular part")
                         }
@@ -380,11 +381,10 @@ fun UserProfile(user: User) {
                 // Benchmarking Card
                 Card(
                     modifier = Modifier
-                        .wrapContentWidth() // Allow width to wrap based on content
-                        .wrapContentHeight() // Allow height to wrap based on content
+                        .wrapContentWidth()
+                        .wrapContentHeight()
 //                        .clickable {
-//                            val context = LocalContext.current
-//                            context.startActivity(Intent(context, BenchmarkingActivity::class.java)) // Navigate to BenchmarkingActivity
+//                            context.startActivity(Intent(context, BenchmarkingActivity::class.java))
 //                        },
 //                    elevation = 8.dp
                 ) {
@@ -400,14 +400,47 @@ fun UserProfile(user: User) {
                             contentDescription = null,
                             modifier = Modifier.size(40.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
+                        Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
                                 text = "Benchmarking",
                                 style = MaterialTheme.typography.headlineMedium,
-//                                fontWeight = FontWeight.Bold
                             )
                             Text(text = "Compare")
+                        }
+                    }
+                }
+            }
+
+            item {
+                // Build Card
+                Card(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .clickable {
+                            context.startActivity(Intent(context, BuildActivity::class.java)) // Navigate to BuildActivity
+                        },
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.icons_build),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "Build",
+                                style = MaterialTheme.typography.headlineMedium,
+                            )
+                            Text(text = "Create your own setup")
                         }
                     }
                 }
@@ -417,6 +450,7 @@ fun UserProfile(user: User) {
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
 
 @Composable
 fun LoadingScreen() {
