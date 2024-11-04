@@ -39,8 +39,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import coil3.request.transformations
-import coil3.transform.CircleCropTransformation
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -165,7 +163,6 @@ fun ProfileIcon(user: User?, onClick: () -> Unit) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(user.profileImageUrl)
-                    .transformations(CircleCropTransformation())
                     .build(),
                 contentDescription = "Profile Image",
                 modifier = Modifier

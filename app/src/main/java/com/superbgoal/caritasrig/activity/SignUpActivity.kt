@@ -1,18 +1,25 @@
 package com.superbgoal.caritasrig.activity
 
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import com.superbgoal.caritasrig.auth.LoadingButton
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +27,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.superbgoal.caritasrig.auth.signUpUser
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
@@ -39,6 +48,7 @@ class SignUpActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(modifier: Modifier = Modifier) {
     var email by remember { mutableStateOf("") }
@@ -46,43 +56,87 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val backgroundColor = Color(0xFF473947)
+    val textFieldColor = Color(0xFF796179)
+    val textColor = Color(0xFF1e1e1e)
+    val buttonColor = Color(0xFF211321)
 
     Column(
         modifier = modifier
+            .background(backgroundColor)
             .fillMaxSize()
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(text = "Sign Up", style = MaterialTheme.typography.titleLarge)
 
-        OutlinedTextField(
+        TextField(
             value = email,
+            shape = MaterialTheme.shapes.medium,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Email Address", color = textColor) },
+            modifier = Modifier.fillMaxWidth(),
+
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                cursorColor = Color.White,
+                focusedLabelColor = Color.Transparent,
+                unfocusedLabelColor = Color.Transparent,
+                containerColor = textFieldColor,
+            ),
+            textStyle = LocalTextStyle.current.copy(color = Color.White)
+
         )
 
-        OutlinedTextField(
+        TextField(
             value = password,
+            shape = MaterialTheme.shapes.medium,
             onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
-        )
+            label = { Text("Password", color = textColor) },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                cursorColor = Color.White,
+                focusedLabelColor = Color.Transparent,
+                unfocusedLabelColor = Color.Transparent,
+                containerColor = textFieldColor,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
+            textStyle = LocalTextStyle.current.copy(color = Color.White)
 
-        OutlinedTextField(
+        )
+        TextField(
             value = confirmPassword,
+            shape = MaterialTheme.shapes.medium,
             onValueChange = { confirmPassword = it },
-            label = { Text("Confirm Password") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Confirm Password", color = textColor) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                cursorColor = Color.White,
+                focusedLabelColor = Color.Transparent,
+                unfocusedLabelColor = Color.Transparent,
+                containerColor = textFieldColor,
+            ),
+            visualTransformation = PasswordVisualTransformation(),
+            textStyle = LocalTextStyle.current.copy(color = Color.White)
         )
 
         LoadingButton(
             text = "Create Account",
+            colors = ButtonDefaults.buttonColors(
+                containerColor = buttonColor
+            ),
+            textColor = Color.White,
             coroutineScope = coroutineScope, // Pass the coroutine scope
             onClick = {
                 signUpUser(email, password, confirmPassword, context)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+
         )
     }
 }

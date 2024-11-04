@@ -16,6 +16,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.HomeActivity
+import com.superbgoal.caritasrig.activity.LoginActivity
 import com.superbgoal.caritasrig.activity.RegisterActivity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -26,55 +27,67 @@ import java.util.UUID
 class AuthenticationManager(private val context: Context) {
     private val auth = FirebaseAuth.getInstance()
 
-    private fun checkUserInDatabase(context: Context, userId: String) {
+    fun checkUserInDatabase(userId: String) {
         val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
         val database = FirebaseDatabase.getInstance(databaseUrl).reference
-        val imageUrl = auth.currentUser?.photoUrl?.toString()
+        val currentUser = auth.currentUser
 
-        database.child("users").child(userId).get().addOnSuccessListener { snapshot ->
-            // Log snapshot details for debugging
-            Log.d("checkUserInDatabase", "Snapshot value: ${snapshot.value}")
-            Log.d("checkUserInDatabase", "Snapshot exists: ${snapshot.exists()}")
+        currentUser?.reload()?.addOnCompleteListener { reloadTask ->
+            if (reloadTask.isSuccessful) {
+                val imageUrl = currentUser.photoUrl?.toString()
 
-            // Check if the snapshot exists and is not null
-            if (snapshot.exists() && snapshot.value != null) {
-                Log.d("checkUserInDatabase", "User exists in database, redirecting to RegisterActivity")
-                Intent(context, HomeActivity::class.java).also {
-                    it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    context.startActivity(it)
+                // Langkah pertama: cek apakah user ada di database
+                database.child("users").child(userId).get().addOnSuccessListener { snapshot ->
+                    Log.d("checkUserInDatabase", "Snapshot value: ${snapshot.value}")
+                    Log.d("checkUserInDatabase", "Snapshot exists: ${snapshot.exists()}")
+
+                    if (snapshot.exists() && snapshot.value != null) {
+                        // User ada di database, cek apakah emailnya terverifikasi
+                        if (currentUser.isEmailVerified) {
+                            Log.d("checkUserInDatabase", "User exists and email is verified, redirecting to HomeActivity")
+                            Intent(context, HomeActivity::class.java).also {
+                                context.startActivity(it)
+                            }
+                        } else {
+                            Log.d("checkUserInDatabase", "User exists but email not verified, redirecting to LoginActivity")
+                            Intent(context, LoginActivity::class.java).also {
+                                context.startActivity(it)
+                            }
+                        }
+                    } else {
+                        // User tidak ada di database, arahkan ke RegisterActivity
+                        Log.d("checkUserInDatabase", "User does not exist in database, redirecting to RegisterActivity")
+                        Intent(context, RegisterActivity::class.java).also {
+                            it.putExtra("userId", userId)
+                            it.putExtra("imageUrl", imageUrl)
+                            Log.d("checkUserInDatabase", "imageUrl: $imageUrl")
+                            context.startActivity(it)
+                        }
+                    }
+                }.addOnFailureListener { exception ->
+                    Log.e("checkUserInDatabase", "Error checking user in database: ${exception.message}")
                 }
             } else {
-                Log.d("checkUserInDatabase", "User does not exist in database, redirecting to RegisterActivity")
-                Intent(context, RegisterActivity::class.java).also {
-                    it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    it.putExtra("userId", userId)
-                    it.putExtra("imageUrl", imageUrl)
-                    Log.d("checkUserInDatabase", "imageUrl: $imageUrl")
-
-                    context.startActivity(it)
-                }
+                Log.e("checkUserInDatabase", "Failed to reload user: ${reloadTask.exception?.message}")
             }
-        }.addOnFailureListener { exception ->
-            Log.e("checkUserInDatabase", "Error checking user in database: ${exception.message}")
         }
     }
 
 
 
+
+
+
+
     fun resetPassword(email: String): Flow<AuthResponse> = callbackFlow {
-        // Mengirim email reset password
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { resetTask ->
                 if (resetTask.isSuccessful) {
-                    // Email reset berhasil dikirim
                     trySend(AuthResponse.Success)
                 } else {
-                    // Jika terjadi kesalahan, kirimkan error yang sesuai
                     if (resetTask.exception is FirebaseAuthInvalidUserException) {
-                        // Jika email tidak terdaftar
                         trySend(AuthResponse.Error("Email tidak terdaftar"))
                     } else {
-                        // Mengirimkan error umum
                         trySend(AuthResponse.Error(resetTask.exception?.message ?: "Error sending reset email"))
                     }
                 }
@@ -151,7 +164,7 @@ class AuthenticationManager(private val context: Context) {
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     val userId = auth.currentUser?.uid ?: ""
-                                    checkUserInDatabase(context,userId)
+                                    checkUserInDatabase(userId)
                                 } else {
                                     trySend(AuthResponse.Error(task.exception?.message ?: "Unknown Error"))
                                 }
@@ -176,3 +189,5 @@ sealed interface AuthResponse {
     data object Success : AuthResponse
     data class Error(val message: String) : AuthResponse
 }
+
+

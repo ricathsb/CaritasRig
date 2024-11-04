@@ -111,7 +111,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     }
 
 
-    Log.d("iimageUrl", imageUrl.toString())
+    Log.d("imageUrl", imageUrl.toString())
     Column(
         modifier = modifier
 

@@ -31,7 +31,7 @@ suspend fun signUpUser(
         if (userId != null) {
             result.user?.sendEmailVerification()?.addOnCompleteListener { verificationTask ->
                 if (verificationTask.isSuccessful) {
-                    Toast.makeText(context, "Verifikasi email telah dikirim. Periksa email Anda.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Isi data diri Anda", Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(context, "Gagal mengirim email verifikasi.", Toast.LENGTH_LONG).show()
                 }
