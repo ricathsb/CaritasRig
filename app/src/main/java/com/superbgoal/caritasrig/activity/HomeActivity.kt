@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -82,39 +84,43 @@ fun HomeScreen(userId: String, onLogout: () -> Unit) {
         })
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Gray
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background Image
+        Image(
+            painter = painterResource(id = R.drawable.bg2),
+            contentDescription = "Background Image",
+            contentScale = ContentScale.Crop, // Adjusts how the image scales
+            modifier = Modifier.fillMaxSize()
+        )
 
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        // Foreground content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (user != null) {
-                        UserProfile(user!!)
-                    } else if (errorMessage != null) {
-                        ErrorMessage(errorMessage!!)
-                    } else {
-                        LoadingScreen()
-                    }
+                if (user != null) {
+                    UserProfile(user!!)
+                } else if (errorMessage != null) {
+                    ErrorMessage(errorMessage!!)
+                } else {
+                    LoadingScreen()
                 }
             }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(18.dp)
-            ) {
-                ProfileIcon(user = user, onLogout = onLogout)
-            }
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(18.dp)
+        ) {
+            ProfileIcon(user = user, onLogout = onLogout)
         }
     }
 }
@@ -303,18 +309,112 @@ fun UserProfile(user: User) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+            .padding(top = 140.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Welcome, ${user.firstName}",
-            style = MaterialTheme.typography.headlineMedium
+        // Search Bar
+        var searchText by remember { mutableStateOf("") }
+        TextField(
+            value = searchText,
+            onValueChange = { searchText = it },
+            label = { Text("Search") },
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = {
+                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = null)
+            },
+            trailingIcon = {
+                if (searchText.isNotEmpty()) {
+                    IconButton(onClick = { searchText = "" }) {
+                        Icon(Icons.Filled.Close, contentDescription = null)
+                    }
+                }
+            }
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "${user.firstName} ${user.lastName}")
-        Text(text = "Username: ${user.username}")
-        Text(text = "Date of Birth: ${user.dateOfBirth}")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Horizontal Scrollable Cards
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp) // Space between cards
+        ) {
+            item {
+                // Trending Card
+                Card(
+                    modifier = Modifier
+                        .wrapContentWidth() // Allow width to wrap based on content
+                        .wrapContentHeight() // Allow height to wrap based on content
+//                        .clickable {
+//                            val context = LocalContext.current
+//                            context.startActivity(Intent(context, TrendingActivity::class.java))
+//                        },
+//                    elevation = 8.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.trend),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
+                        Column {
+                            Text(
+                                text = "Trending",
+                                style = MaterialTheme.typography.headlineMedium,
+//                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = "Find popular part")
+                        }
+                    }
+                }
+            }
+
+            item {
+                // Benchmarking Card
+                Card(
+                    modifier = Modifier
+                        .wrapContentWidth() // Allow width to wrap based on content
+                        .wrapContentHeight() // Allow height to wrap based on content
+//                        .clickable {
+//                            val context = LocalContext.current
+//                            context.startActivity(Intent(context, BenchmarkingActivity::class.java)) // Navigate to BenchmarkingActivity
+//                        },
+//                    elevation = 8.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_hourglass_bottom_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
+                        Column {
+                            Text(
+                                text = "Benchmarking",
+                                style = MaterialTheme.typography.headlineMedium,
+//                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = "Compare")
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
