@@ -5,26 +5,28 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.User
 
 class HomeActivity : ComponentActivity() {
@@ -82,7 +84,8 @@ fun HomeScreen(userId: String, onLogout: () -> Unit) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = Color.Gray
+
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -157,71 +160,95 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = {
-            Text(text = "User Profile", style = MaterialTheme.typography.titleMedium)
-        },
+        containerColor = Color.Transparent,
+        textContentColor = MaterialTheme.colorScheme.onBackground,
+        modifier = Modifier,
         text = {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.Start
+            Box(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (user?.profileImageUrl != null) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(user.profileImageUrl)
-                            .build(),
-                        contentDescription = "Profile Image",
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape)
-                    )
-                } else {
+                // Tombol Close (X) di kanan atas
+                IconButton(
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Default Profile Icon",
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape)
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close Dialog",
+                        tint = Color.Gray
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                // Isi dialog
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.fillMaxWidth().padding(top = 24.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        if (user?.profileImageUrl != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(user.profileImageUrl)
+                                    .build(),
+                                contentDescription = "Profile Image",
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .clip(CircleShape)
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Default Profile Icon",
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
 
-                user?.let {
-                    Text("${it.firstName} ${it.lastName}")
-                    Text(it.username)
-                    Text(email ?: "No email available")
-                } ?: Text("No user information available")
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+                        user?.let {
+                            Text(it.username)
+                            Text(email ?: "No email available")
+                        } ?: Text("No user information available")
 
-                TransparentIconButton(
-                    text = "Activity",
-                    icon = Icons.Default.Build,
-                    onClick = { /* Navigate to Activity */ }
-                )
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                TransparentIconButton(
-                    text = "Settings",
-                    icon = Icons.Default.Settings,
-                    onClick = { /* Navigate to Settings */ }
-                )
+                        TransparentIconButton(
+                            text = "Activity",
+                            icon = R.drawable.icons_activity,
+                            onClick = { /* Navigate to Activity */ }
+                        )
 
-                TransparentIconButton(
-                    text = "About Us",
-                    icon = Icons.Default.Face,
-                    onClick = {
-                        val intent = Intent(context, AboutUsActivity::class.java)
-                        context.startActivity(intent)
+                        TransparentIconButton(
+                            text = "Settings",
+                            icon = R.drawable.icons_settings,
+                            onClick = { /* Navigate to Settings */ }
+                        )
+
+                        TransparentIconButton(
+                            text = "About Us",
+                            icon = R.drawable.icons_aboutus,
+                            onClick = {
+                                val intent = Intent(context, AboutUsActivity::class.java)
+                                context.startActivity(intent)
+                            }
+                        )
+
+                        TransparentIconButton(
+                            text = "Log Out",
+                            icon = R.drawable.icons_logout,
+                            onClick = onLogout
+                        )
                     }
-                )
-
-                TransparentIconButton(
-                    text = "Log Out",
-                    icon = Icons.Default.Clear,
-                    onClick = onLogout
-                )
+                }
             }
         },
         confirmButton = {
@@ -232,19 +259,22 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
     )
 }
 
+
 @Composable
 fun TransparentIconButton(
     text: String,
-    icon: ImageVector,
+    icon: Int,
     onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f)
+            .height(56.dp)
+            .padding(horizontal = 16.dp),
+        colors = ButtonDefaults.buttonColors().copy(
+            containerColor = Color(171, 161, 157, 255).copy(alpha = 0.7f),
+            contentColor = Color.Black
         ),
         contentPadding = PaddingValues(8.dp)
     ) {
@@ -253,16 +283,16 @@ fun TransparentIconButton(
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = icon,
+            Image(
+                painter = painterResource(id = icon),
                 contentDescription = "$text icon",
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
+                colorFilter = ColorFilter.tint(Color.Gray)
             )
-            Spacer(modifier = Modifier.width(9.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = text,
-                color = MaterialTheme.colorScheme.onBackground
+                color = Color.Black
             )
         }
     }
