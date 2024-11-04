@@ -101,13 +101,7 @@ class AuthenticationManager(private val context: Context) {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    if (user != null && user.isEmailVerified) {
-                        Log.d("login", "success")
-                        trySend(AuthResponse.Success)
-                    } else{
-                        trySend(AuthResponse.Error("Please verify your email before logging in."))
-                        auth.signOut()
-                    }
+                    checkUserInDatabase(user?.uid ?: "")
                 } else {
                     Log.d("login", "error")
                     trySend(AuthResponse.Error(task.exception?.message ?: "Unknown Error"))

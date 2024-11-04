@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.activity
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -283,7 +284,10 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                             ) { isVerified ->
                                 if (isVerified) {
                                     Toast.makeText(context, "Data saved successfully and email verified.", Toast.LENGTH_SHORT).show()
-                                    // Proceed to the next screen, if needed
+                                    // Proceed to HomeActivity
+                                    val homeIntent = Intent(context, HomeActivity::class.java)
+                                    context.startActivity(homeIntent)
+                                    (context as RegisterActivity).finish() // Optional, close RegisterActivity
                                 } else {
                                     Toast.makeText(context, "Please verify your email first.", Toast.LENGTH_SHORT).show()
                                 }
@@ -297,9 +301,13 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ) { isVerified ->
                             if (isVerified) {
                                 Toast.makeText(context, "Data saved successfully and email verified.", Toast.LENGTH_SHORT).show()
-                                // Proceed to the next screen, if needed
+                                // Proceed to HomeActivity
+                                val homeIntent = Intent(context, HomeActivity::class.java)
+                                context.startActivity(homeIntent)
+                                (context as RegisterActivity).finish()
                             } else {
                                 Toast.makeText(context, "Please verify your email first.", Toast.LENGTH_SHORT).show()
+
                             }
                         }
                     }
