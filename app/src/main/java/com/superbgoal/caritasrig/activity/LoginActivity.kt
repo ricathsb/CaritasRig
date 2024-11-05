@@ -1,6 +1,5 @@
 package com.superbgoal.caritasrig.activity
 
-
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -12,31 +11,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +50,7 @@ class LoginActivity : ComponentActivity() {
                 authenticationManager.checkUserInDatabase(userId)
 
                 if (user.isEmailVerified) {
-                    Log.d("cekemail", "emailverivied")
+                    Log.d("cekemail", "emailverified")
                     authenticationManager.checkUserInDatabase(userId)
                 } else {
                     Toast.makeText(this, "Please verify your email before proceeding.", Toast.LENGTH_SHORT).show()
@@ -107,32 +84,27 @@ fun SwipeableLoginScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(backgroundColor) // Bisa disesuaikan untuk background utama
+            .background(backgroundColor)
     ) {
-        // Background layer
         Image(
-            painter = painterResource(id = R.drawable.background), // Pastikan background.png ada di res/drawable
+            painter = painterResource(id = R.drawable.background),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Login screen layer
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                //.clip(shape = MaterialTheme.shapes.extraLarge)
                 .offset { IntOffset(0, animatedOffsetY.roundToInt()) }
                 .pointerInput(Unit) {
                     detectVerticalDragGestures { change, dragAmount ->
-                        change.consume() // Menandakan gesture telah diproses
+                        change.consume()
                         offsetY += dragAmount
-
-                        // Batas swipe
                         offsetY = offsetY.coerceIn(0f, 1000f)
                     }
                 }
-                .background(Color.Transparent) // Warna background login screen
+                .background(Color.Transparent)
         ) {
             LoginScreenContent(initialEmail)
         }
@@ -144,190 +116,167 @@ fun SwipeableLoginScreen(
 fun LoginScreenContent(initialEmail: String = "") {
     var email by remember { mutableStateOf(initialEmail) }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val autheticationManager = remember { AuthenticationManager(context) }
+    val authenticationManager = remember { AuthenticationManager(context) }
     val coroutineScope = rememberCoroutineScope()
 
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
-    val textColor = Color(0xFF1e1e1e)
     val buttonColor = Color(0xFF211321)
 
-    Column(
-        modifier = Modifier
-            .clip(shape = MaterialTheme.shapes.extraLarge)
-            .fillMaxSize()
-            .background(backgroundColor)
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.loginicon),
-            contentDescription = "Login Icon",
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .size(160.dp)
-                .padding(top = 32.dp, bottom = 16.dp)
-        )
+                .clip(shape = MaterialTheme.shapes.extraLarge)
+                .fillMaxSize()
+                .background(backgroundColor)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.loginicon),
+                contentDescription = "Login Icon",
+                modifier = Modifier
+                    .size(160.dp)
+                    .padding(top = 32.dp, bottom = 16.dp)
+            )
 
-        TextField(
-            value = email,
-            shape = MaterialTheme.shapes.medium,
-            onValueChange = { email = it },
-            label = { Text("Email Address", color = textColor) },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
-                cursorColor = Color.White,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent,
-                containerColor = textFieldColor,
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = LocalTextStyle.current.copy(color = Color.White)
-        )
+            TextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email Address", color = Color.White) },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = textFieldColor,
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        TextField(
-            value = password,
-            shape = MaterialTheme.shapes.medium,
-            onValueChange = { password = it },
-            label = { Text("Password", color = textColor) },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
-                cursorColor = Color.White,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent,
-                containerColor = textFieldColor,
-            ),
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = LocalTextStyle.current.copy(color = Color.White)
-        )
+            TextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password", color = Color.White) },
+                visualTransformation = PasswordVisualTransformation(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    containerColor = textFieldColor,
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        //login button
-        Button(
-            onClick = {
-                if (password.isBlank() || email.isBlank()) {
-                    Toast.makeText(context, "Email and password cannot be blank", Toast.LENGTH_SHORT).show()
-                } else if (password.length < 6) {
-                    Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
-                } else {
+            Button(
+                onClick = {
+                    isLoading = true
                     coroutineScope.launch {
-                        autheticationManager.loginWithEmail(email, password).collect { authResponse ->
-                            when (authResponse) {
-                                is AuthResponse.Success -> {
-                                    Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-                                    val intent = Intent(context, HomeActivity::class.java)
-                                    context.startActivity(intent)
-                                }
-                                is AuthResponse.Error -> {
-                                    Toast.makeText(context, authResponse.message, Toast.LENGTH_SHORT).show()
+                        if (password.isBlank() || email.isBlank()) {
+                            Toast.makeText(context, "Email and password cannot be blank", Toast.LENGTH_SHORT).show()
+                            isLoading = false
+                        } else if (password.length < 6) {
+                            Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                            isLoading = false
+                        } else {
+                            authenticationManager.loginWithEmail(email, password).collect { authResponse ->
+                                isLoading = false
+                                when (authResponse) {
+                                    is AuthResponse.Success -> {
+                                        Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                                        context.startActivity(Intent(context, HomeActivity::class.java))
+                                    }
+                                    is AuthResponse.Error -> {
+                                        Toast.makeText(context, authResponse.message, Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = buttonColor,
-            )
-        ) {
-            Text(text = "LOGIN", fontWeight = FontWeight.Bold, color = Color.White)
-        }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = buttonColor,
+                )
+            ) {
+                Text(text = "LOGIN", fontWeight = FontWeight.Bold, color = Color.White)
+            }
 
-        // additional options and Google sign-in button
-        // ...
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 1.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Sign Up Text
-            Text(
-                text = "Sign up",
-                color = Color.Cyan,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier
-                    .clickable {
-                        Log.d("SignUpActivity", "SignUpActivity started")
-                        val intent = Intent(context, SignUpActivity::class.java)
-                        context.startActivity(intent)
-                    }
-                    .padding(top = 8.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 1.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Sign up",
+                    color = Color.Cyan,
+                    modifier = Modifier.clickable {
+                        context.startActivity(Intent(context, SignUpActivity::class.java))
+                    }.padding(top = 8.dp)
+                )
 
-            // Forgot Password Text
-            Text(
-                text = "Forgot Password?",
-                color = Color.Cyan,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier
-                    .clickable {
+                Text(
+                    text = "Forgot Password?",
+                    color = Color.Cyan,
+                    modifier = Modifier.clickable {
                         if (email.isBlank()) {
                             Toast.makeText(context, "Please enter your email to reset password", Toast.LENGTH_SHORT).show()
                         } else {
-                            autheticationManager.resetPassword(email)
-                                .onEach { authResponse ->
-                                    when (authResponse) {
-                                        is AuthResponse.Success -> {
-                                            Toast.makeText(context, "Password reset link has been sent to your email.", Toast.LENGTH_SHORT).show()
-                                        }
-                                        is AuthResponse.Error -> {
-                                            Toast.makeText(context, "Failed to send reset link: ${authResponse.message}", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
+                            isLoading = true
+                            authenticationManager.resetPassword(email).onEach { authResponse ->
+                                isLoading = false
+                                when (authResponse) {
+                                    is AuthResponse.Success -> Toast.makeText(context, "Password reset link has been sent to your email.", Toast.LENGTH_SHORT).show()
+                                    is AuthResponse.Error -> Toast.makeText(context, "Failed to send reset link: ${authResponse.message}", Toast.LENGTH_SHORT).show()
                                 }
-                                .launchIn(coroutineScope)
+                            }.launchIn(coroutineScope)
                         }
-                    }
-                    .padding(top = 8.dp)
-            )
-        }
+                    }.padding(top = 8.dp)
+                )
+            }
 
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "or continue with",
-                color = Color.White  // Sesuaikan warna teks dengan tema
-            )
-        }
-        //sign in google
-        OutlinedButton(
-            onClick = {
-                autheticationManager.signInWithGoogle()
-                    .launchIn(coroutineScope)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.White  // Warna background button
-            )
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logogoogle),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .padding(end = 8.dp)
-                )
-                Text(
-                    text = "Sign in with Google",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black  // Warna teks button
-                )
+                Text(text = "or continue with", color = Color.White)
+            }
+
+            OutlinedButton(
+                onClick = {
+                    isLoading = true
+                    authenticationManager.signInWithGoogle().onEach {
+                        isLoading = false
+                    }.launchIn(coroutineScope)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logogoogle),
+                        contentDescription = null,
+                        modifier = Modifier.size(36.dp).padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Sign in with Google",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black
+                    )
+                }
+            }
+        }
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
             }
         }
     }

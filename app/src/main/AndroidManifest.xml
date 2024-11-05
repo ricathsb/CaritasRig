@@ -15,6 +15,7 @@
 
         <activity
             android:name=".activity.CheckActivity"
+            android:noHistory="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,6 +43,7 @@
         <activity android:name=".activity.build.MotherboardActivity"/>
         <activity android:name=".activity.build.PowerSupplyActivity"/>
         <activity android:name=".activity.build.VideoCardActivity"/>
+        <activity android:name=".activity.LoadingActivity"/>
     </application>
 
 </manifest>

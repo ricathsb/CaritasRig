@@ -107,7 +107,7 @@ fun HomeScreen(userId: String, onLogout: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (user != null) {
-                    UserProfile(user!!)
+                    UserProfile()
                 } else if (errorMessage != null) {
                     ErrorMessage(errorMessage!!)
                 } else {
@@ -306,7 +306,7 @@ fun TransparentIconButton(
 }
 
 @Composable
-fun UserProfile(user: User) {
+fun UserProfile() {
     val context = LocalContext.current // Memindahkan context ke dalam lingkup fungsi UserProfile
 
     Column(

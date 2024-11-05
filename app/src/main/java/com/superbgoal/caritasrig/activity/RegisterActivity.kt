@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -34,12 +35,10 @@ import coil3.transform.CircleCropTransformation
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
-import com.superbgoal.caritasrig.auth.LoadingButton
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
 import com.superbgoal.caritasrig.data.uploadImageToFirebase
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -73,47 +72,44 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     var dateOfBirth by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
     val email = (context as? RegisterActivity)?.intent?.getStringExtra("email") ?: ""
-    Log.d("image", imageUri.toString())
     val imageUrl = imageUri?.toString() ?: (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
     val textColor = Color(0xFF1e1e1e)
-    val buttonColor = Color(0xFF211321)
+
     val imageCropLauncher = rememberLauncherForActivityResult(
         CropImageContract()
-    )
-    { result ->
-        if(result.isSuccessful){
+    ) { result ->
+        if (result.isSuccessful) {
             imageUri = result.uriContent
         } else {
             val exception = result.error
             Log.d("imageCropLauncher", exception.toString())
         }
-
     }
 
     if (imageUri != null) {
-        val source = ImageDecoder.createSource(context.contentResolver,imageUri!!)
+        val source = ImageDecoder.createSource(context.contentResolver, imageUri!!)
         bitmap = ImageDecoder.decodeBitmap(source)
     }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-    ) { uri : Uri? ->
+    ) { uri: Uri? ->
         val cropOptions = CropImageContractOptions(uri, CropImageOptions().apply {
-            aspectRatioX = 1 // Ubah sesuai kebutuhan
+            aspectRatioX = 1
             aspectRatioY = 1
-            fixAspectRatio = true // Untuk mengunci rasio
+            fixAspectRatio = true
         })
         imageCropLauncher.launch(cropOptions)
-
     }
 
-    Log.d("imageUrl", imageUrl.toString())
     Column(
         modifier = modifier
             .background(backgroundColor)
@@ -126,6 +122,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             text = "Register",
             style = MaterialTheme.typography.titleLarge
         )
+
         Box(
             modifier = Modifier.pointerInput(Unit) {
                 detectTapGestures(
@@ -140,15 +137,14 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center
         ) {
             RegisterProfileIcon(imageUri, imageUrl)
-
         }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
-        )
-        {
+        ) {
             TextField(
                 modifier = modifier.weight(1f),
                 value = firstname,
@@ -159,12 +155,9 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                     unfocusedBorderColor = Color.Transparent,
                     focusedBorderColor = Color.Transparent,
                     cursorColor = Color.White,
-                    focusedLabelColor = Color.Transparent,
-                    unfocusedLabelColor = Color.Transparent,
                     containerColor = textFieldColor,
                 ),
                 textStyle = LocalTextStyle.current.copy(color = Color.White)
-
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -179,16 +172,11 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                     unfocusedBorderColor = Color.Transparent,
                     focusedBorderColor = Color.Transparent,
                     cursorColor = Color.White,
-                    focusedLabelColor = Color.Transparent,
-                    unfocusedLabelColor = Color.Transparent,
                     containerColor = textFieldColor,
-
-                    ),
+                ),
                 textStyle = LocalTextStyle.current.copy(color = Color.White)
             )
         }
-
-
 
         TextField(
             value = username,
@@ -200,21 +188,15 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 unfocusedBorderColor = Color.Transparent,
                 focusedBorderColor = Color.Transparent,
                 cursorColor = Color.White,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent,
                 containerColor = textFieldColor,
-
-                ),
+            ),
             textStyle = LocalTextStyle.current.copy(color = Color.White)
         )
 
         var showDatePicker by remember { mutableStateOf(false) }
         val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
-
-// Format tanggal
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-        // Fungsi untuk mengkonversi Long ke LocalDate
         fun Long.toLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
 
         TextField(
@@ -227,11 +209,8 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 unfocusedBorderColor = Color.Transparent,
                 focusedBorderColor = Color.Transparent,
                 cursorColor = Color.White,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent,
                 containerColor = textFieldColor,
-
-                ),
+            ),
             textStyle = LocalTextStyle.current.copy(color = Color.White),
             readOnly = true,
             trailingIcon = {
@@ -264,100 +243,76 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             }
         }
 
-
-        LoadingButton(
-            text = "Submit",
-            coroutineScope = coroutineScope,
+        Button(
             onClick = {
+                isLoading = true
                 if (userId != null) {
-                    Log.d("email", "userId: $email")
-
-                    // Check for `imageUri` and proceed accordingly
                     imageUri?.let { uri ->
                         uploadImageToFirebase(uri) { firebaseImageUrl ->
-                            Log.d("firebaseImageUrl", firebaseImageUrl)
-
-                            // Call saveUserData with callback
                             saveUserData(
                                 user = User(userId, firstname, lastname, username, dateOfBirth, email, firebaseImageUrl),
                                 context = context
                             ) { isVerified ->
+                                isLoading = false
                                 if (isVerified) {
                                     Toast.makeText(context, "Data saved successfully and email verified.", Toast.LENGTH_SHORT).show()
-                                    // Proceed to HomeActivity
-                                    val homeIntent = Intent(context, HomeActivity::class.java)
-                                    context.startActivity(homeIntent)
-                                    (context as RegisterActivity).finish() // Optional, close RegisterActivity
+                                    context.startActivity(Intent(context, HomeActivity::class.java))
+                                    (context as RegisterActivity).finish()
                                 } else {
                                     Toast.makeText(context, "Please verify your email first.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
                     } ?: run {
-                        // Call saveUserData if there's no imageUri
                         saveUserData(
                             user = User(userId, firstname, lastname, username, dateOfBirth, email, imageUrl),
                             context = context
                         ) { isVerified ->
+                            isLoading = false
                             if (isVerified) {
                                 Toast.makeText(context, "Data saved successfully and email verified.", Toast.LENGTH_SHORT).show()
-                                // Proceed to HomeActivity
-                                val homeIntent = Intent(context, HomeActivity::class.java)
-                                context.startActivity(homeIntent)
+                                context.startActivity(Intent(context, HomeActivity::class.java))
                                 (context as RegisterActivity).finish()
                             } else {
                                 Toast.makeText(context, "Please verify your email first.", Toast.LENGTH_SHORT).show()
-
                             }
                         }
                     }
-
-                    Log.d("imageUri1", imageUrl.toString())
-                } else {
-                    Toast.makeText(context, "User ID tidak ditemukan.", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth()
-        )
-
+            enabled = !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text(text = "Submit")
+            }
+        }
     }
 }
 
 @Composable
 fun RegisterProfileIcon(imageUri: Uri?, imageUrl: String?) {
-    when {
-        imageUrl != null -> {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .transformations(CircleCropTransformation())
-                    .build(),
-                contentDescription = "Profile Image",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-            )
-            Log.d("ProfileIcon", "Profile Image URL: $imageUrl")
-        }
-        imageUri != null -> {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUri)
-                    .transformations(CircleCropTransformation())
-                    .build(),
-                contentDescription = "Selected Image",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-            )
-            Log.d("ProfileIcon", "Selected Image URI: $imageUri")
-        }
-        else -> {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Default Profile Icon",
-                modifier = Modifier.size(100.dp)
-            )
-        }
+    if (imageUri != null) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUri)
+                .transformations(CircleCropTransformation())
+                .build(),
+            contentDescription = "Selected image",
+            modifier = Modifier
+                .size(150.dp)
+                .clip(CircleShape)
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Default.AccountCircle,
+            contentDescription = "Default Icon",
+            modifier = Modifier.size(150.dp),
+            tint = Color.White
+        )
     }
 }

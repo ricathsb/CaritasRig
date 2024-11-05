@@ -48,11 +48,6 @@ class AuthenticationManager(private val context: Context) {
                             Intent(context, HomeActivity::class.java).also {
                                 context.startActivity(it)
                             }
-                        } else {
-                            Log.d("checkUserInDatabase", "User exists but email not verified, redirecting to LoginActivity")
-                            Intent(context, LoginActivity::class.java).also {
-                                context.startActivity(it)
-                            }
                         }
                     } else {
                         // User tidak ada di database, arahkan ke RegisterActivity
@@ -60,6 +55,7 @@ class AuthenticationManager(private val context: Context) {
                         Intent(context, RegisterActivity::class.java).also {
                             it.putExtra("userId", userId)
                             it.putExtra("imageUrl", imageUrl)
+                            it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                             Log.d("checkUserInDatabase", "imageUrl: $imageUrl")
                             context.startActivity(it)
                         }

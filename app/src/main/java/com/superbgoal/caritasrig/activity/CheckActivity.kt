@@ -1,10 +1,12 @@
 package com.superbgoal.caritasrig.activity
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.auth.AuthenticationManager
 
 class CheckActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -13,23 +15,37 @@ class CheckActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
 
-        // Logika untuk menentukan ke mana user akan diarahkan
         if (auth.currentUser != null) {
             val user = auth.currentUser
+            val authenticationManager = AuthenticationManager(this)
             if (user != null) {
-                if (user.isEmailVerified) {
-                    // Cek jika user sudah ada di database dan arahkan ke HomeActivity
-                    startActivity(Intent(this, HomeActivity::class.java))
-                } else {
-                    Toast.makeText(this, "Please verify your email before proceeding.", Toast.LENGTH_SHORT).show()
-                    // Arahkan ke LoginActivity atau aktivitas lainnya
-                    startActivity(Intent(this, LoginActivity::class.java))
+                if (isXiaomiDevice()) {
+                    Log.d("XiaomiDevice", "This is a Xiaomi device")
+                    navigateToLoadingActivity()
+                    authenticationManager.checkUserInDatabase(user.uid)
+                }
+                else {
+                    Log.d("XiaomiDevice", "This is not a Xiaomi device")
+                    authenticationManager.checkUserInDatabase(user.uid)
                 }
             }
         } else {
-            // Jika user belum login, arahkan ke LoginActivity
-            startActivity(Intent(this, LoginActivity::class.java))
+            navigateToLoginActivity()
         }
-        finish() // Tutup CheckActivity setelah mengarahkan
+    }
+
+    private fun navigateToLoadingActivity() {
+        startActivity(Intent(this, LoadingActivity::class.java))
+        finish()
+    }
+
+    private fun navigateToLoginActivity() {
+        startActivity(Intent(this, LoginActivity::class.java))
+        finish()
     }
 }
+
+private fun isXiaomiDevice(): Boolean {
+    return Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
+}
+
