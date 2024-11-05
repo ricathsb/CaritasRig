@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.activity
 
+import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.superbgoal.caritasrig.auth.LoadingButton
@@ -19,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -138,6 +140,16 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
 
         )
+        TextButton(
+            onClick = {
+                context.startActivity(Intent(context, LoginActivity::class.java))
+                (context as SignUpActivity)
+                    .finish()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Already have an account? Log in", color = Color.White)
+        }
     }
 }
 
