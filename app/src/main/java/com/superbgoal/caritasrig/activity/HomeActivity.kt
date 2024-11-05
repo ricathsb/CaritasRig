@@ -343,6 +343,40 @@ fun UserProfile() {
             horizontalArrangement = Arrangement.spacedBy(16.dp) // Space between cards
         ) {
             item {
+                // Build Card
+                Card(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .clickable {
+                            context.startActivity(Intent(context, BuildActivity::class.java)) // Navigate to BuildActivity
+                        },
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.icons_build),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "Build",
+                                style = MaterialTheme.typography.headlineMedium,
+                            )
+                            Text(text = "Create your own setup")
+                        }
+                    }
+                }
+            }
+
+            item {
                 // Trending Card
                 Card(
                     modifier = Modifier
@@ -351,7 +385,6 @@ fun UserProfile() {
 //                        .clickable {
 //                            context.startActivity(Intent(context, TrendingActivity::class.java))
 //                        },
-//                    elevation = 8.dp
                 ) {
                     Row(
                         modifier = Modifier
@@ -386,7 +419,6 @@ fun UserProfile() {
 //                        .clickable {
 //                            context.startActivity(Intent(context, BenchmarkingActivity::class.java))
 //                        },
-//                    elevation = 8.dp
                 ) {
                     Row(
                         modifier = Modifier
@@ -411,46 +443,80 @@ fun UserProfile() {
                     }
                 }
             }
+        }
+        Spacer(modifier = Modifier.height(30.dp))
 
+        // Horizontal Scrollable Cards for AMD, NVIDIA, Intel, etc. without text, with icons sized 20x20 dp
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             item {
-                // Build Card
+                // AMD Card
                 Card(
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .clickable {
-                            context.startActivity(Intent(context, BuildActivity::class.java)) // Navigate to BuildActivity
-                        },
+//                        .clickable {
+//                            context.startActivity(Intent(context, AmdActivity::class.java))
+//                        }
                 ) {
-                    Row(
+                    Image(
+                        painter = painterResource(id = R.drawable.amd_logo), // Replace with your AMD icon resource
+                        contentDescription = null,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icons_build),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = "Build",
-                                style = MaterialTheme.typography.headlineMedium,
-                            )
-                            Text(text = "Create your own setup")
-                        }
-                    }
+                            .size(100.dp) // Set icon size to 20x20 dp
+                            .padding(4.dp)
+                    )
                 }
             }
+
+            item {
+                // NVIDIA Card
+                Card(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+//                        .clickable {
+//                            context.startActivity(Intent(context, NvidiaActivity::class.java))
+//                        }
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.nvidia_logo), // Replace with your NVIDIA icon resource
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp) // Set icon size to 20x20 dp
+                            .padding(4.dp)
+                    )
+                }
+            }
+
+            item {
+                // Intel Card
+                Card(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+//                        .clickable {
+//                            context.startActivity(Intent(context, IntelActivity::class.java))
+//                        }
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.intel_logo), // Replace with your Intel icon resource
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp) // Set icon size to 20x20 dp
+                            .padding(4.dp)
+                    )
+                }
+            }
+
+            // Add more items for other brands if needed
         }
 
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
-
 
 @Composable
 fun LoadingScreen() {
