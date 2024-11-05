@@ -5,10 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,8 +17,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.superbgoal.caritasrig.activity.build.CasingActivity
+import com.superbgoal.caritasrig.activity.build.CpuActivity
+import com.superbgoal.caritasrig.activity.build.InternalHardDriveActivity
+import com.superbgoal.caritasrig.activity.build.MemoryActivity
+import com.superbgoal.caritasrig.activity.build.MotherboardActivity
+import com.superbgoal.caritasrig.activity.build.PowerSupplyActivity
+import com.superbgoal.caritasrig.activity.build.VideoCardActivity
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.build.*
 
 class BuildActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
