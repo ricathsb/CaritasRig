@@ -30,19 +30,64 @@ import com.superbgoal.caritasrig.activity.build.MotherboardActivity
 import com.superbgoal.caritasrig.activity.build.PowerSupplyActivity
 import com.superbgoal.caritasrig.activity.build.VideoCardActivity
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.auth.ProcessorInfo
+import com.superbgoal.caritasrig.auth.VideoCardInfo
+import com.superbgoal.caritasrig.data.model.Processor
+import com.superbgoal.caritasrig.data.model.VideoCard
 
 class BuildActivity : ComponentActivity() {
+    private var processor: Processor? = null
+    private var videoCard: VideoCard? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
-            BuildScreen()
+            BuildScreen(processor, videoCard, onAddComponentClick = { component ->
+                when (component) {
+                    "CPU" -> startActivityForResult(Intent(this, CpuActivity::class.java), REQUEST_CODE_CPU)
+                    "GPU" -> startActivityForResult(Intent(this, VideoCardActivity::class.java), REQUEST_CODE_GPU)
+                }
+            })
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == RESULT_OK) {
+            data?.let {
+                when (requestCode) {
+                    REQUEST_CODE_CPU -> processor = it.getParcelableExtra("processor")
+                    REQUEST_CODE_GPU -> videoCard = it.getParcelableExtra("videoCard")
+                }
+            }
+            // Perbarui UI dengan data baru
+            setContent {
+                BuildScreen(processor, videoCard, onAddComponentClick = { component ->
+                    when (component) {
+                        "CPU" -> startActivityForResult(Intent(this, CpuActivity::class.java), REQUEST_CODE_CPU)
+                        "GPU" -> startActivityForResult(Intent(this, VideoCardActivity::class.java), REQUEST_CODE_GPU)
+                    }
+                })
+            }
+        }
+    }
+
+    companion object {
+        const val REQUEST_CODE_CPU = 1
+        const val REQUEST_CODE_GPU = 2
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildScreen() {
+fun BuildScreen(
+    processor: Processor?,
+    videoCard: VideoCard?,
+    onAddComponentClick: (String) -> Unit
+) {
     val context = LocalContext.current
 
     Box(
@@ -68,29 +113,29 @@ fun BuildScreen() {
                                 context.startActivity(intent)
                             },
                             modifier = Modifier
-                                .padding(start = 30.dp, top = 60.dp) // Padding untuk ikon Home
+                                .padding(start = 30.dp, top = 60.dp) // Padding for the Home icon
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_home),
                                 contentDescription = "Home",
-                                modifier = Modifier.size(80.dp), // Ukuran ikon Home
-                                tint = Color.White // Warna ikon
+                                modifier = Modifier.size(80.dp), // Size for the Home icon
+                                tint = Color.White // Icon color
                             )
                         }
                     },
                     actions = {
                         IconButton(
                             onClick = {
-                                // Tambahkan fungsi simpan di sini
+                                // Add save function here
                             },
                             modifier = Modifier
-                                .padding(end = 30.dp, top = 60.dp) // Padding untuk ikon Save
+                                .padding(end = 30.dp, top = 60.dp) // Padding for the Save icon
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_save),
                                 contentDescription = "Save",
-                                modifier = Modifier.size(80.dp), // Ukuran ikon Save
-                                tint = Color.White // Warna ikon
+                                modifier = Modifier.size(80.dp), // Size for the Save icon
+                                tint = Color.White // Icon color
                             )
                         }
                     },
@@ -107,25 +152,30 @@ fun BuildScreen() {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp,0.dp,16.dp,16.dp),
+                    .padding(16.dp, 0.dp, 16.dp, 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item { ComponentCard(title = "CPU", activity = CpuActivity::class.java) }
-                item { ComponentCard(title = "Case", activity = CasingActivity::class.java) }
-                item { ComponentCard(title = "GPU", activity = VideoCardActivity::class.java) }
-                item { ComponentCard(title = "Motherboard", activity = MotherboardActivity::class.java) }
-                item { ComponentCard(title = "RAM", activity = MemoryActivity::class.java) }
-                item { ComponentCard(title = "Storage", activity = InternalHardDriveActivity::class.java) }
-                item { ComponentCard(title = "Power Supply", activity = PowerSupplyActivity::class.java) }
+                item { ComponentCard(title = "CPU", processor = processor, onAddClick = { onAddComponentClick("CPU") }) }
+                item { ComponentCard(title = "Case", onAddClick = { /* Tambahkan tindakan untuk Case */ }) }
+                item { ComponentCard(title = "GPU", videoCard = videoCard, onAddClick = { onAddComponentClick("GPU") }) }
+                item { ComponentCard(title = "Motherboard", onAddClick = { /* Tambahkan tindakan untuk Motherboard */ }) }
+                item { ComponentCard(title = "RAM", onAddClick = { /* Tambahkan tindakan untuk RAM */ }) }
+                item { ComponentCard(title = "Storage", onAddClick = { /* Tambahkan tindakan untuk Storage */ }) }
+                item { ComponentCard(title = "Power Supply", onAddClick = { /* Tambahkan tindakan untuk Power Supply */ }) }
             }
         }
     }
 }
 
-@Composable
-fun ComponentCard(title: String, activity: Class<out ComponentActivity>) {
-    val context = LocalContext.current
 
+
+@Composable
+fun ComponentCard(
+    title: String,
+    processor: Processor? = null,
+    videoCard: VideoCard? = null,
+    onAddClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -153,15 +203,6 @@ fun ComponentCard(title: String, activity: Class<out ComponentActivity>) {
                     modifier = Modifier.padding(10.dp)
                 )
             }
-
-            // Box cokelat dengan tombol Add Component
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .clip(RoundedCornerShape(10.dp))  // Sudut melengkung 10 dp
-                    .background(colorResource(id = R.color.brown)),  // Warna cokelat dari colors.xml
-                contentAlignment = Alignment.Center
             ) {
                 Button(
                     onClick = {
@@ -186,3 +227,7 @@ fun ComponentCard(title: String, activity: Class<out ComponentActivity>) {
         }
     }
 }
+
+
+
+
