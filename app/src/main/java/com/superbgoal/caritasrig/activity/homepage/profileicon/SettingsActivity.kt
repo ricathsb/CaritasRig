@@ -50,6 +50,8 @@ fun SettingsScreen() {
             // Use context to start the ProfileSettingsActivity
             val context = LocalContext.current
             SettingOption("Profile Settings") {
+               val intent = Intent(context, ProfileSettingsActivity::class.java)
+                context.startActivity(intent)
 
             }
         }
