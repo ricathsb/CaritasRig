@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,10 +20,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Password
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -83,7 +90,10 @@ fun SwipeableLoginScreen(
     initialEmail: String = ""
 ) {
     var offsetY by remember { mutableStateOf(1000f) }
-    val animatedOffsetY by animateFloatAsState(targetValue = offsetY)
+    val animatedOffsetY by animateFloatAsState(
+        targetValue = offsetY,
+        animationSpec = tween(durationMillis = 600) // Durasi animasi 500ms
+    )
     val backgroundColor = Color(0xFF473947)
 
     Box(
@@ -111,22 +121,26 @@ fun SwipeableLoginScreen(
                 }
                 .background(Color.Transparent)
         ) {
-            LoginScreenContent(initialEmail)
+            // Panggil LoginScreenContent dengan dua argumen
+            LoginScreenContent(
+                initialEmail = initialEmail,
+                onOffsetChange = { newOffsetY -> offsetY = newOffsetY }
+            )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreenContent(initialEmail: String = "") {
+fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Unit) {
     var email by remember { mutableStateOf(initialEmail) }
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var isArrowUp by remember { mutableStateOf(true) } // State untuk ikon
     val context = LocalContext.current
     val authenticationManager = remember { AuthenticationManager(context) }
     val coroutineScope = rememberCoroutineScope()
-
+    val textColor = Color(0xFF1e1e1e)
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
     val buttonColor = Color(0xFF211321)
@@ -141,38 +155,69 @@ fun LoginScreenContent(initialEmail: String = "") {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Icon(
+                imageVector = if (isArrowUp) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier
+                    .size(22.dp)
+                    .clickable {
+                        // Ubah offsetY saat ikon ditekan
+                        if (isArrowUp) {
+                            onOffsetChange(0f) // Geser ke atas
+                        } else {
+                            onOffsetChange(1000f) // Kembali ke posisi awal
+                        }
+                        // Ubah status ikon
+                        isArrowUp = !isArrowUp
+                    }
+            )
             Image(
                 painter = painterResource(id = R.drawable.loginicon),
                 contentDescription = "Login Icon",
                 modifier = Modifier
-                    .size(160.dp)
-                    .padding(top = 32.dp, bottom = 16.dp)
+                    .size(144.dp)
+                    .padding(top = 1.dp, bottom = 1.dp)
             )
 
             TextField(
                 value = email,
+                leadingIcon = {
+                    Icon(Icons.Outlined.Email, contentDescription = null, tint = textColor)
+                },
+                singleLine = true,
                 onValueChange = { email = it },
-                label = { Text("Email Address", color = Color.White) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = textFieldColor,
+                label = { Text("Email Address", color = textColor) },
+                colors = TextFieldDefaults.colors().copy(
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    focusedContainerColor = textFieldColor,
+                    unfocusedContainerColor = textFieldColor
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
 
             TextField(
+                singleLine = true,
+                leadingIcon = {
+                    Icon(Icons.Outlined.Password, contentDescription = null, tint = textColor)
+                },
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password", color = Color.White) },
+                label = { Text("Password", color = textColor) },
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = textFieldColor,
+                colors = TextFieldDefaults.colors().copy(
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    focusedContainerColor = textFieldColor,
+                    unfocusedContainerColor = textFieldColor
                 ),
                 trailingIcon = {
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        val icon = if (isPasswordVisible) R.drawable.amd_logo else R.drawable.intel_logo
+                        val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
                         val description = if (isPasswordVisible) "Hide password" else "Show password"
                         Icon(
-                            painter = painterResource(id = icon),
+                            imageVector = icon,
                             contentDescription = description,
                             tint = Color.White
                         )

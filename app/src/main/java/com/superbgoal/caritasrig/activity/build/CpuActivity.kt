@@ -111,5 +111,4 @@ fun ProcessorCard(processor: Processor) {
         }
     }
 }
-
 }

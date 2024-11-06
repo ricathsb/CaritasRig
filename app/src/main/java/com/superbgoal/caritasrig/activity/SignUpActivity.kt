@@ -1,9 +1,6 @@
 package com.superbgoal.caritasrig.activity
 
 import android.content.Intent
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import com.superbgoal.caritasrig.auth.LoadingButton
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,14 +10,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Password
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.superbgoal.caritasrig.auth.LoadingButton
 import com.superbgoal.caritasrig.auth.signUpUser
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 
@@ -62,6 +67,8 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
     val textFieldColor = Color(0xFF796179)
     val textColor = Color(0xFF1e1e1e)
     val buttonColor = Color(0xFF211321)
+    var isPasswordVisible by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = modifier
@@ -70,61 +77,88 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "Sign Up", style = MaterialTheme.typography.titleLarge)
+        Text(text = "Sign Up", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 30.dp))
 
         TextField(
+            singleLine = true,
+            leadingIcon = {
+                Icon(Icons.Outlined.Email, contentDescription = null, tint = textColor)
+            },
             value = email,
             shape = MaterialTheme.shapes.medium,
             onValueChange = { email = it },
             label = { Text("Email Address", color = textColor) },
             modifier = Modifier.fillMaxWidth(),
-
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
+            colors = TextFieldDefaults.colors().copy(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
                 cursorColor = Color.White,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent,
-                containerColor = textFieldColor,
+                focusedContainerColor = textFieldColor,
+                unfocusedContainerColor = textFieldColor,
             ),
-            textStyle = LocalTextStyle.current.copy(color = Color.White)
 
         )
 
         TextField(
+            singleLine = true,
+            leadingIcon = {
+                Icon(Icons.Outlined.Password, contentDescription = null, tint = textColor)
+            },
             value = password,
             shape = MaterialTheme.shapes.medium,
             onValueChange = { password = it },
             label = { Text("Password", color = textColor) },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
+            colors = TextFieldDefaults.colors().copy(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
                 cursorColor = Color.White,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent,
-                containerColor = textFieldColor,
+                focusedContainerColor = textFieldColor,
+                unfocusedContainerColor = textFieldColor,
             ),
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            textStyle = LocalTextStyle.current.copy(color = Color.White)
+            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                    val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
+                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = description,
+                        tint = Color.White
+                    )
+                }
+            },
 
         )
         TextField(
+            singleLine = true,
+            leadingIcon = {
+                Icon(Icons.Outlined.Password, contentDescription = null, tint = textColor)
+            },
             value = confirmPassword,
             shape = MaterialTheme.shapes.medium,
             onValueChange = { confirmPassword = it },
             label = { Text("Confirm Password", color = textColor) },
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
+            colors = TextFieldDefaults.colors().copy(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
                 cursorColor = Color.White,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent,
-                containerColor = textFieldColor,
+                focusedContainerColor = textFieldColor,
+                unfocusedContainerColor = textFieldColor,
             ),
-            visualTransformation = PasswordVisualTransformation(),
-            textStyle = LocalTextStyle.current.copy(color = Color.White)
+            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                    val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
+                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = description,
+                        tint = Color.White
+                    )
+                }
+            },
         )
 
         LoadingButton(
