@@ -26,7 +26,7 @@ fun LoadingScreenActivity() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(color = Color.Blue) // Ubah warna sesuai kebutuhan
+        CircularProgressIndicator(color = Color.Blue)
     }
 }
 
