@@ -5,18 +5,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.superbgoal.caritasrig.activity.build.CasingActivity
 import com.superbgoal.caritasrig.activity.build.CpuActivity
 import com.superbgoal.caritasrig.activity.build.InternalHardDriveActivity
@@ -130,26 +135,53 @@ fun ComponentCard(title: String, activity: Class<out ComponentActivity>) {
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 8.dp),
-                textAlign = TextAlign.Center
-            )
-
-            Button(
-                onClick = {
-                    val intent = Intent(context, activity)
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.padding(top = 8.dp)
+            // Header abu-abu dengan title
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .background(Color.Transparent),
+                contentAlignment = Alignment.Center
             ) {
-                Text(text = "Add Component")
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 20.sp),
+                    color = Color.Black,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(10.dp)
+                )
+            }
+
+            // Box cokelat dengan tombol Add Component
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(10.dp))  // Sudut melengkung 10 dp
+                    .background(colorResource(id = R.color.brown)),  // Warna cokelat dari colors.xml
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = {
+                        val intent = Intent(context, activity)
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .background(Color.Transparent),  // Warna latar belakang transparan
+                    elevation = ButtonDefaults.buttonElevation(0.dp) // Menghapus efek bayangan tombol
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.add_btn),  // Gambar dari res/drawable/add_btn
+                        contentDescription = "Add Icon",
+                        tint = Color.Unspecified,  // Mempertahankan warna asli ikon
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))  // Jarak antara ikon dan teks
+                    Text(text = "Add Component")
+                }
             }
         }
     }
