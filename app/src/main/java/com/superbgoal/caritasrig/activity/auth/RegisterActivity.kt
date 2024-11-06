@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.auth
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -76,6 +76,7 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
 import com.superbgoal.caritasrig.data.uploadImageToFirebase
@@ -379,7 +380,6 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         Toast.makeText(context, "Date of Birth is required", Toast.LENGTH_SHORT).show()
                     }
                     else -> {
-                        // Jika semua field terisi, lanjutkan dengan proses registrasi
                         isLoading = true
                         if (userId != null) {
                             imageUri?.let { uri ->
@@ -473,7 +473,6 @@ fun RegisterProfileIcon(imageUri: Uri?, imageUrl: String?) {
             )
         }
         else -> {
-            // Jika tidak ada imageUri maupun imageUrl, tampilkan ikon default
             Icon(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Default Icon",

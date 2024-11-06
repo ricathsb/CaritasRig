@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.auth
+package com.superbgoal.caritasrig.functions.auth
 
 import android.app.Activity
 import android.content.Context
@@ -6,7 +6,7 @@ import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.activity.RegisterActivity
+import com.superbgoal.caritasrig.activity.auth.RegisterActivity
 import kotlinx.coroutines.tasks.await
 
 suspend fun signUpUser(

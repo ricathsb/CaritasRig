@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.build
+package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
@@ -27,7 +27,6 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Processor
 

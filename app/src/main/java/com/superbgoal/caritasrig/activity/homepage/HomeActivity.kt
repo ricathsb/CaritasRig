@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.homepage
 
 import android.content.Intent
 import android.os.Bundle
@@ -30,6 +30,9 @@ import coil3.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
+import com.superbgoal.caritasrig.activity.auth.LoginActivity
+import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsActivity
 import com.superbgoal.caritasrig.data.model.User
 
 class HomeActivity : ComponentActivity() {
@@ -70,7 +73,7 @@ fun HomeScreen(userId: String, onLogout: () -> Unit) {
     val database = FirebaseDatabase.getInstance(databaseUrl).reference
 
     LaunchedEffect(userId) {
-        database.child("users").child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("users").child(userId).child("userData").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     user = snapshot.getValue(User::class.java)
@@ -174,7 +177,7 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Tombol Close (X) di kanan atas
+                // Close (X) button at the top right
                 IconButton(
                     onClick = onDismissRequest,
                     modifier = Modifier
@@ -188,7 +191,7 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
                     )
                 }
 
-                // Isi dialog
+                // Dialog content
                 Surface(
                     shape = RoundedCornerShape(10.dp),
                     color = Color.White.copy(alpha = 0.7f),
@@ -231,13 +234,17 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
                         TransparentIconButton(
                             text = "Activity",
                             icon = R.drawable.icons_activity,
-                            onClick = { /* Navigate to Activity */ }
+                            onClick = { /* Activity action */ }
                         )
 
                         TransparentIconButton(
                             text = "Settings",
                             icon = R.drawable.icons_settings,
-                            onClick = { /* Navigate to Settings */ }
+                            onClick = {
+                                // Navigate to SettingsActivity
+                                val intent = Intent(context, SettingsActivity::class.java)
+                                context.startActivity(intent)
+                            }
                         )
 
                         TransparentIconButton(
@@ -265,6 +272,7 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
         }
     )
 }
+
 
 
 @Composable
@@ -337,7 +345,6 @@ fun UserProfile() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Horizontal Scrollable Cards
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp) // Space between cards
@@ -411,14 +418,11 @@ fun UserProfile() {
             }
 
             item {
-                // Benchmarking Card
                 Card(
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-//                        .clickable {
-//                            context.startActivity(Intent(context, BenchmarkingActivity::class.java))
-//                        },
+//
                 ) {
                     Row(
                         modifier = Modifier

@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.auth
 
 import android.content.Intent
 import android.os.Bundle
@@ -58,8 +58,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.auth.AuthResponse
-import com.superbgoal.caritasrig.auth.AuthenticationManager
+import com.superbgoal.caritasrig.activity.homepage.HomeActivity
+import com.superbgoal.caritasrig.functions.auth.AuthResponse
+import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach

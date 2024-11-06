@@ -24,26 +24,27 @@
         </activity>
 
         <activity
-            android:name=".activity.LoginActivity"
+            android:name=".activity.auth.LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.CaritasRig">
         </activity>
-        <activity android:name=".activity.HomeActivity" />
-        <activity android:name=".activity.SignUpActivity" />
-        <activity android:name=".activity.RegisterActivity" />
+        <activity android:name=".activity.homepage.HomeActivity" />
+        <activity android:name=".activity.auth.SignUpActivity" />
+        <activity android:name=".activity.auth.RegisterActivity" />
         <activity android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"/>
-        <activity android:name=".activity.AboutUsActivity" />
-        <activity android:name=".activity.BuildActivity"/>
-        <activity android:name=".activity.build.CasingActivity"/>
-        <activity android:name=".activity.build.CpuActivity"/>
-        <activity android:name=".activity.build.InternalHardDriveActivity"/>
-        <activity android:name=".activity.build.MemoryActivity"/>
-        <activity android:name=".activity.build.MotherboardActivity"/>
-        <activity android:name=".activity.build.PowerSupplyActivity"/>
-        <activity android:name=".activity.build.VideoCardActivity"/>
-        <activity android:name=".activity.LoadingActivity"/>
+        <activity android:name=".activity.homepage.profileicon.AboutUsActivity" />
+        <activity android:name=".activity.homepage.BuildActivity"/>
+        <activity android:name=".activity.homepage.build.CasingActivity"/>
+        <activity android:name=".activity.homepage.build.CpuActivity"/>
+        <activity android:name=".activity.homepage.build.InternalHardDriveActivity"/>
+        <activity android:name=".activity.homepage.build.MemoryActivity"/>
+        <activity android:name=".activity.homepage.build.MotherboardActivity"/>
+        <activity android:name=".activity.homepage.build.PowerSupplyActivity"/>
+        <activity android:name=".activity.homepage.build.VideoCardActivity"/>
+        <activity android:name=".activity.homepage.profileicon.SettingsActivity"/>
+        <activity android:name=".activity.homepage.profileicon.ProfileSettingsActivity"/>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.build
+package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,42 +24,42 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.Motherboard
 
-class InternalHardDriveActivity : ComponentActivity() {
+class MotherboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Mengisi data dari file JSON untuk InternalHardDrive
-        val typeToken = object : TypeToken<List<InternalHardDrive>>() {}.type
-        val internalHardDrives: List<InternalHardDrive> = loadItemsFromResources(
+        // Mengisi data dari file JSON untuk Motherboard
+        val typeToken = object : TypeToken<List<Motherboard>>() {}.type
+        val motherboards: List<Motherboard> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.internalharddrive // Pastikan file JSON ini ada
+            resourceId = R.raw.motherboard // Pastikan file JSON ini ada
         )
 
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    InternalHardDriveList(internalHardDrives)
+                    MotherboardList(motherboards)
                 }
             }
         }
     }
 
     @Composable
-    fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>) {
+    fun MotherboardList(motherboards: List<Motherboard>) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(internalHardDrives) { hardDrive ->
-                InternalHardDriveCard(hardDrive)
+            items(motherboards) { motherboard ->
+                MotherboardCard(motherboard)
             }
         }
     }
 
     @Composable
-    fun InternalHardDriveCard(hardDrive: InternalHardDrive) {
+    fun MotherboardCard(motherboard: Motherboard) {
         Card(
             elevation = 4.dp,
             modifier = Modifier
@@ -75,11 +75,11 @@ class InternalHardDriveActivity : ComponentActivity() {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = hardDrive.name,
+                        text = motherboard.name,
                         style = MaterialTheme.typography.h6
                     )
                     Text(
-                        text = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
+                        text = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
                         style = MaterialTheme.typography.body2
                     )
                 }

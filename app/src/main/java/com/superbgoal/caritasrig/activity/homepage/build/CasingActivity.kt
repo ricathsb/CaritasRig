@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.build
+package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,42 +24,47 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.PowerSupply
+import com.superbgoal.caritasrig.data.model.Casing
+import com.superbgoal.caritasrig.data.model.Processor
 
-class PowerSupplyActivity : ComponentActivity() {
+
+
+class CasingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Mengisi data dari file JSON untuk PowerSupply
-        val typeToken = object : TypeToken<List<PowerSupply>>() {}.type
-        val powerSupplies: List<PowerSupply> = loadItemsFromResources(
+        // Define the type explicitly for Gson TypeToken
+        val typeToken = object : TypeToken<List<Processor>>() {}.type
+        val casing: List<Casing> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.powersupply // Pastikan file JSON ini ada
+            resourceId = R.raw.casing
         )
+
 
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    PowerSupplyList(powerSupplies)
+                    CasingList(casing)
                 }
             }
         }
     }
 
+
     @Composable
-    fun PowerSupplyList(powerSupplies: List<PowerSupply>) {
+    fun CasingList(casing: List<Casing>) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(powerSupplies) { powerSupply ->
-                PowerSupplyCard(powerSupply)
+            items(casing) { casing ->
+                CasingCard(casing)
             }
         }
     }
 
     @Composable
-    fun PowerSupplyCard(powerSupply: PowerSupply) {
+    fun CasingCard(casing: Casing) {
         Card(
             elevation = 4.dp,
             modifier = Modifier
@@ -75,13 +80,14 @@ class PowerSupplyActivity : ComponentActivity() {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = powerSupply.name,
+                        text = casing.name,
                         style = MaterialTheme.typography.h6
                     )
                     Text(
-                        text = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
+                        text = "${casing.type} | ${casing.color} | PSU: ${casing.psu ?: "Not included"} | Volume: ${casing.externalVolume} L | 3.5\" Bays: ${casing.internal35Bays}",
                         style = MaterialTheme.typography.body2
                     )
+
                 }
                 Button(onClick = { /* Tambahkan aksi untuk tombol "Add" */ }) {
                     Text(text = "Add")
@@ -89,4 +95,5 @@ class PowerSupplyActivity : ComponentActivity() {
             }
         }
     }
+
 }

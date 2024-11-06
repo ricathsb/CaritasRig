@@ -1,5 +1,5 @@
 // Function.kt
-package com.superbgoal.caritasrig.auth
+package com.superbgoal.caritasrig.functions.auth
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -127,6 +127,7 @@ fun VideoCardInfo(videoCard: VideoCard) {
     Text(text = "Boost Clock: ${videoCard.boostClock} MHz")
 //    Text(text = "TDP: ${videoCard.tdp}W")
 }
+
 
 
 

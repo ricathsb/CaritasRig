@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.homepage.profileicon
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

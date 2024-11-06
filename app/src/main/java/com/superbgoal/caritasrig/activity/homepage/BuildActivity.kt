@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.homepage
 
 import android.content.Intent
 import android.os.Bundle
@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,18 +34,25 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.build.CpuActivity
-import com.superbgoal.caritasrig.activity.build.VideoCardActivity
-import com.superbgoal.caritasrig.auth.ProcessorInfo
-import com.superbgoal.caritasrig.auth.VideoCardInfo
+import com.superbgoal.caritasrig.activity.homepage.build.CasingActivity
+import com.superbgoal.caritasrig.activity.homepage.build.CpuActivity
+import com.superbgoal.caritasrig.activity.homepage.build.InternalHardDriveActivity
+import com.superbgoal.caritasrig.activity.homepage.build.MemoryActivity
+import com.superbgoal.caritasrig.activity.homepage.build.MotherboardActivity
+import com.superbgoal.caritasrig.activity.homepage.build.PowerSupplyActivity
+import com.superbgoal.caritasrig.activity.homepage.build.VideoCardActivity
+import com.superbgoal.caritasrig.functions.auth.ProcessorInfo
+import com.superbgoal.caritasrig.functions.auth.VideoCardInfo
 import com.superbgoal.caritasrig.data.model.Processor
 import com.superbgoal.caritasrig.data.model.VideoCard
 
@@ -59,6 +68,11 @@ class BuildActivity : ComponentActivity() {
                 when (component) {
                     "CPU" -> startActivityForResult(Intent(this, CpuActivity::class.java), REQUEST_CODE_CPU)
                     "GPU" -> startActivityForResult(Intent(this, VideoCardActivity::class.java), REQUEST_CODE_GPU)
+                    "Case" -> startActivity(Intent(this, CasingActivity::class.java))
+                    "Motherboard" -> startActivity(Intent(this, MotherboardActivity::class.java))
+                    "RAM" -> startActivity(Intent(this, MemoryActivity::class.java))
+                    "Storage" -> startActivity(Intent(this, InternalHardDriveActivity::class.java))
+                    "Power Supply" -> startActivity(Intent(this, PowerSupplyActivity::class.java))
                 }
             })
         }
@@ -74,12 +88,16 @@ class BuildActivity : ComponentActivity() {
                     REQUEST_CODE_GPU -> videoCard = it.getParcelableExtra("videoCard")
                 }
             }
-            // Perbarui UI dengan data baru
             setContent {
                 BuildScreen(processor, videoCard, onAddComponentClick = { component ->
                     when (component) {
                         "CPU" -> startActivityForResult(Intent(this, CpuActivity::class.java), REQUEST_CODE_CPU)
                         "GPU" -> startActivityForResult(Intent(this, VideoCardActivity::class.java), REQUEST_CODE_GPU)
+                        "Case" -> startActivity(Intent(this, CasingActivity::class.java))
+                        "Motherboard" -> startActivity(Intent(this, MotherboardActivity::class.java))
+                        "RAM" -> startActivity(Intent(this, MemoryActivity::class.java))
+                        "Storage" -> startActivity(Intent(this, InternalHardDriveActivity::class.java))
+                        "Power Supply" -> startActivity(Intent(this, PowerSupplyActivity::class.java))
                     }
                 })
             }
@@ -105,7 +123,6 @@ fun BuildScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Background Image
         Image(
             painter = painterResource(id = R.drawable.bg_build),
             contentDescription = null,
@@ -116,7 +133,7 @@ fun BuildScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = {}, // Remove title text
+                    title = {},
                     modifier = Modifier.height(145.dp),
                     navigationIcon = {
                         IconButton(
@@ -125,13 +142,13 @@ fun BuildScreen(
                                 context.startActivity(intent)
                             },
                             modifier = Modifier
-                                .padding(start = 30.dp, top = 60.dp) // Padding for the Home icon
+                                .padding(start = 30.dp, top = 60.dp)
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_home),
                                 contentDescription = "Home",
-                                modifier = Modifier.size(80.dp), // Size for the Home icon
-                                tint = Color.White // Icon color
+                                modifier = Modifier.size(80.dp),
+                                tint = Color.White
                             )
                         }
                     },
@@ -141,24 +158,24 @@ fun BuildScreen(
                                 // Add save function here
                             },
                             modifier = Modifier
-                                .padding(end = 30.dp, top = 60.dp) // Padding for the Save icon
+                                .padding(end = 30.dp, top = 60.dp)
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_save),
                                 contentDescription = "Save",
-                                modifier = Modifier.size(80.dp), // Size for the Save icon
-                                tint = Color.White // Icon color
+                                modifier = Modifier.size(80.dp),
+                                tint = Color.White
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent, // Transparent background
+                        containerColor = Color.Transparent,
                         navigationIconContentColor = Color.White,
                         actionIconContentColor = Color.White
                     )
                 )
             },
-            containerColor = Color.Transparent // Make Scaffold background transparent
+            containerColor = Color.Transparent
         ) { paddingValues ->
             LazyColumn(
                 modifier = Modifier
@@ -168,12 +185,12 @@ fun BuildScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item { ComponentCard(title = "CPU", processor = processor, onAddClick = { onAddComponentClick("CPU") }) }
-                item { ComponentCard(title = "Case", onAddClick = { /* Tambahkan tindakan untuk Case */ }) }
+                item { ComponentCard(title = "Case", onAddClick = { onAddComponentClick("Case") }) }
                 item { ComponentCard(title = "GPU", videoCard = videoCard, onAddClick = { onAddComponentClick("GPU") }) }
-                item { ComponentCard(title = "Motherboard", onAddClick = { /* Tambahkan tindakan untuk Motherboard */ }) }
-                item { ComponentCard(title = "RAM", onAddClick = { /* Tambahkan tindakan untuk RAM */ }) }
-                item { ComponentCard(title = "Storage", onAddClick = { /* Tambahkan tindakan untuk Storage */ }) }
-                item { ComponentCard(title = "Power Supply", onAddClick = { /* Tambahkan tindakan untuk Power Supply */ }) }
+                item { ComponentCard(title = "Motherboard", onAddClick = { onAddComponentClick("Motherboard") }) }
+                item { ComponentCard(title = "RAM", onAddClick = { onAddComponentClick("RAM") }) }
+                item { ComponentCard(title = "Storage", onAddClick = { onAddComponentClick("Storage") }) }
+                item { ComponentCard(title = "Power Supply", onAddClick = { onAddComponentClick("Power Supply") }) }
             }
         }
     }
@@ -224,18 +241,30 @@ fun ComponentCard(
                 VideoCardInfo(videoCard)
             }
 
-            Button(
-                onClick = { onAddClick() },
-                modifier = Modifier.padding(8.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(10.dp))  // Sudut melengkung 10 dp
+                    .background(colorResource(id = R.color.brown)),  // Warna cokelat dari colors.xml
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.add_btn),
-                    contentDescription = "Add Icon",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Add Component")
+                Button(
+                    onClick = { onAddClick() }, // Panggil onAddClick ketika tombol ditekan
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .background(Color.Transparent),  // Warna latar belakang transparan
+                    elevation = ButtonDefaults.buttonElevation(0.dp) // Menghapus efek bayangan tombol
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.add_btn),  // Gambar dari res/drawable/add_btn
+                        contentDescription = "Add Icon",
+                        tint = Color.Unspecified,  // Mempertahankan warna asli ikon
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))  // Jarak antara ikon dan teks
+                    Text(text = "Add Component")
+                }
             }
         }
     }
