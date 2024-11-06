@@ -37,7 +37,7 @@ fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
                     "profileImageUrl" to user.profileImageUrl
                 )
                 Log.d("imageUrl", user.profileImageUrl.toString())
-                database.child("users").child(user.userId).setValue(userMap)
+                database.child("users").child(user.userId).child("userData").setValue(userMap)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             Log.d("loginStatus", "Data saved for verified account")

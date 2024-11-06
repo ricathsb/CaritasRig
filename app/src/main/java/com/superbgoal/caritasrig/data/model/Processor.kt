@@ -1,5 +1,9 @@
 package com.superbgoal.caritasrig.data.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Processor(
     val name: String,
     val price: Double,
@@ -9,4 +13,4 @@ data class Processor(
     val tdp: Int,
     val graphics: String,
     val smt: Boolean
-)
+) : Parcelable

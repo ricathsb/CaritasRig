@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.activity.build
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,8 +22,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Processor
 
@@ -87,9 +92,22 @@ fun ProcessorCard(processor: Processor) {
                     style = MaterialTheme.typography.body2
                 )
             }
-            Button(onClick = { /* Tambahkan aksi untuk tombol "Add" */ }) {
+            Button(onClick = {
+                val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
+                val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                database.child("users").child(currentUser?.uid.toString()).child("build").child("processor").setValue(processor.name)
+
+                val intent = Intent().apply {
+                    putExtra("processor", processor) // `selectedProcessor` adalah objek Processor yang dipilih
+                }
+                setResult(RESULT_OK, intent)
+                finish()
+
+            }) {
                 Text(text = "Add")
             }
+
         }
     }
 }
