@@ -23,6 +23,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -45,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.superbgoal.caritasrig.R
@@ -118,6 +121,7 @@ fun SwipeableLoginScreen(
 fun LoginScreenContent(initialEmail: String = "") {
     var email by remember { mutableStateOf(initialEmail) }
     var password by remember { mutableStateOf("") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val authenticationManager = remember { AuthenticationManager(context) }
@@ -159,10 +163,21 @@ fun LoginScreenContent(initialEmail: String = "") {
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color.White) },
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     containerColor = textFieldColor,
                 ),
+                trailingIcon = {
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        val icon = if (isPasswordVisible) R.drawable.amd_logo else R.drawable.intel_logo
+                        val description = if (isPasswordVisible) "Hide password" else "Show password"
+                        Icon(
+                            painter = painterResource(id = icon),
+                            contentDescription = description,
+                            tint = Color.White
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
