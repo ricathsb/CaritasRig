@@ -67,7 +67,6 @@ class CpuActivity : ComponentActivity() {
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize().fillMaxWidth(),
             )
-
             // LazyColumn for the list of processors
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
