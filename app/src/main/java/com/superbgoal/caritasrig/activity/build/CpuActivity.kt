@@ -1,12 +1,10 @@
 package com.superbgoal.caritasrig.activity.build
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,12 +21,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Processor
 
@@ -57,38 +56,22 @@ class CpuActivity : ComponentActivity() {
 
 
     @Composable
-    fun ProcessorList(processors: List<Processor>) {
-        val background = painterResource(id = R.drawable.component_bg) // Load the background image
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Background image
-            Image(
-                painter = background,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize().fillMaxWidth(),
-            )
-            // LazyColumn for the list of processors
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth() // Ensure LazyColumn takes the full size
-            ) {
-                items(processors) { processor ->
-                    ProcessorCard(processor)
-                }
-            }
+fun ProcessorList(processors: List<Processor>) {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(processors) { processor ->
+            ProcessorCard(processor)
         }
     }
+}
 
 @Composable
 fun ProcessorCard(processor: Processor) {
-    val cardColor = Color(0xff0473947)
-    val textColor = Color.White
     Card(
         elevation = 4.dp,
-        backgroundColor = cardColor,
         modifier = Modifier
-            .background(cardColor)
             .fillMaxWidth()
             .padding(8.dp)
     ) {
@@ -102,30 +85,29 @@ fun ProcessorCard(processor: Processor) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = processor.name,
-                    style = MaterialTheme.typography.h6,
-                    color = textColor
+                    style = MaterialTheme.typography.h6
                 )
                 Text(
                     text = "${processor.core_count} cores @ ${processor.core_clock} GHz Up To ${processor.boost_clock} GHz",
-                    style = MaterialTheme.typography.body2,
-                    color = textColor
-
+                    style = MaterialTheme.typography.body2
                 )
             }
-            Button(
-                onClick = { /* Tambahkan aksi untuk tombol "Add" */ },
-                modifier = Modifier
-                    .background(cardColor)
-                    .clip(MaterialTheme.shapes.large)
+            Button(onClick = {
+                val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
+                val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                database.child("users").child(currentUser?.uid.toString()).child("build").child("processor").setValue(processor.name)
 
+                val intent = Intent().apply {
+                    putExtra("processor", processor) // `selectedProcessor` adalah objek Processor yang dipilih
+                }
+                setResult(RESULT_OK, intent)
+                finish()
 
-
-            ) {
-                Text(
-                    text = "+ Add",
-                    color = cardColor
-                )
+            }) {
+                Text(text = "Add")
             }
+
         }
     }
 }

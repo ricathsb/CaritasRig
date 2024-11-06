@@ -26,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.superbgoal.caritasrig.data.model.Processor
+import com.superbgoal.caritasrig.data.model.VideoCard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -104,6 +106,28 @@ fun Maintenance() {
         }
     }
 }
+@Composable
+fun ProcessorInfo(processor: Processor) {
+    Text(text = "Name: ${processor.name}")
+    Text(text = "Price: $${processor.price}")
+    Text(text = "Cores: ${processor.core_count}")
+    Text(text = "Core Clock: ${processor.core_clock} GHz")
+    Text(text = "Boost Clock: ${processor.boost_clock} GHz")
+    Text(text = "TDP: ${processor.tdp}W")
+    Text(text = "Graphics: ${processor.graphics}")
+    Text(text = "SMT: ${if (processor.smt) "Yes" else "No"}")
+}
+
+@Composable
+fun VideoCardInfo(videoCard: VideoCard) {
+    Text(text = "Name: ${videoCard.name}")
+    Text(text = "Price: $${videoCard.price}")
+    Text(text = "Memory: ${videoCard.memory} GB")
+    Text(text = "Core Clock: ${videoCard.coreClock} MHz")
+    Text(text = "Boost Clock: ${videoCard.boostClock} MHz")
+//    Text(text = "TDP: ${videoCard.tdp}W")
+}
+
 
 
 
