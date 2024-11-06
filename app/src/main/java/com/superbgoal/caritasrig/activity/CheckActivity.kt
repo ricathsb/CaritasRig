@@ -30,8 +30,3 @@ class CheckActivity : ComponentActivity() {
         finish()
     }
 }
-
-
-
-
-

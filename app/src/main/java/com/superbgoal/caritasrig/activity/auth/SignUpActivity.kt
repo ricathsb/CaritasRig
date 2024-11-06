@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.auth
 
 import android.content.Intent
 import android.os.Bundle
@@ -37,9 +37,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.superbgoal.caritasrig.auth.LoadingButton
-import com.superbgoal.caritasrig.auth.signUpUser
+import com.superbgoal.caritasrig.activity.auth.LoginActivity
+import com.superbgoal.caritasrig.functions.auth.LoadingButton
+import com.superbgoal.caritasrig.functions.auth.signUpUser
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
+
 
 class SignUpActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
