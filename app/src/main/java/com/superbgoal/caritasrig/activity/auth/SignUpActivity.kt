@@ -1,9 +1,8 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.auth
 
 import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import com.superbgoal.caritasrig.auth.LoadingButton
+import com.superbgoal.caritasrig.functions.auth.LoadingButton
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,10 +29,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.superbgoal.caritasrig.auth.signUpUser
+import com.superbgoal.caritasrig.functions.auth.signUpUser
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 
 class SignUpActivity : ComponentActivity() {

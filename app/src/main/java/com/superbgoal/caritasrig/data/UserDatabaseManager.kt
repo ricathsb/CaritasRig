@@ -1,21 +1,15 @@
 package com.superbgoal.caritasrig.data
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import com.google.gson.Gson
-import com.superbgoal.caritasrig.activity.HomeActivity
-import com.superbgoal.caritasrig.activity.LoginActivity
 import com.superbgoal.caritasrig.data.model.User
-import java.io.IOException
 import java.util.UUID
 
 fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {

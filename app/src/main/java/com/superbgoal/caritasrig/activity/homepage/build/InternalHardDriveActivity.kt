@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.build
+package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,47 +24,42 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Casing
-import com.superbgoal.caritasrig.data.model.Processor
+import com.superbgoal.caritasrig.data.model.InternalHardDrive
 
-
-
-class CasingActivity : ComponentActivity() {
+class InternalHardDriveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<Processor>>() {}.type
-        val casing: List<Casing> = loadItemsFromResources(
+        // Mengisi data dari file JSON untuk InternalHardDrive
+        val typeToken = object : TypeToken<List<InternalHardDrive>>() {}.type
+        val internalHardDrives: List<InternalHardDrive> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.casing
+            resourceId = R.raw.internalharddrive // Pastikan file JSON ini ada
         )
-
 
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    CasingList(casing)
+                    InternalHardDriveList(internalHardDrives)
                 }
             }
         }
     }
 
-
     @Composable
-    fun CasingList(casing: List<Casing>) {
+    fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(casing) { casing ->
-                CasingCard(casing)
+            items(internalHardDrives) { hardDrive ->
+                InternalHardDriveCard(hardDrive)
             }
         }
     }
 
     @Composable
-    fun CasingCard(casing: Casing) {
+    fun InternalHardDriveCard(hardDrive: InternalHardDrive) {
         Card(
             elevation = 4.dp,
             modifier = Modifier
@@ -80,14 +75,13 @@ class CasingActivity : ComponentActivity() {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = casing.name,
+                        text = hardDrive.name,
                         style = MaterialTheme.typography.h6
                     )
                     Text(
-                        text = "${casing.type} | ${casing.color} | PSU: ${casing.psu ?: "Not included"} | Volume: ${casing.externalVolume} L | 3.5\" Bays: ${casing.internal35Bays}",
+                        text = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
                         style = MaterialTheme.typography.body2
                     )
-
                 }
                 Button(onClick = { /* Tambahkan aksi untuk tombol "Add" */ }) {
                     Text(text = "Add")
@@ -95,5 +89,4 @@ class CasingActivity : ComponentActivity() {
             }
         }
     }
-
 }

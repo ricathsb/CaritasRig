@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity
+package com.superbgoal.caritasrig.activity.homepage
 
 import android.content.Intent
 import android.os.Bundle
@@ -44,17 +44,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.build.CasingActivity
-import com.superbgoal.caritasrig.activity.build.CpuActivity
-import com.superbgoal.caritasrig.activity.build.InternalHardDriveActivity
-import com.superbgoal.caritasrig.activity.build.MemoryActivity
-import com.superbgoal.caritasrig.activity.build.MotherboardActivity
-import com.superbgoal.caritasrig.activity.build.PowerSupplyActivity
-import com.superbgoal.caritasrig.activity.build.VideoCardActivity
-import com.superbgoal.caritasrig.auth.ProcessorInfo
-import com.superbgoal.caritasrig.auth.VideoCardInfo
-import com.superbgoal.caritasrig.data.model.InternalHardDrive
-import com.superbgoal.caritasrig.data.model.Memory
+import com.superbgoal.caritasrig.activity.homepage.build.CasingActivity
+import com.superbgoal.caritasrig.activity.homepage.build.CpuActivity
+import com.superbgoal.caritasrig.activity.homepage.build.InternalHardDriveActivity
+import com.superbgoal.caritasrig.activity.homepage.build.MemoryActivity
+import com.superbgoal.caritasrig.activity.homepage.build.MotherboardActivity
+import com.superbgoal.caritasrig.activity.homepage.build.PowerSupplyActivity
+import com.superbgoal.caritasrig.activity.homepage.build.VideoCardActivity
+import com.superbgoal.caritasrig.functions.auth.ProcessorInfo
+import com.superbgoal.caritasrig.functions.auth.VideoCardInfo
 import com.superbgoal.caritasrig.data.model.Processor
 import com.superbgoal.caritasrig.data.model.VideoCard
 

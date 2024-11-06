@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.build
+package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,42 +24,42 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Motherboard
+import com.superbgoal.caritasrig.data.model.PowerSupply
 
-class MotherboardActivity : ComponentActivity() {
+class PowerSupplyActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Mengisi data dari file JSON untuk Motherboard
-        val typeToken = object : TypeToken<List<Motherboard>>() {}.type
-        val motherboards: List<Motherboard> = loadItemsFromResources(
+        // Mengisi data dari file JSON untuk PowerSupply
+        val typeToken = object : TypeToken<List<PowerSupply>>() {}.type
+        val powerSupplies: List<PowerSupply> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.motherboard // Pastikan file JSON ini ada
+            resourceId = R.raw.powersupply // Pastikan file JSON ini ada
         )
 
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    MotherboardList(motherboards)
+                    PowerSupplyList(powerSupplies)
                 }
             }
         }
     }
 
     @Composable
-    fun MotherboardList(motherboards: List<Motherboard>) {
+    fun PowerSupplyList(powerSupplies: List<PowerSupply>) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(motherboards) { motherboard ->
-                MotherboardCard(motherboard)
+            items(powerSupplies) { powerSupply ->
+                PowerSupplyCard(powerSupply)
             }
         }
     }
 
     @Composable
-    fun MotherboardCard(motherboard: Motherboard) {
+    fun PowerSupplyCard(powerSupply: PowerSupply) {
         Card(
             elevation = 4.dp,
             modifier = Modifier
@@ -75,11 +75,11 @@ class MotherboardActivity : ComponentActivity() {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = motherboard.name,
+                        text = powerSupply.name,
                         style = MaterialTheme.typography.h6
                     )
                     Text(
-                        text = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
+                        text = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
                         style = MaterialTheme.typography.body2
                     )
                 }
