@@ -167,16 +167,16 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
 
         var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
 
-        val imagePickerLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent(),
-            onResult = { uri: Uri? ->
-                if (uri != null) {
-                    imageUri = uri
-                } else {
-                    Log.d("ImagePicker", "User cancelled image selection")
-                }
-            }
-        )
+//        val imagePickerLauncher = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.GetContent(),
+//            onResult = { uri: Uri? ->
+//                if (uri != null) {
+//                    imageUri = uri
+//                } else {
+//                    Log.d("ImagePicker", "User cancelled image selection")
+//                }
+//            }
+//        )
 
         Box(
             modifier = Modifier
@@ -186,13 +186,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                             Log.d("Modifier", "Long clicked! yeay")
                         },
                         onTap = {
-                            if (imageUri != null) {
-                                // Jika ada gambar, buka tampilan view foto profil
-                                isViewingProfileImage = true
-                            } else {
-                                // Jika belum ada gambar, buka picker untuk memilih gambar
-                                imagePickerLauncher.launch("image/*")
-                            }
+                            imagePickerLauncher.launch("image/*")
                         }
                     )
                 },
