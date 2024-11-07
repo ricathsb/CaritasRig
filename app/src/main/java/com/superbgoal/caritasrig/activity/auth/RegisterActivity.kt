@@ -2,7 +2,6 @@ package com.superbgoal.caritasrig.activity.auth
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -12,23 +11,31 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -54,8 +61,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.transformations
@@ -98,7 +108,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-
+    val buttonColor = Color(0xFF211321)
     val context = LocalContext.current
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
     val email = (context as? RegisterActivity)?.intent?.getStringExtra("email") ?: ""
@@ -108,9 +118,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
     val textColor = Color(0xFF1e1e1e)
     val currentUser = FirebaseAuth.getInstance().currentUser
 
-    val imageCropLauncher = rememberLauncherForActivityResult(
-        CropImageContract()
-    ) { result ->
+    val imageCropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
             imageUri = result.uriContent
         } else {
@@ -119,50 +127,131 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    if (imageUri != null) {
-        val source = ImageDecoder.createSource(context.contentResolver, imageUri!!)
-        bitmap = ImageDecoder.decodeBitmap(source)
-    }
-
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
+        contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        val cropOptions = CropImageContractOptions(uri, CropImageOptions().apply {
-            aspectRatioX = 1
-            aspectRatioY = 1
-            fixAspectRatio = true
-        })
-        imageCropLauncher.launch(cropOptions)
+        if (uri != null) {
+            val cropOptions = CropImageContractOptions(uri, CropImageOptions().apply {
+                aspectRatioX = 1
+                aspectRatioY = 1
+                fixAspectRatio = true
+            })
+            imageCropLauncher.launch(cropOptions)
+        } else {
+            Log.d("ImagePicker", "User cancelled image selection")
+        }
     }
-
     Column(
         modifier = modifier
             .background(backgroundColor)
             .fillMaxSize()
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
             text = "Register",
             style = MaterialTheme.typography.titleLarge
         )
 
+        var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
+
+        val imagePickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+            onResult = { uri: Uri? ->
+                if (uri != null) {
+                    imageUri = uri
+                } else {
+                    Log.d("ImagePicker", "User cancelled image selection")
+                }
+            }
+        )
+
         Box(
-            modifier = Modifier.pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = {
-                        Log.d("Modifier", "Long clicked! yeay")
-                    },
-                    onTap = {
-                        imagePickerLauncher.launch("image/*")
-                    }
-                )
-            },
+            modifier = Modifier
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            Log.d("Modifier", "Long clicked! yeay")
+                        },
+                        onTap = {
+                            if (imageUri != null) {
+                                // Jika ada gambar, buka tampilan view foto profil
+                                isViewingProfileImage = true
+                            } else {
+                                // Jika belum ada gambar, buka picker untuk memilih gambar
+                                imagePickerLauncher.launch("image/*")
+                            }
+                        }
+                    )
+                },
             contentAlignment = Alignment.Center
         ) {
-            RegisterProfileIcon(imageUri,imageUrl)
+            RegisterProfileIcon(imageUri, imageUrl)
+
+            // Icon add/remove overlay
+            Box(
+                modifier = Modifier
+                    .offset(x = 50.dp, y = 50.dp)
+                    .size(32.dp)
+                    .background(
+                        color = Color.White,
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color.Black,
+                        shape = CircleShape
+                    )
+                    .clickable {
+                        if (imageUri != null) {
+                            // Hanya klik pada ikon remove yang menghapus gambar
+                            imageUri = null
+                        } else {
+                            // Jika belum ada gambar, buka picker untuk memilih gambar
+                            imagePickerLauncher.launch("image/*")
+                        }
+                    }
+                    .zIndex(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
+                    contentDescription = if (imageUri != null) "Remove Profile Photo" else "Add Profile Photo",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
+
+// Dialog untuk menampilkan foto profil jika isViewingProfileImage = true
+        if (isViewingProfileImage && imageUri != null) {
+            AlertDialog(
+                onDismissRequest = { isViewingProfileImage = false }, // Tutup dialog saat diketuk di luar
+                buttons = {},
+                text = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.Transparent)
+                            .padding(0.dp) // Hilangkan padding
+                    ) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = "Profile Image",
+                            contentScale = ContentScale.Crop, // Mengisi seluruh area dengan crop
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f) // Mengatur rasio tampilan gambar
+                        )
+                    }
+                }
+            )
+        }
+
+
+
+
 
         Row(
             modifier = Modifier
@@ -176,11 +265,12 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 shape = MaterialTheme.shapes.medium,
                 onValueChange = { firstname = it },
                 label = { Text("First Name", color = textColor) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent,
+                colors = TextFieldDefaults.colors().copy(
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
                     cursorColor = Color.White,
-                    containerColor = textFieldColor,
+                    focusedContainerColor = textFieldColor,
+                    unfocusedContainerColor = textFieldColor,
                 ),
                 textStyle = LocalTextStyle.current.copy(color = Color.White)
             )
@@ -193,11 +283,12 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 shape = MaterialTheme.shapes.medium,
                 onValueChange = { lastname = it },
                 label = { Text("Last Name", color = textColor) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent,
+                colors = TextFieldDefaults.colors().copy(
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
                     cursorColor = Color.White,
-                    containerColor = textFieldColor,
+                    focusedContainerColor = textFieldColor,
+                    unfocusedContainerColor = textFieldColor,
                 ),
                 textStyle = LocalTextStyle.current.copy(color = Color.White)
             )
@@ -209,11 +300,12 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             onValueChange = { username = it },
             label = { Text("Username", color = textColor) },
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
+            colors = TextFieldDefaults.colors().copy(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
                 cursorColor = Color.White,
-                containerColor = textFieldColor,
+                focusedContainerColor = textFieldColor,
+                unfocusedContainerColor = textFieldColor,
             ),
             textStyle = LocalTextStyle.current.copy(color = Color.White)
         )
@@ -229,12 +321,13 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             shape = MaterialTheme.shapes.medium,
             onValueChange = { },
             label = { Text("Date of Birth", color = textColor) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
+            modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+            colors = TextFieldDefaults.colors().copy(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
                 cursorColor = Color.White,
-                containerColor = textFieldColor,
+                focusedContainerColor = textFieldColor,
+                unfocusedContainerColor = textFieldColor,
             ),
             textStyle = LocalTextStyle.current.copy(color = Color.White),
             readOnly = true,
@@ -331,6 +424,9 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 }
             },
             enabled = !isLoading,
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = buttonColor,
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -338,7 +434,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text(text = "Register")
+                Text(text = "Register", fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
 

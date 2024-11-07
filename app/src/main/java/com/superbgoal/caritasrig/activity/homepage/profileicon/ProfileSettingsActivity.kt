@@ -2,8 +2,6 @@ package com.superbgoal.caritasrig.activity.homepage.profileicon
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -13,20 +11,52 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.transformations
@@ -35,6 +65,8 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.activity.auth.RegisterActivity
+import com.superbgoal.caritasrig.activity.auth.RegisterProfileIcon
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.data.loadUserData
 import com.superbgoal.caritasrig.data.model.User
@@ -68,6 +100,8 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
     val textFieldColor = Color(0xFF796179)
     val textColor = Color(0xFF1e1e1e)
     val context = LocalContext.current
+    val imageUrl = imageUri?.toString() ?: (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
+
     val activity = context as? Activity
     val userId = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -131,13 +165,99 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
     ) {
         Text(text = "Profile Settings", style = MaterialTheme.typography.titleLarge)
 
+        var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
+
+        val imagePickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+            onResult = { uri: Uri? ->
+                if (uri != null) {
+                    imageUri = uri
+                } else {
+                    Log.d("ImagePicker", "User cancelled image selection")
+                }
+            }
+        )
+
         Box(
-            modifier = Modifier.pointerInput(Unit) {
-                detectTapGestures(onTap = { imagePickerLauncher.launch("image/*") })
-            },
+            modifier = Modifier
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            Log.d("Modifier", "Long clicked! yeay")
+                        },
+                        onTap = {
+                            if (imageUri != null) {
+                                // Jika ada gambar, buka tampilan view foto profil
+                                isViewingProfileImage = true
+                            } else {
+                                // Jika belum ada gambar, buka picker untuk memilih gambar
+                                imagePickerLauncher.launch("image/*")
+                            }
+                        }
+                    )
+                },
             contentAlignment = Alignment.Center
         ) {
-            ProfileIcon(imageUri = imageUri)
+            RegisterProfileIcon(imageUri, imageUrl)
+
+            // Icon add/remove overlay
+            Box(
+                modifier = Modifier
+                    .offset(x = 50.dp, y = 50.dp)
+                    .size(32.dp)
+                    .background(
+                        color = Color.White,
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color.Black,
+                        shape = CircleShape
+                    )
+                    .clickable {
+                        if (imageUri != null) {
+                            // Hanya klik pada ikon remove yang menghapus gambar
+                            imageUri = null
+                        } else {
+                            // Jika belum ada gambar, buka picker untuk memilih gambar
+                            imagePickerLauncher.launch("image/*")
+                        }
+                    }
+                    .zIndex(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
+                    contentDescription = if (imageUri != null) "Remove Profile Photo" else "Add Profile Photo",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+// Dialog untuk menampilkan foto profil jika isViewingProfileImage = true
+        if (isViewingProfileImage && imageUri != null) {
+            AlertDialog(
+                onDismissRequest = { isViewingProfileImage = false }, // Tutup dialog saat diketuk di luar
+                buttons = {},
+                text = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.Transparent)
+                            .padding(0.dp) // Hilangkan padding
+                    ) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = "Profile Image",
+                            contentScale = ContentScale.Crop, // Mengisi seluruh area dengan crop
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f) // Mengatur rasio tampilan gambar
+                        )
+                    }
+                }
+            )
         }
 
         Row(
@@ -151,10 +271,11 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                 onValueChange = { firstname = it },
                 label = { Text("First Name", color = textColor) },
                 placeholder = { Text(text = "Enter first name", color = Color.Gray) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = textFieldColor,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
+                colors = TextFieldDefaults.colors().copy(
+                    focusedContainerColor = textFieldColor,
+                    unfocusedContainerColor = textFieldColor,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent
                 ),
                 modifier = Modifier.weight(1f)
             )
@@ -166,10 +287,11 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                 onValueChange = { lastname = it },
                 label = { Text("Last Name", color = textColor) },
                 placeholder = { Text(text = "Enter last name", color = Color.Gray) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = textFieldColor,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
+                colors = TextFieldDefaults.colors().copy(
+                    focusedContainerColor = textFieldColor,
+                    unfocusedContainerColor = textFieldColor,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent
                 ),
                 modifier = Modifier.weight(1f)
             )
@@ -180,10 +302,11 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             onValueChange = { username = it },
             label = { Text("Username", color = textColor) },
             placeholder = { Text(text = "Enter username", color = Color.Gray) },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = textFieldColor,
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent
+            colors = TextFieldDefaults.colors().copy(
+                focusedContainerColor = textFieldColor,
+                unfocusedContainerColor = textFieldColor,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent
             ),
             modifier = Modifier.fillMaxWidth()
         )
@@ -193,10 +316,11 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             onValueChange = { dateBirth = it },
             label = { Text("Date of Birth", color = textColor) },
             placeholder = { Text(text = "Enter date of birth", color = Color.Gray) },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = textFieldColor,
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent
+            colors = TextFieldDefaults.colors().copy(
+                focusedContainerColor = textFieldColor,
+                unfocusedContainerColor = textFieldColor,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent
             ),
             modifier = Modifier.fillMaxWidth()
         )
