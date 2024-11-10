@@ -37,7 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.superbgoal.caritasrig.activity.auth.LoginActivity
+import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.functions.auth.LoadingButton
 import com.superbgoal.caritasrig.functions.auth.signUpUser
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme

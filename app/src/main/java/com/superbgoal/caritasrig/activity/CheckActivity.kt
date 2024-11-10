@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.activity.auth.LoginActivity
+import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
 
 class CheckActivity : ComponentActivity() {
