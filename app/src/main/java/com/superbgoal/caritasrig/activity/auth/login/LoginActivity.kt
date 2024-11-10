@@ -1,5 +1,4 @@
-package com.superbgoal.caritasrig.activity.auth
-
+package com.superbgoal.caritasrig.activity.auth.login
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -39,11 +38,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +55,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.auth.SignUpActivity
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.functions.auth.AuthResponse
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
@@ -71,13 +71,13 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val emailFromSignUp = intent.getStringExtra("email") ?: ""
+
+        intent.getStringExtra("email") ?: ""
         setContent {
             CaritasRigTheme {
                 Scaffold { paddingValues ->
                     SwipeableLoginScreen(
-                        modifier = Modifier.padding(paddingValues),
-                        initialEmail = emailFromSignUp
+                        modifier = Modifier.padding(paddingValues)
                     )
                 }
             }
@@ -87,13 +87,13 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun SwipeableLoginScreen(
-    modifier: Modifier = Modifier,
-    initialEmail: String = ""
+    modifier: Modifier = Modifier
 ) {
-    var offsetY by remember { mutableStateOf(1000f) }
+    val loginViewModel: LoginViewModel = viewModel()
+    val offsetY by loginViewModel.offsetY.collectAsState()
     val animatedOffsetY by animateFloatAsState(
         targetValue = offsetY,
-        animationSpec = tween(durationMillis = 600) // Durasi animasi 500ms
+        animationSpec = tween(durationMillis = 600), label = ""
     )
     val backgroundColor = Color(0xFF473947)
 
@@ -116,28 +116,29 @@ fun SwipeableLoginScreen(
                 .pointerInput(Unit) {
                     detectVerticalDragGestures { change, dragAmount ->
                         change.consume()
-                        offsetY += dragAmount
-                        offsetY = offsetY.coerceIn(0f, 1000f)
+                        loginViewModel.updateOffsetY(offsetY + dragAmount)
                     }
                 }
                 .background(Color.Transparent)
         ) {
-            // Panggil LoginScreenContent dengan dua argumen
             LoginScreenContent(
-                initialEmail = initialEmail,
-                onOffsetChange = { newOffsetY -> offsetY = newOffsetY }
+                onOffsetChange = { newOffsetY -> loginViewModel.updateOffsetY(newOffsetY) },
+                viewModel = loginViewModel
             )
         }
     }
 }
 
 @Composable
-fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Unit) {
-    var email by remember { mutableStateOf(initialEmail) }
-    var password by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var isArrowUp by remember { mutableStateOf(true) } // State untuk ikon
+fun LoginScreenContent(
+    onOffsetChange: (Float) -> Unit,
+    viewModel: LoginViewModel
+) {
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isArrowUp by viewModel.isArrowUp.collectAsState()
     val context = LocalContext.current
     val authenticationManager = remember { AuthenticationManager(context) }
     val coroutineScope = rememberCoroutineScope()
@@ -163,14 +164,12 @@ fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Uni
                 modifier = Modifier
                     .size(22.dp)
                     .clickable {
-                        // Ubah offsetY saat ikon ditekan
                         if (isArrowUp) {
-                            onOffsetChange(0f) // Geser ke atas
+                            onOffsetChange(0f)
                         } else {
-                            onOffsetChange(1000f) // Kembali ke posisi awal
+                            onOffsetChange(1000f)
                         }
-                        // Ubah status ikon
-                        isArrowUp = !isArrowUp
+                        viewModel.toggleArrowDirection()
                     }
             )
             Image(
@@ -183,12 +182,12 @@ fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Uni
 
             TextField(
                 value = email,
+                onValueChange = { viewModel.updateEmail(it) },
+                label = { Text("Email Address", color = textColor) },
                 leadingIcon = {
                     Icon(Icons.Outlined.Email, contentDescription = null, tint = textColor)
                 },
                 singleLine = true,
-                onValueChange = { email = it },
-                label = { Text("Email Address", color = textColor) },
                 colors = TextFieldDefaults.colors().copy(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
@@ -199,47 +198,43 @@ fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Uni
             )
 
             TextField(
-                singleLine = true,
+                value = password,
+                onValueChange = { viewModel.updatePassword(it) },
+                label = { Text("Password", color = textColor) },
                 leadingIcon = {
                     Icon(Icons.Outlined.Password, contentDescription = null, tint = textColor)
                 },
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password", color = textColor) },
+                singleLine = true,
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { viewModel.togglePasswordVisibility() }) {
+                        val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
+                        val description = if (isPasswordVisible) "Hide password" else "Show password"
+                        Icon(imageVector = icon, contentDescription = description, tint = Color.White)
+                    }
+                },
                 colors = TextFieldDefaults.colors().copy(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     focusedContainerColor = textFieldColor,
                     unfocusedContainerColor = textFieldColor
                 ),
-                trailingIcon = {
-                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
-                        val description = if (isPasswordVisible) "Hide password" else "Show password"
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = description,
-                            tint = Color.White
-                        )
-                    }
-                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Button(
                 onClick = {
-                    isLoading = true
+                    viewModel.setLoading(true)
                     coroutineScope.launch {
                         if (password.isBlank() || email.isBlank()) {
                             Toast.makeText(context, "Email and password cannot be blank", Toast.LENGTH_SHORT).show()
-                            isLoading = false
+                            viewModel.setLoading(false)
                         } else if (password.length < 6) {
                             Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
-                            isLoading = false
+                            viewModel.setLoading(false)
                         } else {
                             authenticationManager.loginWithEmail(email, password).collect { authResponse ->
-                                isLoading = false
+                                viewModel.setLoading(false)
                                 when (authResponse) {
                                     is AuthResponse.Success -> {
                                         Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
@@ -254,15 +249,15 @@ fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Uni
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = buttonColor,
-                )
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = buttonColor)
             ) {
-                Text(text = "LOGIN", fontWeight = FontWeight.Bold, color = Color.White)
+                Text("LOGIN", color = Color.White)
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 1.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 1.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -280,9 +275,9 @@ fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Uni
                         if (email.isBlank()) {
                             Toast.makeText(context, "Please enter your email to reset password", Toast.LENGTH_SHORT).show()
                         } else {
-                            isLoading = true
+                            viewModel.setLoading(true)
                             authenticationManager.resetPassword(email).onEach { authResponse ->
-                                isLoading = false
+                                viewModel.setLoading(false)
                                 when (authResponse) {
                                     is AuthResponse.Success -> Toast.makeText(context, "Password reset link has been sent to your email.", Toast.LENGTH_SHORT).show()
                                     is AuthResponse.Error -> Toast.makeText(context, "Failed to send reset link: ${authResponse.message}", Toast.LENGTH_SHORT).show()
@@ -304,9 +299,9 @@ fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Uni
 
             OutlinedButton(
                 onClick = {
-                    isLoading = true
+                    viewModel.setLoading(true)
                     authenticationManager.signInWithGoogle().onEach {
-                        isLoading = false
+                        viewModel.setLoading(false)
                     }.launchIn(coroutineScope)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -344,3 +339,4 @@ fun LoginScreenContent(initialEmail: String = "", onOffsetChange: (Float) -> Uni
         }
     }
 }
+

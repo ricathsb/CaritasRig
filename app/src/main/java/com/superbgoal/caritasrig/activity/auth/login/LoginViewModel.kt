@@ -1,0 +1,52 @@
+package com.superbgoal.caritasrig.activity.auth.login
+
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
+class LoginViewModel : ViewModel() {
+
+    // State flows for UI states
+    private val _email = MutableStateFlow("")
+    val email: StateFlow<String> get() = _email
+
+    private val _password = MutableStateFlow("")
+    val password: StateFlow<String> get() = _password
+
+    private val _isPasswordVisible = MutableStateFlow(false)
+    val isPasswordVisible: StateFlow<Boolean> get() = _isPasswordVisible
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> get() = _isLoading
+
+    private val _offsetY = MutableStateFlow(1000f)
+    val offsetY: StateFlow<Float> get() = _offsetY
+
+    private val _isArrowUp = MutableStateFlow(false)
+    val isArrowUp: StateFlow<Boolean> get() = _isArrowUp
+
+    // Update functions for state values
+    fun updateEmail(newEmail: String) {
+        _email.value = newEmail
+    }
+
+    fun updatePassword(newPassword: String) {
+        _password.value = newPassword
+    }
+
+    fun togglePasswordVisibility() {
+        _isPasswordVisible.value = !_isPasswordVisible.value
+    }
+
+    fun setLoading(isLoading: Boolean) {
+        _isLoading.value = isLoading
+    }
+
+    fun updateOffsetY(newOffset: Float) {
+        _offsetY.value = newOffset
+    }
+
+    fun toggleArrowDirection() {
+        _isArrowUp.value = !_isArrowUp.value
+    }
+}
