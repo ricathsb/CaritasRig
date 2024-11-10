@@ -31,7 +31,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
-import com.superbgoal.caritasrig.activity.auth.LoginActivity
+import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsActivity
 import com.superbgoal.caritasrig.data.model.User
 
