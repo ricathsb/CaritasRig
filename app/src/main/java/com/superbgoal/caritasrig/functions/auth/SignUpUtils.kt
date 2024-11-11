@@ -6,7 +6,6 @@ import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.activity.auth.Register.RegisterActivity
 import kotlinx.coroutines.tasks.await
 
 suspend fun signUpUser(
