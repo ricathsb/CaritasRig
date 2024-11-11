@@ -31,8 +31,13 @@
             android:theme="@style/Theme.CaritasRig">
         </activity>
         <activity android:name=".activity.homepage.HomeActivity" />
+
         <activity android:name=".activity.auth.signup.SignUpActivity" />
         <activity android:name=".activity.auth.register.RegisterActivity" />
+
+        <activity android:name=".activity.auth.SignUpActivity" />
+        <activity android:name=".activity.auth.Register.RegisterActivity" />
+
         <activity android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"/>
         <activity android:name=".activity.homepage.profileicon.AboutUsActivity" />
