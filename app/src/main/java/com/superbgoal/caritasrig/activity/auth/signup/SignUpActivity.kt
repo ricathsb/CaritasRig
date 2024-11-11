@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.auth
+package com.superbgoal.caritasrig.activity.auth.signup
 
 import android.content.Intent
 import android.os.Bundle
@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,10 +62,13 @@ class SignUpActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(modifier: Modifier = Modifier) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+fun SignUpScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SignUpViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val confirmPassword by viewModel.confirmPassword.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val backgroundColor = Color(0xFF473947)
@@ -90,7 +94,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             },
             value = email,
             shape = MaterialTheme.shapes.medium,
-            onValueChange = { email = it },
+            onValueChange = { viewModel.updateEmail(it) },
             label = { Text(stringResource(id = R.string.email_label), color = textColor) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors().copy(
@@ -110,7 +114,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             },
             value = password,
             shape = MaterialTheme.shapes.medium,
-            onValueChange = { password = it },
+            onValueChange = { viewModel.updatePassword(it) },
             label = { Text(stringResource(id = R.string.password_label), color = textColor) },
             colors = TextFieldDefaults.colors().copy(
                 unfocusedIndicatorColor = Color.Transparent,
@@ -141,7 +145,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             },
             value = confirmPassword,
             shape = MaterialTheme.shapes.medium,
-            onValueChange = { confirmPassword = it },
+            onValueChange = { viewModel.updateConfirmPassword(it) },
             label = { Text(stringResource(id = R.string.confirm_password_label), color = textColor) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors().copy(

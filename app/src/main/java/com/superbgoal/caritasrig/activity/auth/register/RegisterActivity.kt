@@ -1,7 +1,6 @@
-package com.superbgoal.caritasrig.activity.auth
+package com.superbgoal.caritasrig.activity.auth.register
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,6 +52,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,6 +77,7 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.auth.signup.SignUpActivity
 import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.data.model.User
@@ -88,13 +90,17 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class RegisterActivity : ComponentActivity() {
+    private val registerViewModel: RegisterViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             CaritasRigTheme {
                 Scaffold {
-                    RegisterScreen(modifier = Modifier.padding(it))
+                    RegisterScreen(
+                        modifier = Modifier.padding(it),
+                        viewModel = registerViewModel // Pass the ViewModel to the screen
+                    )
                 }
             }
         }
@@ -103,14 +109,13 @@ class RegisterActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier) {
-    var firstname by remember { mutableStateOf("") }
-    var lastname by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var dateOfBirth by remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var isLoading by remember { mutableStateOf(false) }
+fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) {
+    val firstname by viewModel.firstname.collectAsState()
+    val lastname by viewModel.lastname.collectAsState()
+    val username by viewModel.username.collectAsState()
+    val dateOfBirth by viewModel.dateOfBirth.collectAsState()
+    val imageUri by viewModel.imageUri.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val buttonColor = Color(0xFF211321)
     val context = LocalContext.current
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
@@ -123,7 +128,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
 
     val imageCropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
-            imageUri = result.uriContent
+            viewModel.updateImageUri(result.uriContent) // Update imageUri in the ViewModel
         } else {
             val exception = result.error
             Log.d("imageCropLauncher", exception.toString())
@@ -194,7 +199,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                     .clickable {
                         if (imageUri != null) {
                             // Hanya klik pada ikon remove yang menghapus gambar
-                            imageUri = null
+                            viewModel.updateImageUri(null)
                         } else {
                             // Jika belum ada gambar, buka picker untuk memilih gambar
                             imagePickerLauncher.launch("image/*")
@@ -251,7 +256,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 modifier = modifier.weight(1f),
                 value = firstname,
                 shape = MaterialTheme.shapes.medium,
-                onValueChange = { firstname = it },
+                onValueChange = { viewModel.updateFirstname(it) },
                 label = { Text(stringResource(id = R.string.first_name), color = textColor) },
                 colors = TextFieldDefaults.colors().copy(
                     unfocusedIndicatorColor = Color.Transparent,
@@ -269,7 +274,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 modifier = modifier.weight(1f),
                 value = lastname,
                 shape = MaterialTheme.shapes.medium,
-                onValueChange = { lastname = it },
+                onValueChange = { viewModel.updateLastname(it) },
                 label = { Text(stringResource(id = R.string.last_name), color = textColor) },
                 colors = TextFieldDefaults.colors().copy(
                     unfocusedIndicatorColor = Color.Transparent,
@@ -285,7 +290,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         TextField(
             value = username,
             shape = MaterialTheme.shapes.medium,
-            onValueChange = { username = it },
+            onValueChange = { viewModel.updateUsername(it) },
             label = { Text(stringResource(id = R.string.username), color = textColor) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors().copy(
@@ -332,7 +337,8 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 confirmButton = {
                     TextButton(onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            dateOfBirth = millis.toLocalDate().format(formatter)
+                            val formattedDate = millis.toLocalDate().format(formatter)
+                            viewModel.updateDateOfBirth(formattedDate)
                         }
                         showDatePicker = false
                     }) {
@@ -366,7 +372,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         Toast.makeText(context, context.getString(R.string.date_of_birth_required), Toast.LENGTH_SHORT).show()
                     }
                     else -> {
-                        isLoading = true
+                        viewModel.setLoading(true)
                         if (userId != null) {
                             imageUri?.let { uri ->
                                 uploadImageToFirebase(uri) { firebaseImageUrl ->
@@ -374,7 +380,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                                         user = User(userId, firstname, lastname, username, dateOfBirth, email, firebaseImageUrl),
                                         context = context
                                     ) { isVerified ->
-                                        isLoading = false
+                                        viewModel.setLoading(false)
                                         if (isVerified) {
                                             Toast.makeText(context, context.getString(R.string.data_saved), Toast.LENGTH_SHORT).show()
                                             context.startActivity(Intent(context, HomeActivity::class.java))
@@ -393,7 +399,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                                     user = User(userId, firstname, lastname, username, dateOfBirth, email, imageUrl),
                                     context = context
                                 ) { isVerified ->
-                                    isLoading = false
+                                    viewModel.setLoading(false)
                                     if (isVerified) {
                                         Toast.makeText(context, context.getString(R.string.data_saved), Toast.LENGTH_SHORT).show()
                                         context.startActivity(Intent(context, HomeActivity::class.java))
@@ -425,11 +431,10 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 Text(text = stringResource(id = R.string.register), fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
+
         TextButton(
             onClick = {
-                context.startActivity(Intent(context, LoginActivity::class.java))
-                (context as SignUpActivity)
-                    .finish()
+                viewModel.signOut(context = context)
             },
             modifier = Modifier.fillMaxWidth()
         ) {

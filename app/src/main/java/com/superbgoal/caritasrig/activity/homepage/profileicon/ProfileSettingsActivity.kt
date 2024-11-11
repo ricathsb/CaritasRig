@@ -67,8 +67,6 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.RegisterActivity
-import com.superbgoal.caritasrig.activity.auth.RegisterProfileIcon
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.data.loadUserData
 import com.superbgoal.caritasrig.data.model.User
@@ -196,7 +194,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                 },
             contentAlignment = Alignment.Center
         ) {
-            RegisterProfileIcon(imageUri, imageUrl)
+            ProfileIcon(imageUri, imageUrl)
 
             // Icon add/remove overlay
             Box(
@@ -381,24 +379,41 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ProfileIcon(imageUri: Uri?) {
-    if (imageUri != null) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUri)
-                .transformations(CircleCropTransformation())
-                .build(),
-            contentDescription = "Profile Image",
-            modifier = Modifier
-                .size(150.dp)
-                .clip(CircleShape)
-        )
-    } else {
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Default Icon",
-            modifier = Modifier.size(150.dp),
-            tint = Color.White
-        )
+fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
+    when {
+        imageUri != null -> {
+            // Jika imageUri ada, tampilkan gambar dari Uri
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUri)
+                    .transformations(CircleCropTransformation())
+                    .build(),
+                contentDescription = "Selected image",
+                modifier = Modifier
+                    .size(150.dp)
+                    .clip(CircleShape)
+            )
+        }
+        imageUrl != null -> {
+            // Jika imageUrl ada, tampilkan gambar dari URL
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .transformations(CircleCropTransformation())
+                    .build(),
+                contentDescription = "Image from URL",
+                modifier = Modifier
+                    .size(150.dp)
+                    .clip(CircleShape)
+            )
+        }
+        else -> {
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = "Default Icon",
+                modifier = Modifier.size(150.dp),
+                tint = Color.White
+            )
+        }
     }
 }

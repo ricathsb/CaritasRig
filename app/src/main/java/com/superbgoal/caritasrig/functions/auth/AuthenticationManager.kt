@@ -16,7 +16,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
-import com.superbgoal.caritasrig.activity.auth.RegisterActivity
+import com.superbgoal.caritasrig.activity.auth.register.RegisterActivity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
