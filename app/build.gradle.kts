@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.google.firebase.auth)
     implementation(libs.gson)
     implementation(libs.play.services.auth)
-    implementation("com.github.CanHub:Android-Image-Cropper:4.0.0")
+    implementation(libs.android.image.cropper)
     implementation(libs.play.services.auth.api.phone)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
@@ -87,9 +87,18 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation("androidx.compose.material:material:1.4.3")
+    implementation(libs.androidx.material)
     implementation(libs.material3)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
+    implementation (libs.androidx.lifecycle.viewmodel.ktx)
+    implementation (libs.androidx.lifecycle.runtime.ktx.v260)
+    implementation (libs.androidx.lifecycle.livedata.ktx)
+    // ViewModel for Compose
+    implementation (libs.androidx.lifecycle.viewmodel.compose)
+    implementation (libs.androidx.lifecycle.viewmodel.ktx.v251)
+
+// Kotlin Coroutine support for ViewModel
+    implementation (libs.kotlinx.coroutines.android)
 
 }

@@ -95,12 +95,12 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
     var dateBirth by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    var imageUrl by remember { mutableStateOf("") }
 
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
     val textColor = Color(0xFF1e1e1e)
     val context = LocalContext.current
-    val imageUrl = imageUri?.toString() ?: (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
 
     val activity = context as? Activity
     val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -111,10 +111,12 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             loadUserData(
                 userId = userId,
                 onUserDataLoaded = { user ->
-                    firstname = user.firstName ?: ""
-                    lastname = user.lastName ?: ""
-                    username = user.username ?: ""
-                    dateBirth = user.dateOfBirth ?: ""
+                    firstname = user.firstName
+                    lastname = user.lastName
+                    username = user.username
+                    dateBirth = user.dateOfBirth
+                    imageUrl = user.profileImageUrl ?: ""
+                    Log.d("ProfileSettingsScreen",imageUrl)
                     // Load profile image if available
                     if (!user.profileImageUrl.isNullOrEmpty()) {
                         imageUri = Uri.parse(user.profileImageUrl)
@@ -338,13 +340,14 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                         lastName = lastname,
                         username = username,
                         dateOfBirth = dateBirth,
-                        profileImageUrl = null // URL akan diperbarui setelah upload
+                        profileImageUrl = imageUrl // Kirim imageUrl jika tidak ada gambar baru
                     )
 
                     // Memanggil fungsi updateUserProfileData untuk mengunggah gambar dan menyimpan data
                     updateUserProfileData(
                         user = user,
                         imageUri = imageUri,
+                        imageUrl = imageUrl,
                         context = context
                     ) { success ->
                         isLoading = false
