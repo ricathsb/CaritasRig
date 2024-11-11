@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -74,6 +75,8 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
@@ -151,7 +154,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
-            text = "Register",
+            text = stringResource(id = R.string.register),
             style = MaterialTheme.typography.titleLarge
         )
 
@@ -249,7 +252,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 value = firstname,
                 shape = MaterialTheme.shapes.medium,
                 onValueChange = { firstname = it },
-                label = { Text("First Name", color = textColor) },
+                label = { Text(stringResource(id = R.string.first_name), color = textColor) },
                 colors = TextFieldDefaults.colors().copy(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
@@ -267,7 +270,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 value = lastname,
                 shape = MaterialTheme.shapes.medium,
                 onValueChange = { lastname = it },
-                label = { Text("Last Name", color = textColor) },
+                label = { Text(stringResource(id = R.string.last_name), color = textColor) },
                 colors = TextFieldDefaults.colors().copy(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
@@ -283,7 +286,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             value = username,
             shape = MaterialTheme.shapes.medium,
             onValueChange = { username = it },
-            label = { Text("Username", color = textColor) },
+            label = { Text(stringResource(id = R.string.username), color = textColor) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors().copy(
                 unfocusedIndicatorColor = Color.Transparent,
@@ -305,7 +308,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             value = dateOfBirth,
             shape = MaterialTheme.shapes.medium,
             onValueChange = { },
-            label = { Text("Date of Birth", color = textColor) },
+            label = { Text(stringResource(id = R.string.date_of_birth), color = textColor) },
             modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
             colors = TextFieldDefaults.colors().copy(
                 unfocusedIndicatorColor = Color.Transparent,
@@ -318,7 +321,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             readOnly = true,
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = true }) {
-                    Icon(Icons.Default.DateRange, contentDescription = "Select date", tint = Color.White)
+                    Icon(Icons.Default.DateRange, contentDescription = stringResource(id = R.string.select_date), tint = Color.White)
                 }
             }
         )
@@ -333,12 +336,12 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         }
                         showDatePicker = false
                     }) {
-                        Text("OK")
+                        Text(stringResource(id = R.string.ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                 }
             ) {
@@ -351,16 +354,16 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                 // Pengecekan apakah ada field yang kosong
                 when {
                     firstname.isEmpty() -> {
-                        Toast.makeText(context, "First Name is required", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.first_name_required), Toast.LENGTH_SHORT).show()
                     }
                     lastname.isEmpty() -> {
-                        Toast.makeText(context, "Last Name is required", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.last_name_required), Toast.LENGTH_SHORT).show()
                     }
                     username.isEmpty() -> {
-                        Toast.makeText(context, "Username is required", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.username_required), Toast.LENGTH_SHORT).show()
                     }
                     dateOfBirth.isEmpty() -> {
-                        Toast.makeText(context, "Date of Birth is required", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.date_of_birth_required), Toast.LENGTH_SHORT).show()
                     }
                     else -> {
                         isLoading = true
@@ -373,13 +376,13 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                                     ) { isVerified ->
                                         isLoading = false
                                         if (isVerified) {
-                                            Toast.makeText(context, "Data saved successfully and email verified.", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, context.getString(R.string.data_saved), Toast.LENGTH_SHORT).show()
                                             context.startActivity(Intent(context, HomeActivity::class.java))
                                             (context).finish()
                                         } else {
                                             Toast.makeText(
                                                 context,
-                                                "Please verify your email ${currentUser?.email ?: "No Email"}",
+                                                context.getString(R.string.verify_email, currentUser?.email),
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
@@ -392,13 +395,13 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                                 ) { isVerified ->
                                     isLoading = false
                                     if (isVerified) {
-                                        Toast.makeText(context, "Data saved successfully and email verified.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.data_saved), Toast.LENGTH_SHORT).show()
                                         context.startActivity(Intent(context, HomeActivity::class.java))
                                         (context).finish()
                                     } else {
                                         Toast.makeText(
                                             context,
-                                            "Please verify your email ${currentUser?.email ?: "No Email"}",
+                                            context.getString(R.string.verify_email, currentUser?.email),
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -419,8 +422,18 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text(text = "Register", fontWeight = FontWeight.Bold, color = Color.White)
+                Text(text = stringResource(id = R.string.register), fontWeight = FontWeight.Bold, color = Color.White)
             }
+        }
+        TextButton(
+            onClick = {
+                context.startActivity(Intent(context, LoginActivity::class.java))
+                (context as SignUpActivity)
+                    .finish()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(id = R.string.already_have_account), color = Color.White)
         }
 
     }

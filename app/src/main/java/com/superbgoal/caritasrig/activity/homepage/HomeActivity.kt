@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -226,19 +227,19 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
 
                         user?.let {
                             Text(it.username)
-                            Text(email ?: "No email available")
-                        } ?: Text("No user information available")
+                            Text(email ?: stringResource(id = R.string.no_email_available))
+                        } ?: Text(stringResource(id = R.string.no_user_information_available))
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         TransparentIconButton(
-                            text = "Activity",
+                            text = stringResource(id = R.string.activity),
                             icon = R.drawable.icons_activity,
                             onClick = { /* Activity action */ }
                         )
 
                         TransparentIconButton(
-                            text = "Settings",
+                            text = stringResource(id = R.string.settings),
                             icon = R.drawable.icons_settings,
                             onClick = {
                                 // Navigate to SettingsActivity
@@ -248,7 +249,7 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
                         )
 
                         TransparentIconButton(
-                            text = "About Us",
+                            text = stringResource(id = R.string.about_us),
                             icon = R.drawable.icons_aboutus,
                             onClick = {
                                 val intent = Intent(context, AboutUsActivity::class.java)
@@ -257,7 +258,7 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
                         )
 
                         TransparentIconButton(
-                            text = "Log Out",
+                            text = stringResource(id = R.string.log_out),
                             icon = R.drawable.icons_logout,
                             onClick = onLogout
                         )
@@ -267,7 +268,7 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
         },
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Close")
+                Text(stringResource(id = R.string.close))
             }
         }
     )
@@ -329,7 +330,7 @@ fun UserProfile() {
         TextField(
             value = searchText,
             onValueChange = { searchText = it },
-            label = { Text("Search") },
+            label = { Text(stringResource(id = R.string.search)) },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = {
                 Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = null)
@@ -374,10 +375,10 @@ fun UserProfile() {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "Build",
+                                text = stringResource(id = R.string.build),
                                 style = MaterialTheme.typography.headlineMedium,
                             )
-                            Text(text = "Create your own setup")
+                            Text(text = stringResource(id = R.string.create_your_own_setup))
                         }
                     }
                 }
@@ -408,10 +409,10 @@ fun UserProfile() {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "Trending",
+                                text = stringResource(id = R.string.trending),
                                 style = MaterialTheme.typography.headlineMedium,
                             )
-                            Text(text = "Find popular part")
+                            Text(text = stringResource(id = R.string.find_popular_part))
                         }
                     }
                 }
@@ -439,10 +440,10 @@ fun UserProfile() {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "Benchmarking",
+                                text = stringResource(id = R.string.benchmarking),
                                 style = MaterialTheme.typography.headlineMedium,
                             )
-                            Text(text = "Compare")
+                            Text(text = stringResource(id = R.string.compare))
                         }
                     }
                 }

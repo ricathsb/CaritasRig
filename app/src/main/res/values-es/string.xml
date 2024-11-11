@@ -1,0 +1,73 @@
+<resources>
+    <!--    Login-->
+    <string name="app_name">CaritasRig</string>
+    <string name="web_client_id">118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="email">Dirección de correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="hide_password">Ocultar contraseña</string>
+    <string name="show_password">Mostrar contraseña</string>
+    <string name="login_success">Inicio de sesión exitoso</string>
+    <string name="login_error">El correo electrónico y la contraseña no deben estar vacíos</string>
+    <string name="password_length_error">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="signup">Registrarse</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="reset_password_prompt">Introduce tu correo electrónico para restablecer la contraseña</string>
+    <string name="reset_password_success">El enlace para restablecer la contraseña ha sido enviado a tu correo electrónico.</string>
+    <string name="reset_password_error">Error al enviar el enlace de restablecimiento: %1$s</string>
+    <string name="or_continue_with">o continuar con</string>
+    <string name="google_sign_in">Iniciar sesión con Google</string>
+    <!--Settings-->
+    <string name="settings">Configuración</string>
+    <string name="change_language">Cambiar idioma</string>
+    <string name="change_theme">Cambiar tema</string>
+    <string name="profile_settings">Configuración del perfil</string>
+    <string name="select_language">Seleccionar idioma</string>
+    <!--    Register-->
+    <string name="register">Registro</string>
+    <string name="first_name">Nombre</string>
+    <string name="last_name">Apellido</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="date_of_birth">Fecha de nacimiento</string>
+    <string name="select_date">Seleccionar fecha</string>
+    <string name="ok">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="first_name_required">El nombre no puede estar vacío</string>
+    <string name="last_name_required">El apellido no puede estar vacío</string>
+    <string name="username_required">El nombre de usuario no puede estar vacío</string>
+    <string name="date_of_birth_required">La fecha de nacimiento no puede estar vacía</string>
+    <string name="data_saved">Datos guardados exitosamente y correo electrónico verificado.</string>
+    <string name="verify_email">Por favor verifica nuevamente tu correo electrónico %1$s</string>
+    <!--Sign Up-->
+    <string name="sign_up_title">Registrarse</string>
+    <string name="email_label">Dirección de correo electrónico</string>
+    <string name="password_label">Contraseña</string>
+    <string name="confirm_password_label">Confirmar contraseña</string>
+    <string name="create_account">Crear cuenta</string>
+    <string name="already_have_account">¿Ya tienes una cuenta? Iniciar sesión</string>
+    <!--Profile Settings-->
+    <string name="remove_photo_profile">Eliminar foto de perfil</string>
+    <string name="add_photo_profile">Añadir foto de perfil</string>
+    <string name="enter_first_name">Introduce el nombre</string>
+    <string name="enter_last_name">Introduce el apellido</string>
+    <string name="enter_username">Introduce un nombre de usuario</string>
+    <string name="enter_date_of_birth">Introduce tu fecha de nacimiento</string>
+    <string name="profile_updated">Perfil actualizado con éxito</string>
+    <string name="profile_updated_failed">Error al actualizar el perfil</string>
+    <string name="save_changes">Guardar cambios</string>
+    <string name="user_not_authenticated">Usuario no autenticado</string>
+    <!--    Homepage-->
+    <string name="no_email_available">No hay correo electrónico disponible</string>
+    <string name="no_user_information_available">No hay información de usuario disponible</string>
+    <string name="activity">Actividad</string>
+    <string name="about_us">Acerca de nosotros</string>
+    <string name="log_out">Cerrar sesión</string>
+    <string name="close">Cerrar</string>
+    <string name="build">Construir</string>
+    <string name="create_your_own_setup">Crea tu propia configuración</string>
+    <string name="trending">tendencia</string>
+    <string name="find_popular_part">Encuentra piezas populares</string>
+    <string name="benchmarking">Benchmarking</string>
+    <string name="compare">Comparar</string>
+    <string name="search">Buscar</string>
+</resources>

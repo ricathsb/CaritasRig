@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
@@ -65,6 +66,7 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.auth.RegisterActivity
 import com.superbgoal.caritasrig.activity.auth.RegisterProfileIcon
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
@@ -127,7 +129,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                 }
             )
         } else {
-            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.user_not_authenticated), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -165,7 +167,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "Profile Settings", style = MaterialTheme.typography.titleLarge)
+        Text(text = stringResource(id = R.string.profile_settings), style = MaterialTheme.typography.titleLarge)
 
         var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
 
@@ -224,7 +226,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             ) {
                 Icon(
                     imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
-                    contentDescription = if (imageUri != null) "Remove Profile Photo" else "Add Profile Photo",
+                    contentDescription = if (imageUri != null) stringResource(id = R.string.remove_photo_profile) else stringResource(id = R.string.add_photo_profile),
                     tint = Color.Black,
                     modifier = Modifier.size(24.dp)
                 )
@@ -265,8 +267,8 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             TextField(
                 value = firstname,
                 onValueChange = { firstname = it },
-                label = { Text("First Name", color = textColor) },
-                placeholder = { Text(text = "Enter first name", color = Color.Gray) },
+                label = { Text(stringResource(id = R.string.first_name), color = textColor) },
+                placeholder = { Text(text = stringResource(id = R.string.enter_first_name), color = Color.Gray) },
                 colors = TextFieldDefaults.colors().copy(
                     focusedContainerColor = textFieldColor,
                     unfocusedContainerColor = textFieldColor,
@@ -281,8 +283,8 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             TextField(
                 value = lastname,
                 onValueChange = { lastname = it },
-                label = { Text("Last Name", color = textColor) },
-                placeholder = { Text(text = "Enter last name", color = Color.Gray) },
+                label = { Text(stringResource(id = R.string.last_name), color = textColor) },
+                placeholder = { Text(text = stringResource(id = R.string.enter_last_name), color = Color.Gray) },
                 colors = TextFieldDefaults.colors().copy(
                     focusedContainerColor = textFieldColor,
                     unfocusedContainerColor = textFieldColor,
@@ -296,8 +298,8 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
         TextField(
             value = username,
             onValueChange = { username = it },
-            label = { Text("Username", color = textColor) },
-            placeholder = { Text(text = "Enter username", color = Color.Gray) },
+            label = { Text(stringResource(id = R.string.username), color = textColor) },
+            placeholder = { Text(text = stringResource(id = R.string.enter_username), color = Color.Gray) },
             colors = TextFieldDefaults.colors().copy(
                 focusedContainerColor = textFieldColor,
                 unfocusedContainerColor = textFieldColor,
@@ -310,8 +312,8 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
         TextField(
             value = dateBirth,
             onValueChange = { dateBirth = it },
-            label = { Text("Date of Birth", color = textColor) },
-            placeholder = { Text(text = "Enter date of birth", color = Color.Gray) },
+            label = { Text(stringResource(id = R.string.date_of_birth), color = textColor) },
+            placeholder = { Text(text = stringResource(id = R.string.enter_date_of_birth), color = Color.Gray) },
             colors = TextFieldDefaults.colors().copy(
                 focusedContainerColor = textFieldColor,
                 unfocusedContainerColor = textFieldColor,
@@ -324,13 +326,13 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
         Button(
             onClick = {
                 if (firstname.isEmpty()) {
-                    Toast.makeText(context, "First Name is required", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.first_name_required), Toast.LENGTH_SHORT).show()
                 } else if (lastname.isEmpty()) {
-                    Toast.makeText(context, "Last Name is required", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.last_name_required), Toast.LENGTH_SHORT).show()
                 } else if (username.isEmpty()) {
-                    Toast.makeText(context, "Username is required", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.username_required), Toast.LENGTH_SHORT).show()
                 } else if (dateBirth.isEmpty()) {
-                    Toast.makeText(context, "Date of Birth is required", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.date_of_birth_required), Toast.LENGTH_SHORT).show()
                 } else {
                     isLoading = true
                     // Membuat objek User untuk disimpan
@@ -352,14 +354,14 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                     ) { success ->
                         isLoading = false
                         if (success) {
-                            Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                             // Arahkan ke HomepageActivity setelah berhasil update data
                             val intent = Intent(context, HomeActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                             context.startActivity(intent)
                             activity?.finish()
                         } else {
-                            Toast.makeText(context, "Failed to update profile", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.profile_updated_failed), Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -372,7 +374,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text("Save Changes")
+                Text(stringResource(id = R.string.save_changes))
             }
         }
     }
