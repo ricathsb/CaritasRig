@@ -13,6 +13,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
 import com.superbgoal.caritasrig.data.model.User
+import com.superbgoal.caritasrig.functions.auth.AuthResponse.Success.toString
 import java.util.UUID
 
 fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
@@ -83,54 +84,70 @@ fun uploadImageToFirebase(uri: Uri, onSuccess: (String) -> Unit) {
 fun updateUserProfileData(
     user: User,
     imageUri: Uri?,
+    imageUrl: String?,
     context: Context,
     callback: (Boolean) -> Unit
 ) {
+    Log.d("ProfileUpdate", "Starting profile update for user: ${user.userId}")
+
     val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
     val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
 
-    // Fungsi untuk menyimpan data ke Firebase Realtime Database
     fun saveDataToDatabase(profileImageUrl: String?) {
-        val userMap = mapOf(
+        Log.d("ProfileUpdate", "Saving data to database with image URL: $profileImageUrl")
+
+        val userMap = mutableMapOf(
             "firstName" to user.firstName,
             "lastName" to user.lastName,
             "username" to user.username,
             "dateOfBirth" to user.dateOfBirth,
             "profileImageUrl" to profileImageUrl
         )
+
         database.child("users").child(user.userId).child("userData").setValue(userMap)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d("ProfileUpdate", "Profile data updated successfully")
-                    callback(true) // Data diperbarui dengan sukses
+                    callback(true)
                 } else {
-                    Log.e("ProfileUpdate", "Failed to update data: ${task.exception?.message}")
-                    callback(false) // Gagal memperbarui data
+                    val errorMessage = task.exception?.message ?: "Unknown error"
+                    Log.e("ProfileUpdate", "Failed to update data. Reason: $errorMessage")
+                    callback(false)
                 }
             }
     }
 
-    // Unggah gambar profil jika ada, lalu perbarui data pengguna
-    if (imageUri != null) {
-        val storageRef = FirebaseStorage.getInstance().reference.child("images/${UUID.randomUUID()}")
+    if (imageUri != null && imageUri.scheme == "content") {
+        Log.d("ProfileUpdate", "Uploading new image with valid URI: $imageUri")
+
+        val storageRef = FirebaseStorage.getInstance().reference.child("images/${user.userId}")
         storageRef.putFile(imageUri)
             .addOnSuccessListener {
                 storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                    Log.d("ProfileUpdate", "Profile image uploaded: ${downloadUri.toString()}")
-                    saveDataToDatabase(downloadUri.toString()) // Perbarui data dengan URL gambar
+                    Log.d("ProfileUpdate", "Profile image uploaded successfully, URL: ${downloadUri.toString()}")
+                    saveDataToDatabase(downloadUri.toString())
                 }
+                    .addOnFailureListener { exception ->
+                        Log.e("UploadError", "Failed to get download URL: ${exception.message}")
+                        callback(false)
+                    }
             }
             .addOnFailureListener { exception ->
                 Log.e("UploadError", "Failed to upload image: ${exception.message}")
-                callback(false) // Gagal mengunggah gambar
+                callback(false)
             }
     } else {
-        // Jika tidak ada gambar, perbarui data tanpa `profileImageUrl`
-        saveDataToDatabase(null)
+        Log.e("ProfileUpdate", "Invalid URI for image upload or no image selected")
+        saveDataToDatabase(imageUrl) // Use existing URL if no new image is selected
     }
 }
 
-fun loadUserData(userId: String, onUserDataLoaded: (User) -> Unit, onFailure: (String) -> Unit) {
+
+
+
+
+
+    fun loadUserData(userId: String, onUserDataLoaded: (User) -> Unit, onFailure: (String) -> Unit) {
     val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
     val database = FirebaseDatabase.getInstance(databaseUrl).reference
 
