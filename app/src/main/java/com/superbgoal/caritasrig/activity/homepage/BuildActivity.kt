@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -204,7 +205,7 @@ fun ComponentCard(
     videoCard: VideoCard? = null,
     onAddClick: () -> Unit
 ) {
-    val context = LocalContext.current // Define context here
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -217,53 +218,54 @@ fun ComponentCard(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            Box(
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 20.sp),
+                color = Color.Black,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
-                    .background(Color.Transparent),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 20.sp),
-                    color = Color.Black,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(10.dp)
-                )
-            }
-
-            if (title == "CPU" && processor != null) {
-                ProcessorInfo(processor)
-            }
-
-            if (title == "GPU" && videoCard != null) {
-                VideoCardInfo(videoCard)
-            }
+                    .padding(10.dp)
+            )
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
-                    .clip(RoundedCornerShape(10.dp))  // Sudut melengkung 10 dp
-                    .background(colorResource(id = R.color.brown)),  // Warna cokelat dari colors.xml
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(colorResource(id = R.color.brown)),
                 contentAlignment = Alignment.Center
             ) {
-                Button(
-                    onClick = { onAddClick() }, // Panggil onAddClick ketika tombol ditekan
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .background(Color.Transparent),  // Warna latar belakang transparan
-                    elevation = ButtonDefaults.buttonElevation(0.dp) // Menghapus efek bayangan tombol
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_btn),  // Gambar dari res/drawable/add_btn
-                        contentDescription = "Add Icon",
-                        tint = Color.Unspecified,  // Mempertahankan warna asli ikon
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))  // Jarak antara ikon dan teks
-                    Text(text = "Add Component")
+                    if (title == "CPU" && processor != null) {
+                        ProcessorInfo(processor)
+                    }
+
+                    if (title == "GPU" && videoCard != null) {
+                        VideoCardInfo(videoCard)
+                    }
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    Button(
+                        onClick = { onAddClick() },
+                        modifier = Modifier
+                            .background(Color.Transparent),
+                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.add_btn),
+                            contentDescription = "Add Icon",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Add Component")
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
             }
         }
