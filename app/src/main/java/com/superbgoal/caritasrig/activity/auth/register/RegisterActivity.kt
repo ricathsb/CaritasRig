@@ -77,8 +77,6 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.signup.SignUpActivity
-import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
@@ -174,7 +172,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
                             Log.d("Modifier", "Long clicked! yeay")
                         },
                         onTap = {
-                           imagePickerLauncher.launch("image/*")
+                            imagePickerLauncher.launch("image/*")
                         }
                     )
                 },

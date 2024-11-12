@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -56,6 +57,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
@@ -169,16 +171,6 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
 
         var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
 
-//        val imagePickerLauncher = rememberLauncherForActivityResult(
-//            contract = ActivityResultContracts.GetContent(),
-//            onResult = { uri: Uri? ->
-//                if (uri != null) {
-//                    imageUri = uri
-//                } else {
-//                    Log.d("ImagePicker", "User cancelled image selection")
-//                }
-//            }
-//        )
 
         Box(
             modifier = Modifier
@@ -321,6 +313,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
+        val buttonColor = Color(0xFF211321)
         Button(
             onClick = {
                 if (firstname.isEmpty()) {
@@ -365,6 +358,9 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                 }
             },
             enabled = !isLoading,
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = buttonColor,
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -372,7 +368,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text(stringResource(id = R.string.save_changes))
+                Text(stringResource(id = R.string.save_changes), fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
     }
@@ -390,7 +386,7 @@ fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
                     .build(),
                 contentDescription = "Selected image",
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(150.dp)   
                     .clip(CircleShape)
             )
         }
