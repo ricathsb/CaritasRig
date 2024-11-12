@@ -32,17 +32,24 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,7 +64,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
@@ -74,6 +80,10 @@ import com.superbgoal.caritasrig.data.loadUserData
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.updateUserProfileData
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class ProfileSettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -171,6 +181,16 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
 
         var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
 
+//        val imagePickerLauncher = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.GetContent(),
+//            onResult = { uri: Uri? ->
+//                if (uri != null) {
+//                    imageUri = uri
+//                } else {
+//                    Log.d("ImagePicker", "User cancelled image selection")
+//                }
+//            }
+//        )
 
         Box(
             modifier = Modifier
@@ -299,8 +319,15 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
+        var showDatePicker by remember { mutableStateOf(false) }
+        val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+        fun Long.toLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
+
         TextField(
             value = dateBirth,
+            shape = MaterialTheme.shapes.medium,
             onValueChange = { dateBirth = it },
             label = { Text(stringResource(id = R.string.date_of_birth), color = textColor) },
             placeholder = { Text(text = stringResource(id = R.string.enter_date_of_birth), color = Color.Gray) },
@@ -308,12 +335,43 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                 focusedContainerColor = textFieldColor,
                 unfocusedContainerColor = textFieldColor,
                 unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent
+                focusedIndicatorColor = Color.Transparent,
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+
+            textStyle = LocalTextStyle.current.copy(color = Color.White),
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.DateRange, contentDescription = "Select date", tint = Color.White)
+                }
+            }
+
         )
 
-        val buttonColor = Color(0xFF211321)
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            dateBirth = millis.toLocalDate().format(formatter)
+                        }
+                        showDatePicker = false
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
         Button(
             onClick = {
                 if (firstname.isEmpty()) {
@@ -358,9 +416,6 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
                 }
             },
             enabled = !isLoading,
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = buttonColor,
-            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -368,7 +423,7 @@ fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text(stringResource(id = R.string.save_changes), fontWeight = FontWeight.Bold, color = Color.White)
+                Text(stringResource(id = R.string.save_changes))
             }
         }
     }
@@ -386,7 +441,7 @@ fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
                     .build(),
                 contentDescription = "Selected image",
                 modifier = Modifier
-                    .size(150.dp)   
+                    .size(150.dp)
                     .clip(CircleShape)
             )
         }
