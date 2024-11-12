@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.SignUpActivity
+import com.superbgoal.caritasrig.activity.auth.signup.SignUpActivity
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.functions.auth.AuthResponse
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
@@ -66,6 +66,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import androidx.compose.ui.res.stringResource
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -183,7 +184,7 @@ fun LoginScreenContent(
             TextField(
                 value = email,
                 onValueChange = { viewModel.updateEmail(it) },
-                label = { Text("Email Address", color = textColor) },
+                label = { Text(stringResource(id = R.string.email), color = textColor) },
                 leadingIcon = {
                     Icon(Icons.Outlined.Email, contentDescription = null, tint = textColor)
                 },
@@ -200,7 +201,7 @@ fun LoginScreenContent(
             TextField(
                 value = password,
                 onValueChange = { viewModel.updatePassword(it) },
-                label = { Text("Password", color = textColor) },
+                label = { Text(stringResource(id = R.string.password), color = textColor) },
                 leadingIcon = {
                     Icon(Icons.Outlined.Password, contentDescription = null, tint = textColor)
                 },
@@ -209,7 +210,7 @@ fun LoginScreenContent(
                 trailingIcon = {
                     IconButton(onClick = { viewModel.togglePasswordVisibility() }) {
                         val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
-                        val description = if (isPasswordVisible) "Hide password" else "Show password"
+                        val description = if (isPasswordVisible) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                         Icon(imageVector = icon, contentDescription = description, tint = Color.White)
                     }
                 },
@@ -227,17 +228,17 @@ fun LoginScreenContent(
                     viewModel.setLoading(true)
                     coroutineScope.launch {
                         if (password.isBlank() || email.isBlank()) {
-                            Toast.makeText(context, "Email and password cannot be blank", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.login_error), Toast.LENGTH_SHORT).show()
                             viewModel.setLoading(false)
                         } else if (password.length < 6) {
-                            Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.password_length_error), Toast.LENGTH_SHORT).show()
                             viewModel.setLoading(false)
                         } else {
                             authenticationManager.loginWithEmail(email, password).collect { authResponse ->
                                 viewModel.setLoading(false)
                                 when (authResponse) {
                                     is AuthResponse.Success -> {
-                                        Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.login_success), Toast.LENGTH_SHORT).show()
                                         context.startActivity(Intent(context, HomeActivity::class.java))
                                     }
                                     is AuthResponse.Error -> {
@@ -251,7 +252,7 @@ fun LoginScreenContent(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(containerColor = buttonColor)
             ) {
-                Text("LOGIN", color = Color.White)
+                Text(stringResource(id = R.string.login), color = Color.White)
             }
 
             Row(
@@ -261,7 +262,7 @@ fun LoginScreenContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Sign up",
+                    text = stringResource(id = R.string.signup),
                     color = Color.Cyan,
                     modifier = Modifier.clickable {
                         context.startActivity(Intent(context, SignUpActivity::class.java))
@@ -269,17 +270,17 @@ fun LoginScreenContent(
                 )
 
                 Text(
-                    text = "Forgot Password?",
+                    text = stringResource(id = R.string.forgot_password),
                     color = Color.Cyan,
                     modifier = Modifier.clickable {
                         if (email.isBlank()) {
-                            Toast.makeText(context, "Please enter your email to reset password", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.reset_password_prompt), Toast.LENGTH_SHORT).show()
                         } else {
                             viewModel.setLoading(true)
                             authenticationManager.resetPassword(email).onEach { authResponse ->
                                 viewModel.setLoading(false)
                                 when (authResponse) {
-                                    is AuthResponse.Success -> Toast.makeText(context, "Password reset link has been sent to your email.", Toast.LENGTH_SHORT).show()
+                                    is AuthResponse.Success -> Toast.makeText(context, context.getString(R.string.reset_password_success), Toast.LENGTH_SHORT).show()
                                     is AuthResponse.Error -> Toast.makeText(context, "Failed to send reset link: ${authResponse.message}", Toast.LENGTH_SHORT).show()
                                 }
                             }.launchIn(coroutineScope)
@@ -294,7 +295,7 @@ fun LoginScreenContent(
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "or continue with", color = Color.White)
+                Text(text = stringResource(id = R.string.or_continue_with), color = Color.White)
             }
 
             OutlinedButton(
@@ -318,7 +319,7 @@ fun LoginScreenContent(
                         modifier = Modifier.size(36.dp).padding(end = 8.dp)
                     )
                     Text(
-                        text = "Sign in with Google",
+                        text = stringResource(id = R.string.google_sign_in),
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.Black

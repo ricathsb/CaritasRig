@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.auth
+package com.superbgoal.caritasrig.activity.auth.signup
 
 import android.content.Intent
 import android.os.Bundle
@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,9 +35,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.functions.auth.LoadingButton
 import com.superbgoal.caritasrig.functions.auth.signUpUser
@@ -59,10 +62,13 @@ class SignUpActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(modifier: Modifier = Modifier) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+fun SignUpScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SignUpViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val confirmPassword by viewModel.confirmPassword.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val backgroundColor = Color(0xFF473947)
@@ -79,7 +85,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "Sign Up", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 30.dp))
+        Text(text = stringResource(id = R.string.sign_up_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 30.dp))
 
         TextField(
             singleLine = true,
@@ -88,8 +94,8 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             },
             value = email,
             shape = MaterialTheme.shapes.medium,
-            onValueChange = { email = it },
-            label = { Text("Email Address", color = textColor) },
+            onValueChange = { viewModel.updateEmail(it) },
+            label = { Text(stringResource(id = R.string.email_label), color = textColor) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors().copy(
                 unfocusedIndicatorColor = Color.Transparent,
@@ -108,8 +114,8 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             },
             value = password,
             shape = MaterialTheme.shapes.medium,
-            onValueChange = { password = it },
-            label = { Text("Password", color = textColor) },
+            onValueChange = { viewModel.updatePassword(it) },
+            label = { Text(stringResource(id = R.string.password_label), color = textColor) },
             colors = TextFieldDefaults.colors().copy(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
@@ -122,7 +128,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             trailingIcon = {
                 IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                     val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
-                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+                    val description = if (isPasswordVisible) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                     Icon(
                         imageVector = icon,
                         contentDescription = description,
@@ -139,8 +145,8 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             },
             value = confirmPassword,
             shape = MaterialTheme.shapes.medium,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Confirm Password", color = textColor) },
+            onValueChange = { viewModel.updateConfirmPassword(it) },
+            label = { Text(stringResource(id = R.string.confirm_password_label), color = textColor) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors().copy(
                 unfocusedIndicatorColor = Color.Transparent,
@@ -153,7 +159,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             trailingIcon = {
                 IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                     val icon = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
-                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+                    val description = if (isPasswordVisible) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                     Icon(
                         imageVector = icon,
                         contentDescription = description,
@@ -164,7 +170,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
         )
 
         LoadingButton(
-            text = "Create Account",
+            text = stringResource(id = R.string.create_account),
             colors = ButtonDefaults.buttonColors(
                 containerColor = buttonColor
             ),
@@ -184,7 +190,7 @@ fun SignUpScreen(modifier: Modifier = Modifier) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Already have an account? Log in", color = Color.White)
+            Text(text = stringResource(id = R.string.already_have_account), color = Color.White)
         }
     }
 }

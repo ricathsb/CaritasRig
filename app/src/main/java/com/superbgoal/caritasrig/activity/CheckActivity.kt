@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
@@ -15,6 +16,7 @@ class CheckActivity : ComponentActivity() {
         auth = FirebaseAuth.getInstance()
 
         if (auth.currentUser != null) {
+            Log.d("authuser", auth.currentUser.toString())
             val user = auth.currentUser
             val authenticationManager = AuthenticationManager(this)
             if (user != null) {

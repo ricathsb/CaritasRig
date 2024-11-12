@@ -1,0 +1,73 @@
+<resources>
+    <!--    Login-->
+    <string name="app_name">CaritasRig</string>
+    <string name="web_client_id">118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com</string>
+    <string name="login">Connexion</string>
+    <string name="email">Adresse e-mail</string>
+    <string name="password">Mot de passe</string>
+    <string name="hide_password">Masquer le mot de passe</string>
+    <string name="show_password">Afficher le mot de passe</string>
+    <string name="login_success">Connexion réussie</string>
+    <string name="login_error">L`email et le mot de passe ne doivent pas être vides</string>
+    <string name="password_length_error">Le mot de passe doit contenir au moins 6 caractères</string>
+    <string name="signup">S`inscrire</string>
+    <string name="forgot_password">Mot de passe oublié ?</string>
+    <string name="reset_password_prompt">Entrez votre adresse e-mail pour réinitialiser le mot de passe</string>
+    <string name="reset_password_success">Un lien pour réinitialiser votre mot de passe a été envoyé à votre e-mail.</string>
+    <string name="reset_password_error">Échec de l`envoi du lien de réinitialisation : %1$s</string>
+    <string name="or_continue_with">ou continuer avec</string>
+    <string name="google_sign_in">Se connecter avec Google</string>
+    <!--Settings-->
+    <string name="settings">Paramètres</string>
+    <string name="change_language">Changer de langue</string>
+    <string name="change_theme">Changer le thème</string>
+    <string name="profile_settings">Paramètres du profil</string>
+    <string name="select_language">Choisir une langue</string>
+    <!--    Register-->
+    <string name="register">Inscription</string>
+    <string name="first_name">Prénom</string>
+    <string name="last_name">Nom</string>
+    <string name="username">Nom d`utilisateur</string>
+    <string name="date_of_birth">Date de naissance</string>
+    <string name="select_date">Choisir une date</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Annuler</string>
+    <string name="first_name_required">Le prénom ne doit pas être vide</string>
+    <string name="last_name_required">Le nom de famille ne doit pas être vide</string>
+    <string name="username_required">Le nom d`utilisateur ne doit pas être vide</string>
+    <string name="date_of_birth_required">La date de naissance ne doit pas être vide</string>
+    <string name="data_saved">Données enregistrées avec succès et e-mail vérifié.</string>
+    <string name="verify_email">Veuillez vérifier à nouveau votre adresse e-mail %1$s</string>
+    <!--Sign Up-->
+    <string name="sign_up_title">S`inscrire</string>
+    <string name="email_label">Adresse e-mail</string>
+    <string name="password_label">Mot de passe</string>
+    <string name="confirm_password_label">Confirmer le mot de passe</string>
+    <string name="create_account">Créer un compte</string>
+    <string name="already_have_account">Vous avez déjà un compte ? Connectez-vous</string>
+    <!--Profile Settings-->
+    <string name="remove_photo_profile">Supprimer la photo de profil</string>
+    <string name="add_photo_profile">Ajouter une photo de profil</string>
+    <string name="enter_first_name">Entrez votre prénom</string>
+    <string name="enter_last_name">Entrez votre nom de famille</string>
+    <string name="enter_username">Entrez un nom d`utilisateur</string>
+    <string name="enter_date_of_birth">Entrez votre date de naissance</string>
+    <string name="profile_updated">Profil mis à jour avec succès</string>
+    <string name="profile_updated_failed">Échec de la mise à jour du profil</string>
+    <string name="save_changes">Enregistrer les modifications</string>
+    <string name="user_not_authenticated">Utilisateur non authentifié</string>
+    <!--    Homepage-->
+    <string name="no_email_available">Aucun e-mail disponible</string>
+    <string name="no_user_information_available">Aucune information utilisateur disponible</string>
+    <string name="activity">Activité</string>
+    <string name="about_us">À propos de nous</string>
+    <string name="log_out">Se déconnecter</string>
+    <string name="close">Fermer</string>
+    <string name="build">Assembler</string>
+    <string name="create_your_own_setup">Créez votre propre configuration</string>
+    <string name="trending">tendance</string>
+    <string name="find_popular_part">Trouvez des pièces populaires</string>
+    <string name="benchmarking">Benchmarking</string>
+    <string name="compare">Comparer</string>
+    <string name="search">Rechercher</string>
+</resources>
