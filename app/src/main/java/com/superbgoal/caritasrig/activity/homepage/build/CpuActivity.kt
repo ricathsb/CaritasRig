@@ -52,7 +52,7 @@ class CpuActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<Processor>>() {}.type
+        object : TypeToken<List<Processor>>() {}.type
         val processors: List<Processor> = loadItemsFromResources(
             context = this,
             resourceId = R.raw.processor

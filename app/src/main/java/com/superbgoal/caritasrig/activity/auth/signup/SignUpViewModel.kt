@@ -16,7 +16,6 @@ class SignUpViewModel : ViewModel() {
     val confirmPassword: StateFlow<String> get() = _confirmPassword
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> get() = _isLoading
 
     // Update functions for each state value
     fun updateEmail(newEmail: String) {

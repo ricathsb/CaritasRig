@@ -50,7 +50,7 @@
         <activity android:name=".activity.homepage.build.PowerSupplyActivity"/>
         <activity android:name=".activity.homepage.build.VideoCardActivity"/>
         <activity android:name=".activity.homepage.profileicon.SettingsActivity"/>
-        <activity android:name=".activity.homepage.profileicon.ProfileSettingsActivity"/>
+        <activity android:name=".activity.homepage.profileicon.profilesettings.ProfileSettingsActivity"/>
     </application>
 
 </manifest>
