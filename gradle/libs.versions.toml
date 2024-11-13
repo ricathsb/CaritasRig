@@ -31,6 +31,7 @@ firebaseStorageKtx = "21.0.1"
 composeMaterial = "1.4.0"
 material3 = "1.3.0"
 materialIconsCore = "1.7.4"
+runtimeLivedata = "1.7.5"
 
 
 [libraries]
@@ -76,6 +77,7 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
+androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
