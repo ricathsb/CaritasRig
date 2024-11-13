@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.profileicon
+package com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings
 
 import android.content.Context
 import android.net.Uri

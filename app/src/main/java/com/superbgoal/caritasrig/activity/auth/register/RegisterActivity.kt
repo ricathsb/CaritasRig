@@ -172,7 +172,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
                             Log.d("Modifier", "Long clicked! yeay")
                         },
                         onTap = {
-                            imagePickerLauncher.launch("image/*")
+                           imagePickerLauncher.launch("image/*")
                         }
                     )
                 },
