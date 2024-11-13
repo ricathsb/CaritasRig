@@ -35,16 +35,24 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -74,6 +82,10 @@ import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.updateUserProfileData
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class ProfileSettingsActivity : ComponentActivity() {
     private val profileSettingsViewModel: ProfileSettingsViewModel by viewModels()
@@ -105,6 +117,7 @@ fun ProfileSettingsScreen(
     val imageUri by viewModel.imageUri.collectAsState()
     val imageUrl by viewModel.imageUrl.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val showDatePicker by viewModel.showDatePicker.collectAsState()
 
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
@@ -292,19 +305,59 @@ fun ProfileSettingsScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+        fun Long.toLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
+
         TextField(
             value = dateOfBirth,
-            onValueChange = { viewModel.updateDateOfBirth(it) },
+            shape = MaterialTheme.shapes.medium,
+            onValueChange = { },
             label = { Text(stringResource(id = R.string.date_of_birth), color = textColor) },
-            placeholder = { Text(text = stringResource(id = R.string.enter_date_of_birth), color = Color.Gray) },
+            modifier = Modifier.fillMaxWidth().clickable {viewModel.updateShowDatePicker(true)},
             colors = TextFieldDefaults.colors().copy(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                cursorColor = Color.White,
                 focusedContainerColor = textFieldColor,
                 unfocusedContainerColor = textFieldColor,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent
             ),
-            modifier = Modifier.fillMaxWidth()
+            textStyle = LocalTextStyle.current.copy(color = Color.White),
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = {viewModel.updateShowDatePicker(true)}) {
+                    Icon(Icons.Default.DateRange, contentDescription = stringResource(id = R.string.select_date), tint = Color.White)
+                }
+            }
         )
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = {viewModel.updateShowDatePicker(false)},
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val formattedDate = millis.toLocalDate().format(formatter)
+                            viewModel.updateDateOfBirth(formattedDate)
+                        }
+                        viewModel.updateShowDatePicker(false)
+                    }) {
+                        Text(stringResource(id = R.string.ok))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {viewModel.updateShowDatePicker(false)}) {
+                        Text(stringResource(id = R.string.cancel))
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    showModeToggle = false // Disable mode toggle to ensure only date picking
+                )
+            }
+        }
 
         Button(
             onClick = {

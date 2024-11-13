@@ -36,6 +36,9 @@ class ProfileSettingsViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
+    private val _showDatePicker = MutableStateFlow(false)
+    val showDatePicker: StateFlow<Boolean> get() = _showDatePicker
+
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     init {
@@ -88,6 +91,10 @@ class ProfileSettingsViewModel : ViewModel() {
 
     fun setLoading(isLoading: Boolean) {
         _isLoading.value = isLoading
+    }
+
+    fun updateShowDatePicker(showDatePicker: Boolean) {
+        _showDatePicker.value = showDatePicker
     }
 
 

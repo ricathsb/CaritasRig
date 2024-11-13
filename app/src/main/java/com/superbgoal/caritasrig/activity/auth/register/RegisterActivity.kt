@@ -114,6 +114,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
     val dateOfBirth by viewModel.dateOfBirth.collectAsState()
     val imageUri by viewModel.imageUri.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val showDatePicker by viewModel.showDatePicker.collectAsState()
     val buttonColor = Color(0xFF211321)
     val context = LocalContext.current
     val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
@@ -297,7 +298,6 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             textStyle = LocalTextStyle.current.copy(color = Color.White)
         )
 
-        var showDatePicker by remember { mutableStateOf(false) }
         val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
@@ -308,7 +308,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             shape = MaterialTheme.shapes.medium,
             onValueChange = { },
             label = { Text(stringResource(id = R.string.date_of_birth), color = textColor) },
-            modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+            modifier = Modifier.fillMaxWidth().clickable {viewModel.updateShowDatePicker(true)},
             colors = TextFieldDefaults.colors().copy(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
@@ -319,7 +319,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             textStyle = LocalTextStyle.current.copy(color = Color.White),
             readOnly = true,
             trailingIcon = {
-                IconButton(onClick = { showDatePicker = true }) {
+                IconButton(onClick = {viewModel.updateShowDatePicker(true)}) {
                     Icon(Icons.Default.DateRange, contentDescription = stringResource(id = R.string.select_date), tint = Color.White)
                 }
             }
@@ -327,20 +327,20 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
 
         if (showDatePicker) {
             DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
+                onDismissRequest = {viewModel.updateShowDatePicker(false)},
                 confirmButton = {
                     TextButton(onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
                             val formattedDate = millis.toLocalDate().format(formatter)
                             viewModel.updateDateOfBirth(formattedDate)
                         }
-                        showDatePicker = false
+                        viewModel.updateShowDatePicker(false)
                     }) {
                         Text(stringResource(id = R.string.ok))
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
+                    TextButton(onClick = {viewModel.updateShowDatePicker(false)}) {
                         Text(stringResource(id = R.string.cancel))
                     }
                 }

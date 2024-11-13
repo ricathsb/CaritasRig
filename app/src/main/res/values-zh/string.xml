@@ -1,0 +1,78 @@
+<resources>
+    <!-- Login -->
+    <string name="app_name">CaritasRig</string>
+    <string name="web_client_id">118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com</string>
+    <string name="login">登录</string>
+    <string name="email">电子邮件地址</string>
+    <string name="password">密码</string>
+    <string name="hide_password">隐藏密码</string>
+    <string name="show_password">显示密码</string>
+    <string name="login_success">登录成功</string>
+    <string name="login_error">电子邮件和密码不能为空</string>
+    <string name="password_length_error">密码至少需要6个字符</string>
+    <string name="signup">注册</string>
+    <string name="forgot_password">忘记密码？</string>
+    <string name="reset_password_prompt">请输入您的电子邮件以重置密码</string>
+    <string name="reset_password_success">密码重置链接已发送到您的电子邮件。</string>
+    <string name="reset_password_error">发送重置链接失败：%1$s</string>
+    <string name="or_continue_with">或继续使用</string>
+    <string name="google_sign_in">使用 Google 登录</string>
+
+    <!-- Settings -->
+    <string name="settings">设置</string>
+    <string name="change_language">更改语言</string>
+    <string name="change_theme">更改主题</string>
+    <string name="profile_settings">个人资料设置</string>
+    <string name="select_language">选择语言</string>
+
+    <!-- Register -->
+    <string name="register">注册</string>
+    <string name="first_name">名字</string>
+    <string name="last_name">姓氏</string>
+    <string name="username">用户名</string>
+    <string name="date_of_birth">出生日期</string>
+    <string name="select_date">选择日期</string>
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="first_name_required">名字是必填项</string>
+    <string name="last_name_required">姓氏是必填项</string>
+    <string name="username_required">用户名是必填项</string>
+    <string name="date_of_birth_required">出生日期是必填项</string>
+    <string name="data_saved">数据保存成功并已验证电子邮件。</string>
+    <string name="verify_email">请验证您的电子邮件 %1$s</string>
+
+    <!-- Sign Up -->
+    <string name="sign_up_title">注册</string>
+    <string name="email_label">电子邮件地址</string>
+    <string name="password_label">密码</string>
+    <string name="confirm_password_label">确认密码</string>
+    <string name="create_account">创建账户</string>
+    <string name="already_have_account">已经有账号？登录</string>
+
+    <!-- Profile Settings -->
+    <string name="remove_photo_profile">移除个人照片</string>
+    <string name="add_photo_profile">添加个人照片</string>
+    <string name="enter_first_name">输入名字</string>
+    <string name="enter_last_name">输入姓氏</string>
+    <string name="enter_username">输入用户名</string>
+    <string name="enter_date_of_birth">输入出生日期</string>
+    <string name="profile_updated">个人资料已更新</string>
+    <string name="profile_updated_failed">个人资料更新失败</string>
+    <string name="save_changes">保存更改</string>
+    <string name="user_not_authenticated">用户未认证</string>
+
+    <!-- Homepage -->
+    <string name="no_email_available">没有可用的电子邮件</string>
+    <string name="no_user_information_available">没有可用的用户信息</string>
+    <string name="activity">活动</string>
+    <string name="about_us">关于我们</string>
+    <string name="log_out">登出</string>
+    <string name="close">关闭</string>
+    <string name="build">构建</string>
+    <string name="create_your_own_setup">创建您自己的设置</string>
+    <string name="trending">趋势</string>
+    <string name="find_popular_part">查找热门部件</string>
+    <string name="benchmarking">基准测试</string>
+    <string name="compare">比较</string>
+    <string name="search">搜索</string>
+</resources>

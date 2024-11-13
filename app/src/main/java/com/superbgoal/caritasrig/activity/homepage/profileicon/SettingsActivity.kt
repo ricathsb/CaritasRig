@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.HomeActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsActivity
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import java.util.*
@@ -71,11 +72,11 @@ fun SettingsScreen() {
     if (showDialog) {
         LanguageSelectionDialog(
             onDismiss = { showDialog = false },
-            onLanguageSelected = { language ->
-                setLocale(context, language)
-                // Restart activity to apply changes
+            onLanguageSelected = { languageCode ->
+                setLocale(context, languageCode)
+                goToHomeActivity(context)
                 context.startActivity(Intent(context, SettingsActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                 })
             }
         )
@@ -113,6 +114,8 @@ fun LanguageSelectionDialog(onDismiss: () -> Unit, onLanguageSelected: (String) 
                 LanguageOption("Spanish", "es", onDismiss, onLanguageSelected)
                 Spacer(modifier = Modifier.height(8.dp))
                 LanguageOption("Japanese", "ja", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("China", "zh", onDismiss, onLanguageSelected)
             }
         }
     )
@@ -164,3 +167,8 @@ fun getSavedLanguage(context: Context): String {
     return prefs.getString("app_language", "en") ?: "en"
 }
 
+fun goToHomeActivity(context: Context) {
+    val intent = Intent(context, HomeActivity::class.java)
+    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+    context.startActivity(intent)
+}

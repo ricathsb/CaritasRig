@@ -31,6 +31,9 @@ class RegisterViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
+    private val _showDatePicker = MutableStateFlow(false)
+    val showDatePicker: StateFlow<Boolean> get() = _showDatePicker
+
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     // Update functions for each state value
@@ -56,6 +59,10 @@ class RegisterViewModel : ViewModel() {
 
     fun setLoading(isLoading: Boolean) {
         _isLoading.value = isLoading
+    }
+
+    fun updateShowDatePicker(showDatePicker: Boolean) {
+        _showDatePicker.value = showDatePicker
     }
 
     fun signOut(context: Context) {
