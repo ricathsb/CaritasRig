@@ -47,6 +47,10 @@
         <activity android:name=".activity.homepage.build.VideoCardActivity"/>
         <activity android:name=".activity.homepage.profileicon.SettingsActivity"/>
         <activity android:name=".activity.homepage.profileicon.profilesettings.ProfileSettingsActivity"/>
+        <activity android:name=".activity.homepage.build.CpuCoolerActivity"/>
+        <activity android:name=".activity.homepage.build.HeadphoneActivity"/>
+        <activity android:name=".activity.homepage.build.KeyboardActivity"/>
+        <activity android:name=".activity.homepage.build.MouseActivity"/>
     </application>
 
 </manifest>

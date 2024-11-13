@@ -38,9 +38,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,10 +62,12 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsActivity
+import com.superbgoal.caritasrig.data.fetchBuildTitle
 import com.superbgoal.caritasrig.data.model.User
 
 class HomeActivity : ComponentActivity() {
     private val viewModel: HomeViewModel by viewModels()
+    val buildIds = listOf("-OBaxPNOSG80fLpQesPy", "-OBaxa-MFHYer51R-Tkl", "-OBaxcgPam9bhIyfOLng")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +102,6 @@ class HomeActivity : ComponentActivity() {
 fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val isProfileDialogVisible by viewModel.isProfileDialogVisible.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -105,10 +109,9 @@ fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
         Image(
             painter = painterResource(id = R.drawable.bg2),
             contentDescription = "Background Image",
-            contentScale = ContentScale.Crop, // Adjusts how the image scales
+            contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-
         // Foreground content
         Column(
             modifier = Modifier
@@ -141,9 +144,11 @@ fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
                 onLogout = onLogout,
                 showDialog = isProfileDialogVisible,
                 toggleDialog = viewModel::toggleProfileDialog
-            )        }
+            )
+        }
     }
 }
+
 
 @Composable
 fun ProfileIcon(user: User?, onLogout: () -> Unit, showDialog: Boolean, toggleDialog: () -> Unit) {
@@ -316,6 +321,8 @@ fun TransparentIconButton(
 @Composable
 fun UserProfile(viewModel: HomeViewModel) {
     val context = LocalContext.current
+    val buildIds = listOf("-OBaxPNOSG80fLpQesPy", "-OBaxa-MFHYer51R-Tkl", "-OBaxcgPam9bhIyfOLng")
+
 
     Column(
         modifier = Modifier
@@ -515,6 +522,8 @@ fun UserProfile(viewModel: HomeViewModel) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+        BuildList(buildIds = buildIds)
+
     }
 }
 
@@ -541,4 +550,38 @@ fun ErrorMessage(message: String) {
 fun getCurrentUserEmail(): String? {
     val currentUser = FirebaseAuth.getInstance().currentUser
     return currentUser?.email
+}
+
+@Composable
+fun BuildCard(buildId: String) {
+    var buildTitle by remember { mutableStateOf("Loading...") }
+
+    // Call the fetchBuildTitle function to get the title
+    LaunchedEffect(buildId) {
+        fetchBuildTitle(buildId) { title ->
+            buildTitle = title ?: "Title not found"
+        }
+    }
+
+    Card(
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Text(
+            text = buildTitle,
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+@Composable
+fun BuildList(buildIds: List<String>) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        buildIds.forEach { buildId ->
+            BuildCard(buildId = buildId)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
 }

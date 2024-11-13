@@ -5,23 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -44,16 +30,20 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.functions.auth.ComponentCard
 
 class InternalHardDriveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val buildTitle = BuildManager.getBuildTitle()
+
 
         // Mengisi data dari file JSON untuk InternalHardDrive
         val typeToken = object : TypeToken<List<InternalHardDrive>>() {}.type
         val internalHardDrives: List<InternalHardDrive> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.internalharddrive // Pastikan file JSON ini ada
+            resourceId = R.raw.internalharddrive
         )
 
         setContent {
@@ -83,7 +73,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 10.dp) // Padding top dan bottom 16 dp
+                                        .padding(top = 16.dp, bottom = 10.dp)
                                 ) {
                                     Text(
                                         text = "Part Pick",
@@ -100,12 +90,11 @@ class InternalHardDriveActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigasi kembali ke BuildActivity
                                         val intent = Intent(this@InternalHardDriveActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
-                                    modifier = Modifier.padding(start = 20.dp, top = 10.dp) // Padding kiri dan atas 20 dp
+                                    modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_back),
@@ -118,7 +107,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                                     onClick = {
                                         // Aksi untuk tombol filter
                                     },
-                                    modifier = Modifier.padding(end = 20.dp, top = 10.dp) // Padding kanan dan atas 20 dp
+                                    modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_filter),
@@ -148,65 +137,21 @@ class InternalHardDriveActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(internalHardDrives) { hardDrive ->
-                InternalHardDriveCard(hardDrive)
-            }
-        }
-    }
-
-    @Composable
-    fun InternalHardDriveCard(hardDrive: InternalHardDrive) {
-        Card(
-            elevation = 4.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            backgroundColor = Color(0xFF3E2C47) // Warna ungu gelap untuk kartu
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = hardDrive.name,
-                        style = MaterialTheme.typography.h6,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
-                        style = MaterialTheme.typography.body2,
-                        color = Color.White
-                    )
-                }
-                Button(
-                    onClick = {
+                // Menggunakan ComponentCard untuk setiap item hard drive
+                ComponentCard(
+                    title = hardDrive.name,
+                    details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
+                    onAddClick = {
                         val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
                         val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         database.child("users").child(currentUser?.uid.toString()).child("build").child("internalHardDrive").setValue(hardDrive.name)
 
-//                        val intent = Intent().apply {
-//                            putExtra("internalHardDrive", hardDrive)
-//                        }
                         setResult(RESULT_OK, intent)
                         finish()
-                    },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF6E5768)) // Warna tombol
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_btn),
-                        contentDescription = "Add Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add", color = Color.White)
-                }
+                    }
+                )
             }
         }
     }
 }
-

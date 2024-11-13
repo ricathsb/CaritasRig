@@ -60,9 +60,6 @@ fun SettingsScreen() {
             SettingOption(stringResource(id = R.string.change_language)) {
                 showDialog = true // Show language selection dialog
             }
-            SettingOption(stringResource(id = R.string.change_theme)) {
-                // Navigate to theme settings or perform action
-            }
             SettingOption(stringResource(id = R.string.profile_settings)) {
                 context.startActivity(Intent(context, ProfileSettingsActivity::class.java))
             }
@@ -172,3 +169,6 @@ fun goToHomeActivity(context: Context) {
     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
     context.startActivity(intent)
 }
+
+
+

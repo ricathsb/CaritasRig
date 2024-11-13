@@ -5,23 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -44,16 +30,20 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.VideoCard
+import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.functions.auth.ComponentCard
 
 class VideoCardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val buildTitle = BuildManager.getBuildTitle()
 
-        // Mengisi data dari file JSON untuk VideoCard
+
+        // Load video cards from JSON resource
         val typeToken = object : TypeToken<List<VideoCard>>() {}.type
         val videoCards: List<VideoCard> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.videocard // Pastikan file JSON ini ada
+            resourceId = R.raw.videocard // Ensure this JSON file exists
         )
 
         setContent {
@@ -61,7 +51,7 @@ class VideoCardActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Menambahkan Image sebagai background
+                    // Background image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -69,7 +59,7 @@ class VideoCardActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Konten utama dengan TopAppBar dan VideoCardList
+                    // Main content with TopAppBar and VideoCardList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -100,7 +90,6 @@ class VideoCardActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigasi kembali ke BuildActivity
                                         val intent = Intent(this@VideoCardActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
@@ -116,7 +105,7 @@ class VideoCardActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Aksi untuk tombol filter
+                                        // Filter action (not implemented)
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -128,7 +117,7 @@ class VideoCardActivity : ComponentActivity() {
                             }
                         )
 
-                        // Konten VideoCardList
+                        // VideoCardList content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
@@ -148,63 +137,18 @@ class VideoCardActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(videoCards) { videoCard ->
-                VideoCardCard(videoCard)
-            }
-        }
-    }
-
-    @Composable
-    fun VideoCardCard(videoCard: VideoCard) {
-        Card(
-            elevation = 4.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            backgroundColor = Color(0xFF3E2C47) // Warna ungu gelap untuk kartu
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = videoCard.name,
-                        style = MaterialTheme.typography.h6,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
-                        style = MaterialTheme.typography.body2,
-                        color = Color.White
-                    )
-                }
-                Button(
-                    onClick = {
+                // Use ComponentCard for each video card
+                ComponentCard(
+                    title = videoCard.name,
+                    details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
+                    onAddClick = {
+                        // Add selected video card to database
                         val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
                         val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
                         val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("VideoCard").setValue(videoCard.name)
-
-                        val intent = Intent().apply {
-                            putExtra("videoCard", videoCard)
-                        }
-                        setResult(RESULT_OK, intent)
-                        finish()
-                    },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF6E5768))
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_btn),
-                        contentDescription = "Add Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add", color = Color.White)
-                }
+                        database.child("users").child(currentUser?.uid.toString()).child("build").child("videoCard").setValue(videoCard.name)
+                    }
+                )
             }
         }
     }

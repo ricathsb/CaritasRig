@@ -5,7 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -29,21 +36,28 @@ import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Motherboard
+import com.superbgoal.caritasrig.data.model.Keyboard
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 
-class MotherboardActivity : ComponentActivity() {
+class KeyboardActivity : ComponentActivity() {
+    private lateinit var database: DatabaseReference
+    val buildTitle = BuildManager.getBuildTitle()
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val buildTitle = BuildManager.getBuildTitle()
 
+        // Initialize Firebase database reference
+        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
+        database = FirebaseDatabase.getInstance(databaseUrl).reference
+        val currentUser = FirebaseAuth.getInstance().currentUser
 
         // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<Motherboard>>() {}.type
-        val motherboards: List<Motherboard> = loadItemsFromResources(
+        val typeToken = object : TypeToken<List<Keyboard>>() {}.type
+        val keyboards: List<Keyboard> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.motherboard // Ensure this JSON file exists in resources
+            resourceId = R.raw.keyboard
         )
 
         setContent {
@@ -51,7 +65,7 @@ class MotherboardActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Set background image
+                    // Background Image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -59,7 +73,7 @@ class MotherboardActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and MotherboardList
+                    // Main content with TopAppBar and Keyboard List
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -81,7 +95,7 @@ class MotherboardActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Motherboard",
+                                        text = "Keyboards",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -90,7 +104,8 @@ class MotherboardActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        val intent = Intent(this@MotherboardActivity, BuildActivity::class.java)
+                                        // Navigate back to BuildActivity
+                                        val intent = Intent(this@KeyboardActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -117,12 +132,12 @@ class MotherboardActivity : ComponentActivity() {
                             }
                         )
 
-                        // Motherboard List content
+                        // Keyboard List content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            MotherboardList(motherboards)
+                            KeyboardList(keyboards, currentUser?.uid.toString())
                         }
                     }
                 }
@@ -131,22 +146,17 @@ class MotherboardActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MotherboardList(motherboards: List<Motherboard>) {
+    fun KeyboardList(keyboards: List<Keyboard>, userId: String) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(motherboards) { motherboard ->
-                // Use ComponentCard for each motherboard
+            items(keyboards) { keyboardItem ->
                 ComponentCard(
-                    title = motherboard.name,
-                    details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
+                    title = keyboardItem.name,
+                    details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
                     onAddClick = {
-                        // Add selected motherboard to database
-                        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-                        val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("motherboard").setValue(motherboard.name)
+                        database.child("users").child(userId).child("build").child("keyboard").setValue(keyboardItem.name)
                     }
                 )
             }

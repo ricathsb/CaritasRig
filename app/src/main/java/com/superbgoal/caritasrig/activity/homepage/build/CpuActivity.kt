@@ -2,32 +2,14 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,15 +26,14 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Processor
-
-
+import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.functions.auth.ComponentCard
 
 class CpuActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Define the type explicitly for Gson TypeToken
-        object : TypeToken<List<Processor>>() {}.type
+        // Load processors from resources
         val processors: List<Processor> = loadItemsFromResources(
             context = this,
             resourceId = R.raw.processor
@@ -63,7 +44,7 @@ class CpuActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Menambahkan Image sebagai background
+                    // Set background image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -71,19 +52,21 @@ class CpuActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Konten utama dengan TopAppBar dan ProcessorList
+                    // Main content with TopAppBar and ProcessorList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
                             contentColor = Color.White,
                             elevation = 0.dp,
-                            modifier = Modifier.fillMaxWidth().height(100.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
                             title = {
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 10.dp) // Padding top dan bottom 16 dp
+                                        .padding(top = 16.dp, bottom = 10.dp)
                                 ) {
                                     Text(
                                         text = "Part Pick",
@@ -100,12 +83,11 @@ class CpuActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigasi kembali ke BuildActivity
                                         val intent = Intent(this@CpuActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
-                                    modifier = Modifier.padding(start = 20.dp, top = 10.dp) // Padding kiri dan atas 20 dp
+                                    modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_back),
@@ -116,9 +98,9 @@ class CpuActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Aksi untuk tombol filter
+                                        // Action for filter button (if needed)
                                     },
-                                    modifier = Modifier.padding(end = 20.dp, top = 10.dp) // Padding kanan dan atas 20 dp
+                                    modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_filter),
@@ -128,7 +110,7 @@ class CpuActivity : ComponentActivity() {
                             }
                         )
 
-                        // Konten ProcessorList
+                        // Processor List content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
@@ -148,65 +130,42 @@ class CpuActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(processors) { processor ->
-                ProcessorCard(processor)
-            }
-        }
-    }
-
-    @Composable
-    fun ProcessorCard(processor: Processor) {
-        Card(
-            elevation = 4.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            backgroundColor = Color(0xFF3E2C47) // Warna ungu gelap untuk kartu
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = processor.name,
-                        style = MaterialTheme.typography.h6,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "${processor.core_count} cores @ ${processor.core_clock} GHz Up To ${processor.boost_clock} GHz",
-                        style = MaterialTheme.typography.body2,
-                        color = Color.White
-                    )
-                }
-                Button(
-                    onClick = {
+                // Use ComponentCard for each processor
+                ComponentCard(
+                    title = processor.name,
+                    details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
+                    onAddClick = {
+                        val currentUser = FirebaseAuth.getInstance().currentUser
                         val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
                         val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("processor").setValue(processor.name)
 
-                        val intent = Intent().apply {
-                            putExtra("processor", processor)
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Store the selected processor under the provided build title in Firebase
+                            database.child("users")
+                                .child(currentUser?.uid.toString())
+                                .child("build")
+                                .child(title)  // Use the provided build title
+                                .child("cpu")  // Store under the "cpu" field within this build
+                                .setValue(processor.name)  // Store the processor name
+                                .addOnSuccessListener {
+                                    // Optional: Success message or handling
+                                }
+                                .addOnFailureListener { exception ->
+                                    // Handle the error if storing fails
+                                    Log.e("BuildActivity", "Failed to store CPU under build title: ${exception.message}")
+                                }
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("BuildActivity", "Build title is null; unable to store CPU.")
                         }
-                        setResult(RESULT_OK, intent)
-                        finish()
-                    },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF6E5768)) // Warna tombol
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_btn),
-                        contentDescription = "Add Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add", color = Color.White)
-                }
+
+                    }
+                )
             }
         }
     }
 }
-

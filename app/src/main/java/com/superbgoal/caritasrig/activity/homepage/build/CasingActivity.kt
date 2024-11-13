@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -9,19 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -44,13 +38,22 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Casing
-import com.superbgoal.caritasrig.data.model.Processor
-
-
+import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class CasingActivity : ComponentActivity() {
+    private lateinit var database: DatabaseReference
+    val buildTitle = BuildManager.getBuildTitle()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Firebase database reference
+        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
+        database = FirebaseDatabase.getInstance(databaseUrl).reference
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val buildTitle = BuildManager.getBuildTitle()
 
         // Define the type explicitly for Gson TypeToken
         val typeToken = object : TypeToken<List<Casing>>() {}.type
@@ -64,7 +67,7 @@ class CasingActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Menambahkan Image sebagai background
+                    // Background Image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -72,7 +75,7 @@ class CasingActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Konten utama dengan TopAppBar dan CasingList
+                    // Main content with TopAppBar and CasingList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -86,7 +89,7 @@ class CasingActivity : ComponentActivity() {
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 10.dp) // Padding top dan bottom 16 dp
+                                        .padding(top = 16.dp, bottom = 10.dp)
                                 ) {
                                     Text(
                                         text = "Part Pick",
@@ -103,12 +106,12 @@ class CasingActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigasi kembali ke BuildActivity
+                                        // Navigate back to BuildActivity
                                         val intent = Intent(this@CasingActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
-                                    modifier = Modifier.padding(start = 20.dp, top = 10.dp) // Padding kiri dan atas 20 dp
+                                    modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_back),
@@ -119,9 +122,9 @@ class CasingActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Aksi untuk tombol filter
+                                        // Action for filter button
                                     },
-                                    modifier = Modifier.padding(end = 20.dp, top = 10.dp) // Padding kanan dan atas 20 dp
+                                    modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_filter),
@@ -131,12 +134,12 @@ class CasingActivity : ComponentActivity() {
                             }
                         )
 
-                        // Konten CasingList
+                        // CasingList content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            CasingList(casing)
+                            CasingList(casing, currentUser?.uid.toString())
                         }
                     }
                 }
@@ -145,69 +148,37 @@ class CasingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun CasingList(casing: List<Casing>) {
+    fun CasingList(casing: List<Casing>, userId: String) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(casing) { casingItem ->
-                CasingCard(casingItem)
-            }
-        }
-    }
-
-    @Composable
-    fun CasingCard(casing: Casing) {
-        Card(
-            elevation = 4.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            backgroundColor = Color(0xFF3E2C47) // Warna ungu gelap untuk kartu
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = casing.name,
-                        style = MaterialTheme.typography.h6,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "${casing.type} | ${casing.color} | PSU: ${casing.psu ?: "Not included"} | Volume: ${casing.externalVolume} L | 3.5\" Bays: ${casing.internal35Bays}",
-                        style = MaterialTheme.typography.body2,
-                        color = Color.White
-                    )
-                }
-                Button(
-                    onClick = {
-                        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-                        val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("casing").setValue(casing.name)
-
-//                        val intent = Intent().apply {
-//                            putExtra("casing", casing)
-//                        }
-                        setResult(RESULT_OK, intent)
-                        finish()
-                    },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF6E5768)) // Warna tombol
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_btn),
-                        contentDescription = "Add Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add", color = Color.White)
-                }
+                Log.d("CasingActivity", "Rendering casing item: ${casingItem.name}")
+                ComponentCard(
+                    title = casingItem.name,
+                    details = "${casingItem.type} | ${casingItem.color} | PSU: ${casingItem.psu ?: "Not included"} | Volume: ${casingItem.externalVolume} L | 3.5\" Bays: ${casingItem.internal35Bays}",
+                    onAddClick = {
+                        Log.d("CasingActivity", "Selected Casing: ${casingItem.name}")
+                        buildTitle?.let { title ->
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "casing",
+                                componentName = casingItem.name,
+                                onSuccess = {
+                                    Log.d("CasingActivity", "Casing saved successfully")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("CasingActivity", errorMessage)
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("BuildManager", "Build title is null")
+                        }
+                    }
+                )
             }
         }
     }

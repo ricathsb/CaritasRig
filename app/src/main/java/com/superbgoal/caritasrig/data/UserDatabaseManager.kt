@@ -53,7 +53,7 @@ fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
             Log.e("loginStatus", "Failed to reload user data: ${reloadTask.exception?.message}")
             callback(false)  // Return false if reloading user data failed
         }
-    }
+       }
 }
 
 
@@ -172,6 +172,35 @@ fun updateUserProfileData(
         })
 }
 
+fun getDatabaseReference(): DatabaseReference {
+    val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
+    return FirebaseDatabase.getInstance(databaseUrl).reference
+}
+
+fun saveBuildTitle(userId: String, buildTitle: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    val database = getDatabaseReference()
+    database.child("users").child(userId).child("builds")
+        .push() // This creates a new unique key under "builds"
+        .setValue(buildTitle)
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to save build title: ${error.message}")
+        }
+}
+
+fun fetchBuildTitle(buildId: String, onResult: (String?) -> Unit) {
+    val dbRef = getDatabaseReference()
+    val userBuildRef = dbRef.child("users/VNplmRcbZgOw52hrVutgg50enPl1/builds").child(buildId)
+
+    userBuildRef.get().addOnSuccessListener { snapshot ->
+        val buildTitle = snapshot.value as? String
+        onResult(buildTitle)
+    }.addOnFailureListener {
+        onResult(null) // Handle the error or set default
+    }
+}
 
 
 

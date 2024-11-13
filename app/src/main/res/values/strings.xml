@@ -70,4 +70,8 @@
     <string name="benchmarking">Benchmarking</string>
     <string name="compare">Compare</string>
     <string name="search">Search</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="system">System\n</string>
+    <string name="select_theme">Select Theme</string>
 </resources>

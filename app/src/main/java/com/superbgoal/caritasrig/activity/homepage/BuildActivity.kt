@@ -2,6 +2,8 @@ package com.superbgoal.caritasrig.activity.homepage
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -20,6 +22,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.TextField
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -30,9 +34,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,83 +53,43 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.build.CasingActivity
 import com.superbgoal.caritasrig.activity.homepage.build.CpuActivity
+import com.superbgoal.caritasrig.activity.homepage.build.CpuCoolerActivity
+import com.superbgoal.caritasrig.activity.homepage.build.HeadphoneActivity
 import com.superbgoal.caritasrig.activity.homepage.build.InternalHardDriveActivity
+import com.superbgoal.caritasrig.activity.homepage.build.KeyboardActivity
 import com.superbgoal.caritasrig.activity.homepage.build.MemoryActivity
 import com.superbgoal.caritasrig.activity.homepage.build.MotherboardActivity
+import com.superbgoal.caritasrig.activity.homepage.build.MouseActivity
 import com.superbgoal.caritasrig.activity.homepage.build.PowerSupplyActivity
 import com.superbgoal.caritasrig.activity.homepage.build.VideoCardActivity
-import com.superbgoal.caritasrig.functions.auth.ProcessorInfo
-import com.superbgoal.caritasrig.functions.auth.VideoCardInfo
-import com.superbgoal.caritasrig.data.model.Processor
-import com.superbgoal.caritasrig.data.model.VideoCard
+import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.saveBuildTitle
 
 class BuildActivity : ComponentActivity() {
-    private var processor: Processor? = null
-    private var videoCard: VideoCard? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-            BuildScreen(processor, videoCard, onAddComponentClick = { component ->
-                when (component) {
-                    "CPU" -> startActivityForResult(Intent(this, CpuActivity::class.java), REQUEST_CODE_CPU)
-                    "GPU" -> startActivityForResult(Intent(this, VideoCardActivity::class.java), REQUEST_CODE_GPU)
-                    "Case" -> startActivity(Intent(this, CasingActivity::class.java))
-                    "Motherboard" -> startActivity(Intent(this, MotherboardActivity::class.java))
-                    "RAM" -> startActivity(Intent(this, MemoryActivity::class.java))
-                    "Storage" -> startActivity(Intent(this, InternalHardDriveActivity::class.java))
-                    "Power Supply" -> startActivity(Intent(this, PowerSupplyActivity::class.java))
-                }
-            })
+
+            BuildScreen()
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (resultCode == RESULT_OK) {
-            data?.let {
-                when (requestCode) {
-                    REQUEST_CODE_CPU -> processor = it.getParcelableExtra("processor")
-                    REQUEST_CODE_GPU -> videoCard = it.getParcelableExtra("videoCard")
-                }
-            }
-            setContent {
-                BuildScreen(processor, videoCard, onAddComponentClick = { component ->
-                    when (component) {
-                        "CPU" -> startActivityForResult(Intent(this, CpuActivity::class.java), REQUEST_CODE_CPU)
-                        "GPU" -> startActivityForResult(Intent(this, VideoCardActivity::class.java), REQUEST_CODE_GPU)
-                        "Case" -> startActivity(Intent(this, CasingActivity::class.java))
-                        "Motherboard" -> startActivity(Intent(this, MotherboardActivity::class.java))
-                        "RAM" -> startActivity(Intent(this, MemoryActivity::class.java))
-                        "Storage" -> startActivity(Intent(this, InternalHardDriveActivity::class.java))
-                        "Power Supply" -> startActivity(Intent(this, PowerSupplyActivity::class.java))
-                    }
-                })
-            }
-        }
-    }
-
-    companion object {
-        const val REQUEST_CODE_CPU = 1
-        const val REQUEST_CODE_GPU = 2
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildScreen(
-    processor: Processor?,
-    videoCard: VideoCard?,
-    onAddComponentClick: (String) -> Unit
-) {
+fun BuildScreen() {
+    getDatabaseReference()
     val context = LocalContext.current
+    var showDialog by remember { mutableStateOf((BuildManager.getBuildTitle() ?: "").isEmpty()) }
+    var dialogText by remember { mutableStateOf("") }
 
+    // Main UI
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -139,8 +108,7 @@ fun BuildScreen(
                     navigationIcon = {
                         IconButton(
                             onClick = {
-                                val intent = Intent(context, HomeActivity::class.java)
-                                context.startActivity(intent)
+                                context.startActivity(Intent(context, HomeActivity::class.java))
                             },
                             modifier = Modifier
                                 .padding(start = 30.dp, top = 60.dp)
@@ -156,16 +124,18 @@ fun BuildScreen(
                     actions = {
                         IconButton(
                             onClick = {
-                                // Add save function here
+                                // Show the dialog and clear the input field for a new title
+                                showDialog = true
+                                dialogText = "" // Clear the input for a new entry
                             },
                             modifier = Modifier
                                 .padding(end = 30.dp, top = 60.dp)
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_save),
-                                contentDescription = "Save",
-                                modifier = Modifier.size(80.dp),
-                                tint = Color.White
+                                contentDescription = "Reset Build Title",
+                                tint = Color.White,
+                                modifier = Modifier.size(80.dp)
                             )
                         }
                     },
@@ -185,28 +155,172 @@ fun BuildScreen(
                     .padding(16.dp, 0.dp, 16.dp, 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item { ComponentCard(title = "CPU", processor = processor, onAddClick = { onAddComponentClick("CPU") }) }
-                item { ComponentCard(title = "Case", onAddClick = { onAddComponentClick("Case") }) }
-                item { ComponentCard(title = "GPU", videoCard = videoCard, onAddClick = { onAddComponentClick("GPU") }) }
-                item { ComponentCard(title = "Motherboard", onAddClick = { onAddComponentClick("Motherboard") }) }
-                item { ComponentCard(title = "RAM", onAddClick = { onAddComponentClick("RAM") }) }
-                item { ComponentCard(title = "Storage", onAddClick = { onAddComponentClick("Storage") }) }
-                item { ComponentCard(title = "Power Supply", onAddClick = { onAddComponentClick("Power Supply") }) }
+                item {
+                    ComponentCard(
+                        title = "CPU",
+                        onClick = {
+                            val intent = Intent(context, CpuActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "Case",
+                        onClick = {
+                            val intent = Intent(context, CasingActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "GPU",
+                        onClick = {
+                            val intent = Intent(context, VideoCardActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "Motherboard",
+                        onClick = {
+                            val intent = Intent(context, MotherboardActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "RAM",
+                        onClick = {
+                            val intent = Intent(context, MemoryActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "Storage",
+                        onClick = {
+                            val intent = Intent(context, InternalHardDriveActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "Power Supply",
+                        onClick = {
+                            val intent = Intent(context, PowerSupplyActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "CPU Cooler",
+                        onClick = {
+                            val intent = Intent(context, CpuCoolerActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "Headphone",
+                        onClick = {
+                            val intent = Intent(context, HeadphoneActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "Keyboard",
+                        onClick = {
+                            val intent = Intent(context, KeyboardActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    ComponentCard(
+                        title = "Mouse",
+                        onClick = {
+                            val intent = Intent(context, MouseActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
             }
         }
     }
+
+    // Show dialog only if showDialog is true
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Do nothing to prevent dismissing the dialog */ },
+            title = {
+                Text(text = "Enter Build Title")
+            },
+            text = {
+                Column {
+                    Text(text = "Please enter a title for your build:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = dialogText,
+                        onValueChange = { dialogText = it },
+                        placeholder = { Text(text = "Build Title") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (dialogText.isNotEmpty()) {
+                            saveBuildTitle(
+                                userId = Firebase.auth.currentUser?.uid ?: "",
+                                buildTitle = dialogText,
+                                onSuccess = {
+                                    showDialog = false
+                                    BuildManager.setBuildTitle(dialogText)
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("BuildScreen", errorMessage)
+                                }
+                            )
+                        }
+                    },
+                    enabled = dialogText.isNotEmpty()
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        // Dismiss the dialog and navigate to HomeActivity
+                        context.startActivity(Intent(context, HomeActivity::class.java))
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
+
 
 
 @Composable
 fun ComponentCard(
     title: String,
-    processor: Processor? = null,
-    videoCard: VideoCard? = null,
-    onAddClick: () -> Unit
+    onClick: () -> Unit // Menambahkan parameter onClick
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -238,20 +352,14 @@ fun ComponentCard(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
                 ) {
-                    if (title == "CPU" && processor != null) {
-                        ProcessorInfo(processor)
-                    }
-
-                    if (title == "GPU" && videoCard != null) {
-                        VideoCardInfo(videoCard)
-                    }
-
                     Spacer(modifier = Modifier.height(5.dp))
 
                     Button(
-                        onClick = { onAddClick() },
+                        onClick = { onClick() }, // Menambahkan onClick ke Button
                         modifier = Modifier
                             .background(Color.Transparent),
                         elevation = ButtonDefaults.buttonElevation(0.dp)
@@ -271,3 +379,4 @@ fun ComponentCard(
         }
     }
 }
+
