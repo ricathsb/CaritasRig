@@ -240,10 +240,6 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             )
         }
 
-
-
-
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -302,7 +298,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
         )
 
         var showDatePicker by remember { mutableStateOf(false) }
-        val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
+        val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
         fun Long.toLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -349,7 +345,10 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
                     }
                 }
             ) {
-                DatePicker(state = datePickerState)
+                DatePicker(
+                    state = datePickerState,
+                    showModeToggle = false // Disable mode toggle to ensure only date picking
+                )
             }
         }
 
