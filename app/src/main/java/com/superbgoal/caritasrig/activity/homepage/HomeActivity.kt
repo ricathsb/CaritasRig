@@ -2,20 +2,45 @@ package com.superbgoal.caritasrig.activity.homepage
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,17 +51,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
 import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
+import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsActivity
 import com.superbgoal.caritasrig.data.model.User
 
 class HomeActivity : ComponentActivity() {
+    private val viewModel: HomeViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,8 +79,10 @@ class HomeActivity : ComponentActivity() {
             return
         }
 
+        viewModel.loadUserData(userId)
+
         setContent {
-            HomeScreen(userId, onLogout = {
+            HomeScreen(viewModel = viewModel, onLogout = {
                 FirebaseAuth.getInstance().signOut()
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -65,29 +94,11 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(userId: String, onLogout: () -> Unit) {
-    var user by remember { mutableStateOf<User?>(null) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    // Firebase database initialization
-    val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-    val database = FirebaseDatabase.getInstance(databaseUrl).reference
-
-    LaunchedEffect(userId) {
-        database.child("users").child(userId).child("userData").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    user = snapshot.getValue(User::class.java)
-                } else {
-                    errorMessage = "User not found"
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                errorMessage = "Failed to load data: ${error.message}"
-            }
-        })
-    }
+fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
+    val user by viewModel.user.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val searchText by viewModel.searchText.collectAsStateWithLifecycle()
+    val isProfileDialogVisible by viewModel.isProfileDialogVisible.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Background Image
@@ -111,7 +122,7 @@ fun HomeScreen(userId: String, onLogout: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (user != null) {
-                    UserProfile()
+                    UserProfile(viewModel)
                 } else if (errorMessage != null) {
                     ErrorMessage(errorMessage!!)
                 } else {
@@ -125,27 +136,26 @@ fun HomeScreen(userId: String, onLogout: () -> Unit) {
                 .align(Alignment.TopEnd)
                 .padding(18.dp)
         ) {
-            ProfileIcon(user = user, onLogout = onLogout)
-        }
+            ProfileIcon(
+                user = user,
+                onLogout = onLogout,
+                showDialog = isProfileDialogVisible,
+                toggleDialog = viewModel::toggleProfileDialog
+            )        }
     }
 }
 
 @Composable
-fun ProfileIcon(user: User?, onLogout: () -> Unit) {
-    var showDialog by remember { mutableStateOf(false) }
-
-    IconButton(onClick = { showDialog = true }) {
+fun ProfileIcon(user: User?, onLogout: () -> Unit, showDialog: Boolean, toggleDialog: () -> Unit) {
+    IconButton(onClick = toggleDialog) {
         if (user?.profileImageUrl != null) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(user.profileImageUrl)
                     .build(),
                 contentDescription = "Profile Image",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
+                modifier = Modifier.size(40.dp).clip(CircleShape)
             )
-            Log.d("ProfileIcon", "Profile Image URL: ${user.profileImageUrl}")
         } else {
             Icon(
                 imageVector = Icons.Default.Person,
@@ -156,11 +166,7 @@ fun ProfileIcon(user: User?, onLogout: () -> Unit) {
     }
 
     if (showDialog) {
-        ProfileDialog(
-            user = user,
-            onDismissRequest = { showDialog = false },
-            onLogout = onLogout
-        )
+        ProfileDialog(user = user, onDismissRequest = toggleDialog, onLogout = onLogout)
     }
 }
 
@@ -169,110 +175,103 @@ fun ProfileDialog(user: User?, onDismissRequest: () -> Unit, onLogout: () -> Uni
     val email = remember { getCurrentUserEmail() }
     val context = LocalContext.current
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        containerColor = Color.Transparent,
-        textContentColor = MaterialTheme.colorScheme.onBackground,
-        modifier = Modifier,
-        text = {
-            Box(
-                modifier = Modifier.fillMaxWidth()
+    // Custom dialog layout
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = Color.White.copy(alpha = 0.9f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.Start
             ) {
-                // Close (X) button at the top right
-                IconButton(
-                    onClick = onDismissRequest,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                ) {
+                // Dialog content
+                if (user?.profileImageUrl != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(user.profileImageUrl)
+                            .build(),
+                        contentDescription = "Profile Image",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
                     Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close Dialog",
-                        tint = Color.Gray
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Default Profile Icon",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
                     )
                 }
 
-                // Dialog content
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color.White.copy(alpha = 0.7f),
-                    modifier = Modifier.fillMaxWidth().padding(top = 24.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        if (user?.profileImageUrl != null) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(user.profileImageUrl)
-                                    .build(),
-                                contentDescription = "Profile Image",
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .clip(CircleShape)
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Default Profile Icon",
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .clip(CircleShape)
-                            )
-                        }
+                Spacer(modifier = Modifier.height(8.dp))
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                user?.let {
+                    Text(it.username)
+                    Text(email ?: stringResource(id = R.string.no_email_available))
+                } ?: Text(stringResource(id = R.string.no_user_information_available))
 
-                        user?.let {
-                            Text(it.username)
-                            Text(email ?: stringResource(id = R.string.no_email_available))
-                        } ?: Text(stringResource(id = R.string.no_user_information_available))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                TransparentIconButton(
+                    text = stringResource(id = R.string.activity),
+                    icon = R.drawable.icons_activity,
+                    onClick = { /* Activity action */ }
+                )
 
-                        TransparentIconButton(
-                            text = stringResource(id = R.string.activity),
-                            icon = R.drawable.icons_activity,
-                            onClick = { /* Activity action */ }
-                        )
-
-                        TransparentIconButton(
-                            text = stringResource(id = R.string.settings),
-                            icon = R.drawable.icons_settings,
-                            onClick = {
-                                // Navigate to SettingsActivity
-                                val intent = Intent(context, SettingsActivity::class.java)
-                                context.startActivity(intent)
-                            }
-                        )
-
-                        TransparentIconButton(
-                            text = stringResource(id = R.string.about_us),
-                            icon = R.drawable.icons_aboutus,
-                            onClick = {
-                                val intent = Intent(context, AboutUsActivity::class.java)
-                                context.startActivity(intent)
-                            }
-                        )
-
-                        TransparentIconButton(
-                            text = stringResource(id = R.string.log_out),
-                            icon = R.drawable.icons_logout,
-                            onClick = onLogout
-                        )
+                TransparentIconButton(
+                    text = stringResource(id = R.string.settings),
+                    icon = R.drawable.icons_settings,
+                    onClick = {
+                        // Navigate to SettingsActivity
+                        val intent = Intent(context, SettingsActivity::class.java)
+                        context.startActivity(intent)
                     }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(id = R.string.close))
+                )
+
+                TransparentIconButton(
+                    text = stringResource(id = R.string.about_us),
+                    icon = R.drawable.icons_aboutus,
+                    onClick = {
+                        val intent = Intent(context, AboutUsActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                )
+
+                TransparentIconButton(
+                    text = stringResource(id = R.string.log_out),
+                    icon = R.drawable.icons_logout,
+                    onClick = onLogout
+                )
             }
         }
-    )
+
+        // Close button positioned at the top right corner
+        IconButton(
+            onClick = onDismissRequest,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close Dialog",
+                tint = Color.Gray
+            )
+        }
+    }
 }
+
 
 
 
@@ -315,8 +314,8 @@ fun TransparentIconButton(
 }
 
 @Composable
-fun UserProfile() {
-    val context = LocalContext.current // Memindahkan context ke dalam lingkup fungsi UserProfile
+fun UserProfile(viewModel: HomeViewModel) {
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -326,18 +325,17 @@ fun UserProfile() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Search Bar
-        var searchText by remember { mutableStateOf("") }
         TextField(
-            value = searchText,
-            onValueChange = { searchText = it },
+            value = viewModel.searchText.collectAsState().value,
+            onValueChange = { viewModel.updateSearchText(it) },
             label = { Text(stringResource(id = R.string.search)) },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = {
                 Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = null)
             },
             trailingIcon = {
-                if (searchText.isNotEmpty()) {
-                    IconButton(onClick = { searchText = "" }) {
+                if (viewModel.searchText.collectAsState().value.isNotEmpty()) {
+                    IconButton(onClick = { viewModel.updateSearchText("") }) {
                         Icon(Icons.Filled.Close, contentDescription = null)
                     }
                 }
@@ -348,7 +346,7 @@ fun UserProfile() {
 
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp) // Space between cards
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 // Build Card
@@ -357,7 +355,7 @@ fun UserProfile() {
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .clickable {
-                            context.startActivity(Intent(context, BuildActivity::class.java)) // Navigate to BuildActivity
+                            context.startActivity(Intent(context, BuildActivity::class.java))
                         },
                 ) {
                     Row(
@@ -462,15 +460,12 @@ fun UserProfile() {
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-//                        .clickable {
-//                            context.startActivity(Intent(context, AmdActivity::class.java))
-//                        }
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.amd_logo), // Replace with your AMD icon resource
+                        painter = painterResource(id = R.drawable.amd_logo),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(100.dp) // Set icon size to 20x20 dp
+                            .size(100.dp)
                             .padding(4.dp)
                     )
                 }
