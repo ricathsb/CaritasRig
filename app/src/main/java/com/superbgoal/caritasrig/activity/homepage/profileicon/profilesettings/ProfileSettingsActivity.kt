@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings
+package com.superbgoal.caritasrig.activity.homepage.profileicon
 
 import android.app.Activity
 import android.content.Intent
@@ -10,7 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,9 +27,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -46,7 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,23 +68,18 @@ import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.HomeActivity
-import com.superbgoal.caritasrig.activity.homepage.profileicon.ProfileSettingsViewModel
+import com.superbgoal.caritasrig.data.loadUserData
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.updateUserProfileData
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 
 class ProfileSettingsActivity : ComponentActivity() {
-    val profileSettingsViewModel: ProfileSettingsViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             CaritasRigTheme {
                 Scaffold {
-                    ProfileSettingsScreen(
-                        modifier = Modifier.padding(it),
-                        viewModel = profileSettingsViewModel
-
-                    )
+                    ProfileSettingsScreen(modifier = Modifier.padding(it))
                 }
             }
         }
@@ -96,17 +88,14 @@ class ProfileSettingsActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileSettingsScreen(
-    modifier: Modifier = Modifier,
-    viewModel: ProfileSettingsViewModel
-) {
-    val firstname by viewModel.firstname.collectAsState()
-    val lastname by viewModel.lastname.collectAsState()
-    val username by viewModel.username.collectAsState()
-    val dateOfBirth by viewModel.dateOfBirth.collectAsState()
-    val imageUri by viewModel.imageUri.collectAsState()
-    val imageUrl by viewModel.imageUrl.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+fun ProfileSettingsScreen(modifier: Modifier = Modifier) {
+    var firstname by remember { mutableStateOf("") }
+    var lastname by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
+    var dateBirth by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var imageUrl by remember { mutableStateOf("") }
 
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
@@ -114,22 +103,39 @@ fun ProfileSettingsScreen(
     val context = LocalContext.current
 
     val activity = context as? Activity
-    FirebaseAuth.getInstance().currentUser?.uid
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     // Load user data on screen creation
-//    LaunchedEffect(Unit) {
-//        if (userId != null) {
-//            viewModel.loadUserData(userId)
-//        } else {
-//            Toast.makeText(context, context.getString(R.string.user_not_authenticated), Toast.LENGTH_SHORT).show()
-//        }
-//    }
+    LaunchedEffect(Unit) {
+        if (userId != null) {
+            loadUserData(
+                userId = userId,
+                onUserDataLoaded = { user ->
+                    firstname = user.firstName
+                    lastname = user.lastName
+                    username = user.username
+                    dateBirth = user.dateOfBirth
+                    imageUrl = user.profileImageUrl ?: ""
+                    Log.d("ProfileSettingsScreen",imageUrl)
+                    // Load profile image if available
+                    if (!user.profileImageUrl.isNullOrEmpty()) {
+                        imageUri = Uri.parse(user.profileImageUrl)
+                    }
+                },
+                onFailure = { errorMessage ->
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            )
+        } else {
+            Toast.makeText(context, context.getString(R.string.user_not_authenticated), Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val imageCropLauncher = rememberLauncherForActivityResult(
         CropImageContract()
     ) { result ->
         if (result.isSuccessful) {
-            viewModel.updateImageUri(result.uriContent)
+            imageUri = result.uriContent
         } else {
             val exception = result.error
             Log.d("imageCropLauncher", "Error: ${exception?.message ?: "Unknown error"}")
@@ -155,8 +161,7 @@ fun ProfileSettingsScreen(
         modifier = modifier
             .background(backgroundColor)
             .fillMaxSize()
-            .padding(20.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -208,7 +213,7 @@ fun ProfileSettingsScreen(
                     .clickable {
                         if (imageUri != null) {
                             // Hanya klik pada ikon remove yang menghapus gambar
-                            viewModel.updateImageUri(null)
+                            imageUri = null
                         } else {
                             // Jika belum ada gambar, buka picker untuk memilih gambar
                             imagePickerLauncher.launch("image/*")
@@ -259,7 +264,7 @@ fun ProfileSettingsScreen(
         ) {
             TextField(
                 value = firstname,
-                onValueChange = { viewModel.updateFirstname(it) },
+                onValueChange = { firstname = it },
                 label = { Text(stringResource(id = R.string.first_name), color = textColor) },
                 placeholder = { Text(text = stringResource(id = R.string.enter_first_name), color = Color.Gray) },
                 colors = TextFieldDefaults.colors().copy(
@@ -275,7 +280,7 @@ fun ProfileSettingsScreen(
 
             TextField(
                 value = lastname,
-                onValueChange = { viewModel.updateLastname(it) },
+                onValueChange = { lastname = it },
                 label = { Text(stringResource(id = R.string.last_name), color = textColor) },
                 placeholder = { Text(text = stringResource(id = R.string.enter_last_name), color = Color.Gray) },
                 colors = TextFieldDefaults.colors().copy(
@@ -290,7 +295,7 @@ fun ProfileSettingsScreen(
 
         TextField(
             value = username,
-            onValueChange = { viewModel.updateUsername(it) },
+            onValueChange = { username = it },
             label = { Text(stringResource(id = R.string.username), color = textColor) },
             placeholder = { Text(text = stringResource(id = R.string.enter_username), color = Color.Gray) },
             colors = TextFieldDefaults.colors().copy(
@@ -303,8 +308,8 @@ fun ProfileSettingsScreen(
         )
 
         TextField(
-            value = dateOfBirth,
-            onValueChange = { viewModel.updateDateOfBirth(it) },
+            value = dateBirth,
+            onValueChange = { dateBirth = it },
             label = { Text(stringResource(id = R.string.date_of_birth), color = textColor) },
             placeholder = { Text(text = stringResource(id = R.string.enter_date_of_birth), color = Color.Gray) },
             colors = TextFieldDefaults.colors().copy(
@@ -324,26 +329,28 @@ fun ProfileSettingsScreen(
                     Toast.makeText(context, context.getString(R.string.last_name_required), Toast.LENGTH_SHORT).show()
                 } else if (username.isEmpty()) {
                     Toast.makeText(context, context.getString(R.string.username_required), Toast.LENGTH_SHORT).show()
-                } else if (dateOfBirth.isEmpty()) {
+                } else if (dateBirth.isEmpty()) {
                     Toast.makeText(context, context.getString(R.string.date_of_birth_required), Toast.LENGTH_SHORT).show()
                 } else {
-                    viewModel.setLoading(true)
+                    isLoading = true
+                    // Membuat objek User untuk disimpan
                     val user = User(
                         userId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
                         firstName = firstname,
                         lastName = lastname,
                         username = username,
-                        dateOfBirth = dateOfBirth,
-                        profileImageUrl = imageUrl
+                        dateOfBirth = dateBirth,
+                        profileImageUrl = imageUrl // Kirim imageUrl jika tidak ada gambar baru
                     )
 
+                    // Memanggil fungsi updateUserProfileData untuk mengunggah gambar dan menyimpan data
                     updateUserProfileData(
                         user = user,
                         imageUri = imageUri,
                         imageUrl = imageUrl,
                         context = context
                     ) { success ->
-                        viewModel.setLoading(false)
+                        isLoading = false
                         if (success) {
                             Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                             // Arahkan ke HomepageActivity setelah berhasil update data
