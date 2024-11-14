@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -39,6 +40,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Keyboard
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class KeyboardActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -156,9 +158,37 @@ class KeyboardActivity : ComponentActivity() {
                     title = keyboardItem.name,
                     details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
                     onAddClick = {
-                        database.child("users").child(userId).child("build").child("keyboard").setValue(keyboardItem.name)
+                        Log.d("KeyboardActivity", "Selected Keyboard: ${keyboardItem.name}")
+
+                        // Get the current user and build title
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan keyboard menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "keyboard", // Menyimpan keyboard dengan tipe "keyboard"
+                                componentName = keyboardItem.name, // Nama keyboard
+                                onSuccess = {
+                                    Log.d("KeyboardActivity", "Keyboard ${keyboardItem.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("KeyboardActivity", "Failed to store Keyboard under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("KeyboardActivity", "Build title is null; unable to store Keyboard.")
+                        }
                     }
                 )
+
             }
         }
     }

@@ -28,6 +28,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Processor
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class CpuActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,36 +137,35 @@ class CpuActivity : ComponentActivity() {
                     details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
                     onAddClick = {
                         val currentUser = FirebaseAuth.getInstance().currentUser
-                        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-                        val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
+                        val userId = currentUser?.uid.toString() // Dapatkan ID pengguna
 
                         // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
                         // Check if buildTitle is available before storing data in Firebase
                         buildTitle?.let { title ->
-                            // Store the selected processor under the provided build title in Firebase
-                            database.child("users")
-                                .child(currentUser?.uid.toString())
-                                .child("build")
-                                .child(title)  // Use the provided build title
-                                .child("cpu")  // Store under the "cpu" field within this build
-                                .setValue(processor.name)  // Store the processor name
-                                .addOnSuccessListener {
-                                    // Optional: Success message or handling
+                            // Menyimpan processor dengan memanggil saveComponent
+                                saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "cpu", // Menyimpan processor dengan tipe "cpu"
+                                componentName = processor.name, // Nama processor
+                                onSuccess = {
+                                    Log.d("BuildActivity", "Processor ${processor.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("BuildActivity", "Failed to store CPU under build title: ${errorMessage}")
                                 }
-                                .addOnFailureListener { exception ->
-                                    // Handle the error if storing fails
-                                    Log.e("BuildActivity", "Failed to store CPU under build title: ${exception.message}")
-                                }
+                            )
                         } ?: run {
                             // Handle the case where buildTitle is null
                             Log.e("BuildActivity", "Build title is null; unable to store CPU.")
                         }
-
                     }
                 )
+
             }
+
         }
     }
 }

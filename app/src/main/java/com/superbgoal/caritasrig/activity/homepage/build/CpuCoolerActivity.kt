@@ -40,6 +40,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.CpuCooler
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class CpuCoolerActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -156,13 +157,40 @@ class CpuCoolerActivity : ComponentActivity() {
                 Log.d("CpuCoolerActivity", "Rendering CPU Cooler: ${cpuCooler.name}")
                 ComponentCard(
                     title = cpuCooler.name,
-                    details = "${cpuCooler.color} | Noise Level: ${cpuCooler.noise_level} dBA | Fan Size: ${cpuCooler.rpm}  | RGB: ${ cpuCooler.rpm }",
+                    details = "${cpuCooler.color} | Noise Level: ${cpuCooler.noise_level} dBA | Fan Size: ${cpuCooler.rpm} RPM | RGB: ${cpuCooler.color}",
                     onAddClick = {
                         Log.d("CpuCoolerActivity", "Selected CPU Cooler: ${cpuCooler.name}")
-                        database.child("users").child(userId).child("build").child("cpuCooler").setValue(cpuCooler.name)
+
+                        // Get the current user and build title
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan CPU Cooler menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "cpuCooler", // Menyimpan CPU Cooler dengan tipe "cpuCooler"
+                                componentName = cpuCooler.name, // Nama CPU Cooler
+                                onSuccess = {
+                                    Log.d("CpuCoolerActivity", "CPU Cooler ${cpuCooler.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("CpuCoolerActivity", "Failed to store CPU Cooler under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("CpuCoolerActivity", "Build title is null; unable to store CPU Cooler.")
+                        }
                     }
                 )
+
             }
+
         }
-    }
-}
+}}

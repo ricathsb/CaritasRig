@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -32,6 +33,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Motherboard
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class MotherboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,13 +144,37 @@ class MotherboardActivity : ComponentActivity() {
                     title = motherboard.name,
                     details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
                     onAddClick = {
-                        // Add selected motherboard to database
-                        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-                        val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
+                        Log.d("MotherboardActivity", "Selected Motherboard: ${motherboard.name}")
+
+                        // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("motherboard").setValue(motherboard.name)
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan motherboard menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "motherboard", // Menyimpan motherboard dengan tipe "motherboard"
+                                componentName = motherboard.name, // Nama motherboard
+                                onSuccess = {
+                                    Log.d("MotherboardActivity", "Motherboard ${motherboard.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("MotherboardActivity", "Failed to store Motherboard under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("MotherboardActivity", "Build title is null; unable to store Motherboard.")
+                        }
                     }
                 )
+
             }
         }
     }

@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -39,6 +40,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Headphones
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class HeadphoneActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -156,9 +158,37 @@ class HeadphoneActivity : ComponentActivity() {
                     title = headphoneItem.name,
                     details = "Type: ${headphoneItem.type} | Color: ${headphoneItem.color} | Battery Life: ${headphoneItem.frequencyResponse} hrs",
                     onAddClick = {
-                        database.child("users").child(userId).child("build").child("headphone").setValue(headphoneItem.name)
+                        Log.d("HeadphoneActivity", "Selected Headphone: ${headphoneItem.name}")
+
+                        // Get the current user and build title
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan headphone menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "headphone", // Menyimpan headphone dengan tipe "headphone"
+                                componentName = headphoneItem.name, // Nama headphone
+                                onSuccess = {
+                                    Log.d("HeadphoneActivity", "Headphone ${headphoneItem.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("HeadphoneActivity", "Failed to store Headphone under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("HeadphoneActivity", "Build title is null; unable to store Headphone.")
+                        }
                     }
                 )
+
             }
         }
     }

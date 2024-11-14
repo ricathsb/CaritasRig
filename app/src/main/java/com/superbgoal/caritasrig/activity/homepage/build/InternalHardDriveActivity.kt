@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -32,6 +33,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.InternalHardDrive
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class InternalHardDriveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,15 +144,41 @@ class InternalHardDriveActivity : ComponentActivity() {
                     title = hardDrive.name,
                     details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
                     onAddClick = {
-                        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-                        val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("internalHardDrive").setValue(hardDrive.name)
+                        Log.d("HardDriveActivity", "Selected Hard Drive: ${hardDrive.name}")
 
+                        // Get the current user and build title
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan hard drive menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "internalHardDrive", // Menyimpan hard drive dengan tipe "internalHardDrive"
+                                componentName = hardDrive.name, // Nama hard drive
+                                onSuccess = {
+                                    Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("HardDriveActivity", "Build title is null; unable to store Hard Drive.")
+                        }
+
+                        // Return to the previous activity
                         setResult(RESULT_OK, intent)
                         finish()
                     }
                 )
+
             }
         }
     }

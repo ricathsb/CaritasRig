@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -62,13 +64,12 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsActivity
-import com.superbgoal.caritasrig.data.fetchBuildTitle
+import com.superbgoal.caritasrig.data.getUserBuilds
+import com.superbgoal.caritasrig.data.model.Build
 import com.superbgoal.caritasrig.data.model.User
 
 class HomeActivity : ComponentActivity() {
     private val viewModel: HomeViewModel by viewModels()
-    val buildIds = listOf("-OBaxPNOSG80fLpQesPy", "-OBaxa-MFHYer51R-Tkl", "-OBaxcgPam9bhIyfOLng")
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -103,7 +104,6 @@ fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val isProfileDialogVisible by viewModel.isProfileDialogVisible.collectAsStateWithLifecycle()
-
     Box(modifier = Modifier.fillMaxSize()) {
         // Background Image
         Image(
@@ -321,8 +321,24 @@ fun TransparentIconButton(
 @Composable
 fun UserProfile(viewModel: HomeViewModel) {
     val context = LocalContext.current
-    val buildIds = listOf("-OBaxPNOSG80fLpQesPy", "-OBaxa-MFHYer51R-Tkl", "-OBaxcgPam9bhIyfOLng")
+    val builds = remember { mutableStateOf<List<Build>>(emptyList()) }
+    val isLoading = remember { mutableStateOf(true) }
+    val errorMessage = remember { mutableStateOf<String?>(null) }
 
+    LaunchedEffect(Unit) {
+        getUserBuilds(
+            onSuccess = { buildsList ->
+                builds.value = buildsList
+                isLoading.value = false
+                Log.d("BuildScreen", "Builds fetched successfully: $buildsList")
+            },
+            onFailure = { error ->
+                errorMessage.value = error
+                isLoading.value = false
+                Log.e("BuildScreen", "Error fetching builds: $error")
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -522,7 +538,16 @@ fun UserProfile(viewModel: HomeViewModel) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        BuildList(buildIds = buildIds)
+
+        Column(modifier = Modifier.padding(3.dp)) {
+            if (isLoading.value) {
+                Text("Loading...")
+            } else if (errorMessage.value != null) {
+                Text("Error: ${errorMessage.value}")
+            } else {
+                BuildList(builds = builds.value)
+            }
+        }
 
     }
 }
@@ -552,36 +577,47 @@ fun getCurrentUserEmail(): String? {
     return currentUser?.email
 }
 
+//@Composable
+//fun BuildList(buildIds: List<String>) {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//    ) {
+//        buildIds.forEach { buildId ->
+//            BuildCard(buildId = buildId)
+//            Spacer(modifier = Modifier.height(16.dp))
+//        }
+//    }
+//}
+
 @Composable
-fun BuildCard(buildId: String) {
-    var buildTitle by remember { mutableStateOf("Loading...") }
-
-    // Call the fetchBuildTitle function to get the title
-    LaunchedEffect(buildId) {
-        fetchBuildTitle(buildId) { title ->
-            buildTitle = title ?: "Title not found"
-        }
-    }
-
+fun BuildCard(build: Build) {
     Card(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
     ) {
-        Text(
-            text = buildTitle,
-            modifier = Modifier.padding(16.dp)
-        )
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = build.title,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
 @Composable
-fun BuildList(buildIds: List<String>) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+fun BuildList(builds: List<Build>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
-        buildIds.forEach { buildId ->
-            BuildCard(buildId = buildId)
-            Spacer(modifier = Modifier.height(16.dp))
+        items(builds.size) { index ->
+            BuildCard(build = builds[index])
         }
     }
 }

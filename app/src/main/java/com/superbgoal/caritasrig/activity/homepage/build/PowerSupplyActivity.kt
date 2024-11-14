@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -32,6 +33,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.PowerSupply
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class PowerSupplyActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,13 +144,37 @@ class PowerSupplyActivity : ComponentActivity() {
                     title = powerSupply.name,
                     details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
                     onAddClick = {
-                        // Add selected power supply to database
-                        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-                        val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
+                        Log.d("PowerSupplyActivity", "Selected Power Supply: ${powerSupply.name}")
+
+                        // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("powersupply").setValue(powerSupply.name)
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan power supply menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "powerSupply", // Menyimpan power supply dengan tipe "powerSupply"
+                                componentName = powerSupply.name, // Nama power supply
+                                onSuccess = {
+                                    Log.d("PowerSupplyActivity", "Power Supply ${powerSupply.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("PowerSupplyActivity", "Failed to store Power Supply under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("PowerSupplyActivity", "Build title is null; unable to store Power Supply.")
+                        }
                     }
                 )
+
             }
         }
     }

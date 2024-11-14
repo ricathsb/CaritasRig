@@ -174,7 +174,7 @@ class CasingActivity : ComponentActivity() {
                                 }
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
+                            // Handle case where buildTitle is null
                             Log.e("BuildManager", "Build title is null")
                         }
                     }

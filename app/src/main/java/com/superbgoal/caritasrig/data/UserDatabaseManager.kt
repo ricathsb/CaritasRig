@@ -12,6 +12,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
+import com.superbgoal.caritasrig.data.model.Build
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.functions.auth.AuthResponse.Success.toString
 import java.util.UUID
@@ -179,9 +180,13 @@ fun getDatabaseReference(): DatabaseReference {
 
 fun saveBuildTitle(userId: String, buildTitle: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
     val database = getDatabaseReference()
+    val buildData = mapOf(
+        "title" to buildTitle
+    )
+
     database.child("users").child(userId).child("builds")
-        .push() // This creates a new unique key under "builds"
-        .setValue(buildTitle)
+        .push() // Membuat key unik untuk setiap build
+        .setValue(buildData) // Menyimpan build sebagai objek dengan `title`
         .addOnSuccessListener {
             onSuccess()
         }
@@ -190,17 +195,36 @@ fun saveBuildTitle(userId: String, buildTitle: String, onSuccess: () -> Unit, on
         }
 }
 
-fun fetchBuildTitle(buildId: String, onResult: (String?) -> Unit) {
-    val dbRef = getDatabaseReference()
-    val userBuildRef = dbRef.child("users/VNplmRcbZgOw52hrVutgg50enPl1/builds").child(buildId)
-
-    userBuildRef.get().addOnSuccessListener { snapshot ->
-        val buildTitle = snapshot.value as? String
-        onResult(buildTitle)
-    }.addOnFailureListener {
-        onResult(null) // Handle the error or set default
+fun getUserBuilds(onSuccess: (List<Build>) -> Unit, onFailure: (String) -> Unit) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId != null) {
+        val database = FirebaseDatabase.getInstance().reference
+        database.child("users").child(userId).child("builds")
+            .get()
+            .addOnSuccessListener { dataSnapshot ->
+                val builds = mutableListOf<Build>()
+                if (dataSnapshot.exists()) {
+                    dataSnapshot.children.forEach { snapshot ->
+                        val build = snapshot.getValue(Build::class.java)
+                        if (build != null) {
+                            builds.add(build)
+                        }
+                    }
+                    onSuccess(builds)
+                } else {
+                    onFailure("No builds found")
+                }
+            }
+            .addOnFailureListener { error ->
+                Log.e("Firebase", "Error fetching builds: ${error.message}")
+                onFailure("Failed to fetch builds: ${error.message}")
+            }
+    } else {
+        onFailure("User not authenticated.")
     }
 }
+
+
 
 
 

@@ -195,22 +195,46 @@ fun ComponentCard(
     }
 }
 
-fun saveComponent(userId: String, buildTitle: String?, componentType: String, componentName: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+fun saveComponent(
+    userId: String,
+    buildTitle: String,
+    componentType: String,
+    componentName: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
     val database = getDatabaseReference()
-    buildTitle?.let { title ->
-        database.child("users").child(userId).child("builds").child(title).child(componentType)
-            .setValue(componentName)
-            .addOnSuccessListener {
-                onSuccess()
+
+    // Mencari build berdasarkan title dan menambahkan komponen
+    database.child("users").child(userId).child("builds").orderByChild("title").equalTo(buildTitle)
+        .get()
+        .addOnSuccessListener { dataSnapshot ->
+            if (dataSnapshot.exists()) {
+                // Mengambil key dari build yang sesuai dengan title yang diberikan
+                val buildId = dataSnapshot.children.first().key
+                if (buildId != null) {
+                    database.child("users").child(userId).child("builds").child(buildId).child("components").child(componentType)
+                        .setValue(componentName)
+                        .addOnSuccessListener {
+                            onSuccess()
+                        }
+                        .addOnFailureListener { error ->
+                            onFailure("Failed to save component: ${error.message}")
+                        }
+                } else {
+                    onFailure("Build ID not found.")
+                }
+            } else {
+                onFailure("Build with title \"$buildTitle\" not found.")
             }
-            .addOnFailureListener { error ->
-                onFailure("Failed to save $componentType: ${error.message}")
-            }
-    } ?: run {
-        // Handle the case where buildTitle is null, for example, log an error or show a message to the user
-        Log.e("BuildManager", "Build title is null")
-    }
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to find build: ${error.message}")
+        }
 }
+
+
+
 
 
 

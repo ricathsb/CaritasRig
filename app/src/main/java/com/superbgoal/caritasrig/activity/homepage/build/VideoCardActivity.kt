@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -32,6 +33,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.VideoCard
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class VideoCardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,13 +144,37 @@ class VideoCardActivity : ComponentActivity() {
                     title = videoCard.name,
                     details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
                     onAddClick = {
-                        // Add selected video card to database
-                        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-                        val database: DatabaseReference = FirebaseDatabase.getInstance(databaseUrl).reference
+                        Log.d("VideoCardActivity", "Selected Video Card: ${videoCard.name}")
+
+                        // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
-                        database.child("users").child(currentUser?.uid.toString()).child("build").child("videoCard").setValue(videoCard.name)
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan video card menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "videoCard", // Menyimpan video card dengan tipe "videoCard"
+                                componentName = videoCard.name, // Nama video card
+                                onSuccess = {
+                                    Log.d("VideoCardActivity", "Video Card ${videoCard.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("VideoCardActivity", "Failed to store Video Card under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("VideoCardActivity", "Build title is null; unable to store Video Card.")
+                        }
                     }
                 )
+
             }
         }
     }

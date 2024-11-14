@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -39,6 +40,7 @@ import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.Mouse
 import com.superbgoal.caritasrig.data.model.test.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
+import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 class MouseActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -156,9 +158,37 @@ class MouseActivity : ComponentActivity() {
                     title = mouseItem.name,
                     details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
                     onAddClick = {
-                        database.child("users").child(userId).child("build").child("mouse").setValue(mouseItem.name)
+                        Log.d("MouseActivity", "Selected Mouse: ${mouseItem.name}")
+
+                        // Get the current user and build title
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
+                        buildTitle?.let { title ->
+                            // Menyimpan mouse menggunakan fungsi saveComponent
+                            saveComponent(
+                                userId = userId,
+                                buildTitle = title,
+                                componentType = "mouse", // Menyimpan mouse dengan tipe "mouse"
+                                componentName = mouseItem.name, // Nama mouse
+                                onSuccess = {
+                                    Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("MouseActivity", "Failed to store Mouse under build title: ${errorMessage}")
+                                }
+                            )
+                        } ?: run {
+                            // Handle the case where buildTitle is null
+                            Log.e("MouseActivity", "Build title is null; unable to store Mouse.")
+                        }
                     }
                 )
+
             }
         }
     }
