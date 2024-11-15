@@ -164,7 +164,7 @@ class CasingActivity : ComponentActivity() {
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "casing",
+                                componentType = "case",
                                 componentData = casingItem,
                                 onSuccess = {
                                     Log.d("CasingActivity", "Casing saved successfully")

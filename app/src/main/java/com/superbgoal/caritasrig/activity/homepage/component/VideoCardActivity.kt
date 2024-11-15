@@ -157,7 +157,7 @@ class VideoCardActivity : ComponentActivity() {
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "videoCard", // Menyimpan video card dengan tipe "videoCard"
+                                componentType = "gpu", // Menyimpan video card dengan tipe "videoCard"
                                 componentData = videoCard, // Nama video card
                                 onSuccess = {
                                     Log.d("VideoCardActivity", "Video Card ${videoCard.name} saved successfully under build title: $title")

@@ -157,7 +157,7 @@ class PowerSupplyActivity : ComponentActivity() {
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "powerSupply", // Menyimpan power supply dengan tipe "powerSupply"
+                                componentType = "powersupply", // Menyimpan power supply dengan tipe "powerSupply"
                                 componentData = powerSupply, // Nama power supply
                                 onSuccess = {
                                     Log.d("PowerSupplyActivity", "Power Supply ${powerSupply.name} saved successfully under build title: $title")

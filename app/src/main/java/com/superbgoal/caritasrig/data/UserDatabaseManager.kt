@@ -20,6 +20,8 @@ import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
 import com.superbgoal.caritasrig.data.model.component.Keyboard
 import com.superbgoal.caritasrig.data.model.component.Motherboard
+import com.superbgoal.caritasrig.data.model.component.Mouse
+import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import java.util.UUID
@@ -259,14 +261,15 @@ fun fetchBuildsWithAuth(
                     // Memetakan komponen ke BuildComponents
                     val componentsSnapshot = snapshot.child("components")
                     val components = BuildComponents(
-                        casing = componentsSnapshot.child("casing").getValue(Casing::class.java),
+                        casing = componentsSnapshot.child("case").getValue(Casing::class.java),
                         processor = componentsSnapshot.child("cpu").getValue(Processor::class.java),
                         motherboard = componentsSnapshot.child("motherboard").getValue(Motherboard::class.java),
-                        videoCard = componentsSnapshot.child("videoCard").getValue(VideoCard::class.java),
+                        videoCard = componentsSnapshot.child("gpu").getValue(VideoCard::class.java),
                         headphone = componentsSnapshot.child("headphone").getValue(Headphones::class.java),
-                        internalHardDrive = componentsSnapshot.child("internalHardDrive").getValue(
-                            InternalHardDrive::class.java),
-                        keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java)
+                        internalHardDrive = componentsSnapshot.child("internalharddrive").getValue(InternalHardDrive::class.java),
+                        keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java),
+                        powerSupply =componentsSnapshot.child("powersupply").getValue(PowerSupply::class.java),
+                        mouse = componentsSnapshot.child("mouse").getValue(Mouse::class.java),
                     )
 
                     // Buat objek Build
@@ -286,6 +289,34 @@ fun fetchBuildsWithAuth(
             onFailure("Failed to fetch builds: ${error.message}")
         }
 }
+
+fun removeBuildComponent(
+    userId: String,
+    buildId: String,
+    componentCategory: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val path = "users/$userId/builds/$buildId/components/$componentCategory"
+    Log.d("RemoveComponent", "Removing from path: $path")
+
+    val databaseRef = getDatabaseReference()
+    val componentRef = databaseRef.child(path)
+
+    componentRef.removeValue()
+        .addOnSuccessListener {
+            Log.d("RemoveComponent", "Successfully removed: $path")
+            onSuccess()
+        }
+        .addOnFailureListener { exception ->
+            Log.e("RemoveComponent", "Failed to remove: $path, Error: ${exception.message}")
+            onFailure(exception.message ?: "Failed to remove component")
+        }
+}
+
+
+
+
 
 
 

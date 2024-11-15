@@ -40,6 +40,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -73,6 +74,7 @@ import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
+import com.superbgoal.caritasrig.data.removeBuildComponent
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
 
@@ -88,7 +90,6 @@ class BuildActivity : ComponentActivity() {
         // Tangani Intent saat aktivitas dibuat
         processIntent(intent)
     }
-
     override fun onResume() {
         super.onResume()
         // Tangani Intent jika aktivitas kembali dari background
@@ -99,7 +100,6 @@ class BuildActivity : ComponentActivity() {
         val buildData = intent?.getParcelableExtra<Build>("build")
         buildData?.let {
             buildViewModel.setBuildData(it)
-
         }
     }
 
@@ -114,9 +114,12 @@ class BuildActivity : ComponentActivity() {
 fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
     getDatabaseReference()
     val context = LocalContext.current
-    val buildTitle by remember { mutableStateOf(buildViewModel.buildTitle) } // Get the build title
+    val buildTitle by buildViewModel.buildTitle.observeAsState("")
     var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
+    val components by buildViewModel.components.observeAsState(emptyMap())
+
+
 
     // Main UI
     Box(
@@ -185,8 +188,8 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                 "GPU" to VideoCardActivity::class.java,
                 "Motherboard" to MotherboardActivity::class.java,
                 "RAM" to MemoryActivity::class.java,
-                "Storage" to InternalHardDriveActivity::class.java,
-                "Power Supply" to PowerSupplyActivity::class.java,
+                "InternalHardDrive" to InternalHardDriveActivity::class.java,
+                "PowerSupply" to PowerSupplyActivity::class.java,
                 "CPU Cooler" to CpuCoolerActivity::class.java,
                 "Headphone" to HeadphoneActivity::class.java,
                 "Keyboard" to KeyboardActivity::class.java,
@@ -205,6 +208,10 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                         val componentDetail = when (title) {
                             "CPU" -> buildViewModel.buildData.value?.components?.processor?.let {
                                 "Processor: ${it.name}\nCores: ${it.core_count}\nSpeed: ${it.core_clock} GHz"
+//                                Log.d("BuildScreen", "Component Detail: $it")
+                            }
+                            "Case" -> buildViewModel.buildData.value?.components?.casing?.let {
+                                "Case: ${it.name}\nType: ${it.type}"
                             }
                             "GPU" -> buildViewModel.buildData.value?.components?.videoCard?.let {
                                 "GPU: ${it.name}\nMemory: ${it.memory} GB"
@@ -213,12 +220,12 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                                 "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
                             }
                             "RAM" -> buildViewModel.buildData.value?.components?.memory?.let {
-                                "RAM: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
+                                "Memory: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
                             }
-                            "Storage" -> buildViewModel.buildData.value?.components?.internalHardDrive?.let {
-                                "Storage: ${it.name}\nSize: ${it.capacity} GB"
+                            "InternalHardDrive" -> buildViewModel.buildData.value?.components?.internalHardDrive?.let {
+                                "InternalHardDrive: ${it.name}\nCapacity: ${it.capacity} GB"
                             }
-                            "Power Supply" -> buildViewModel.buildData.value?.components?.powerSupply?.let {
+                            "PowerSupply" -> buildViewModel.buildData.value?.components?.powerSupply?.let {
                                 "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
                             }
                             "CPU Cooler" -> buildViewModel.buildData.value?.components?.cpuCooler?.let {
@@ -233,9 +240,6 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                             "Mouse" -> buildViewModel.buildData.value?.components?.mouse?.let {
                                 "Mouse: ${it.name}\nType: ${it.maxDpi}"
                             }
-                            "Case" -> buildViewModel.buildData.value?.components?.casing?.let {
-                                "Case: ${it.name}\nForm Factor: ${it.type}"
-                            }
                             else -> null
                         }
 
@@ -246,12 +250,25 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                                 context.startActivity(intent)
                             },
                             componentDetail = componentDetail,
-                            category = title // Menambahkan nilai untuk parameter 'category'
+                            category = title,
+                            onRemove = {
+                                removeBuildComponent(
+                                    userId = Firebase.auth.currentUser?.uid ?: "",
+                                    componentCategory = title.lowercase(),
+                                    onSuccess = {
+                                        Log.d("BuildScreen", "$title removed successfully")
+                                        buildViewModel.refreshBuildData()
+                                    },
+                                    onFailure = { errorMessage ->
+                                        Log.e("BuildScreen", "Failed to remove $title: $errorMessage")
+                                    },
+                                    buildId = buildViewModel.buildData.value?.buildId ?: ""
+                                )
+                                Log.d("BuildScreen", "Component Detail for $title: $componentDetail")
+                            }
                         )
-
-
-                        Log.d("BuildScreen", "Component Detail for $title: $componentDetail")
                     }
+
                 }
             }
         }
@@ -317,9 +334,10 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
 @Composable
 fun ComponentCard(
     title: String,
-    category: String, // Tambahkan kategori untuk membedakan komponen
+    category: String, // Kategori komponen
     onClick: () -> Unit,
-    componentDetail: String? // Ubah detail menjadi String yang sudah diolah
+    componentDetail: String?,
+    onRemove: () -> Unit // Tambahkan callback untuk remove
 ) {
     Card(
         modifier = Modifier
@@ -358,7 +376,6 @@ fun ComponentCard(
                 ) {
                     Spacer(modifier = Modifier.height(5.dp))
 
-                    // Tampilkan detail komponen berdasarkan kategori
                     if (!componentDetail.isNullOrEmpty() && category == title) {
                         Text(
                             text = componentDetail,
@@ -366,6 +383,14 @@ fun ComponentCard(
                             modifier = Modifier.padding(8.dp),
                             textAlign = TextAlign.Start
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { onRemove() },
+                            modifier = Modifier.background(Color.Transparent),
+                            elevation = ButtonDefaults.buttonElevation(0.dp)
+                        ) {
+                            Text(text = "Remove Component")
+                        }
                     } else {
                         Button(
                             onClick = { onClick() },
@@ -388,6 +413,7 @@ fun ComponentCard(
         }
     }
 }
+
 
 
 

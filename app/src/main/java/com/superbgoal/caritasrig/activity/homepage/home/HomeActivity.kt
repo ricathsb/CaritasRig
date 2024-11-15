@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.activity.homepage.home
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -91,7 +92,14 @@ class HomeActivity : ComponentActivity() {
 
         setContent {
             HomeScreen(viewModel = viewModel, onLogout = {
+                // Hapus data SharedPreferences
+                val sharedPreferences = getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+                sharedPreferences.edit().clear().apply()
+
+                // Logout dari Firebase
                 FirebaseAuth.getInstance().signOut()
+
+                // Redirect ke LoginActivity
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
@@ -671,6 +679,7 @@ fun BuildList(builds: List<Build>, onBuildClick: (Build) -> Unit) {
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
+                            Log.d("BuildList", "Displaying internal hard drive name: ${internalHardDrive.name}")
                     }
 
                     // Display keyboard name if available
@@ -681,10 +690,27 @@ fun BuildList(builds: List<Build>, onBuildClick: (Build) -> Unit) {
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                     }
+
+                    build.components?.powerSupply?.let { powerSupply ->
+                        Text(
+                            text = "Power Supply: ${powerSupply.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    build.components?.mouse?.let { mouse ->
+                        Text(
+                            text = "Mouse: ${mouse.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 }
             }
         }
     }
 }
+
 
 

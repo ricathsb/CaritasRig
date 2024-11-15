@@ -157,7 +157,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "internalHardDrive", // Menyimpan hard drive dengan tipe "internalHardDrive"
+                                componentType = "internalharddrive", // Menyimpan hard drive dengan tipe "internalHardDrive"
                                 componentData = hardDrive, // Nama hard drive
                                 onSuccess = {
                                     Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
