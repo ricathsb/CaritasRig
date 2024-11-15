@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,14 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -31,35 +24,26 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.CpuCooler
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class CpuCoolerActivity : ComponentActivity() {
-    private lateinit var database: DatabaseReference
-    val buildTitle = BuildManager.getBuildTitle()
-
-
+class InternalHardDriveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val buildTitle = BuildManager.getBuildTitle()
 
-        // Initialize Firebase database reference
-        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-        database = FirebaseDatabase.getInstance(databaseUrl).reference
-        val currentUser = FirebaseAuth.getInstance().currentUser
 
-        // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<CpuCooler>>() {}.type
-        val cpuCoolers: List<CpuCooler> = loadItemsFromResources(
+        // Mengisi data dari file JSON untuk InternalHardDrive
+        val typeToken = object : TypeToken<List<InternalHardDrive>>() {}.type
+        val internalHardDrives: List<InternalHardDrive> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.cpucooler // JSON file for CPU coolers
+            resourceId = R.raw.internalharddrive
         )
 
         setContent {
@@ -67,7 +51,7 @@ class CpuCoolerActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Background Image
+                    // Menambahkan Image sebagai background
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -75,7 +59,7 @@ class CpuCoolerActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and CpuCoolerList
+                    // Konten utama dengan TopAppBar dan InternalHardDriveList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -97,7 +81,7 @@ class CpuCoolerActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "CPU Cooler",
+                                        text = "Internal Hard Drive",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -106,8 +90,7 @@ class CpuCoolerActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigate back to BuildActivity
-                                        val intent = Intent(this@CpuCoolerActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@InternalHardDriveActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -122,7 +105,7 @@ class CpuCoolerActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Action for filter button
+                                        // Aksi untuk tombol filter
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -134,12 +117,12 @@ class CpuCoolerActivity : ComponentActivity() {
                             }
                         )
 
-                        // CpuCoolerList content
+                        // Konten InternalHardDriveList
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            CpuCoolerList(cpuCoolers, currentUser?.uid.toString())
+                            InternalHardDriveList(internalHardDrives)
                         }
                     }
                 }
@@ -148,18 +131,18 @@ class CpuCoolerActivity : ComponentActivity() {
     }
 
     @Composable
-    fun CpuCoolerList(cpuCoolers: List<CpuCooler>, userId: String) {
+    fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(cpuCoolers) { cpuCooler ->
-                Log.d("CpuCoolerActivity", "Rendering CPU Cooler: ${cpuCooler.name}")
+            items(internalHardDrives) { hardDrive ->
+                // Menggunakan ComponentCard untuk setiap item hard drive
                 ComponentCard(
-                    title = cpuCooler.name,
-                    details = "${cpuCooler.color} | Noise Level: ${cpuCooler.noise_level} dBA | Fan Size: ${cpuCooler.rpm} RPM | RGB: ${cpuCooler.color}",
+                    title = hardDrive.name,
+                    details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
                     onAddClick = {
-                        Log.d("CpuCoolerActivity", "Selected CPU Cooler: ${cpuCooler.name}")
+                        Log.d("HardDriveActivity", "Selected Hard Drive: ${hardDrive.name}")
 
                         // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -170,27 +153,31 @@ class CpuCoolerActivity : ComponentActivity() {
 
                         // Check if buildTitle is available before storing data in Firebase
                         buildTitle?.let { title ->
-                            // Menyimpan CPU Cooler menggunakan fungsi saveComponent
+                            // Menyimpan hard drive menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "cpuCooler", // Menyimpan CPU Cooler dengan tipe "cpuCooler"
-                                componentName = cpuCooler.name, // Nama CPU Cooler
+                                componentType = "internalHardDrive", // Menyimpan hard drive dengan tipe "internalHardDrive"
+                                componentData = hardDrive, // Nama hard drive
                                 onSuccess = {
-                                    Log.d("CpuCoolerActivity", "CPU Cooler ${cpuCooler.name} saved successfully under build title: $title")
+                                    Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("CpuCoolerActivity", "Failed to store CPU Cooler under build title: ${errorMessage}")
+                                    Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: ${errorMessage}")
                                 }
                             )
                         } ?: run {
                             // Handle the case where buildTitle is null
-                            Log.e("CpuCoolerActivity", "Build title is null; unable to store CPU Cooler.")
+                            Log.e("HardDriveActivity", "Build title is null; unable to store Hard Drive.")
                         }
+
+                        // Return to the previous activity
+                        setResult(RESULT_OK, intent)
+                        finish()
                     }
                 )
 
             }
-
         }
-}}
+    }
+}

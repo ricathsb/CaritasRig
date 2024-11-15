@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage
+package com.superbgoal.caritasrig.activity.homepage.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

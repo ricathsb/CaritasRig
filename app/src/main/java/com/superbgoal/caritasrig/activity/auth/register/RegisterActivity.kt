@@ -77,7 +77,7 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.HomeActivity
+import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
 import com.superbgoal.caritasrig.data.uploadImageToFirebase
@@ -374,7 +374,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
                             imageUri?.let { uri ->
                                 uploadImageToFirebase(uri) { firebaseImageUrl ->
                                     saveUserData(
-                                        user = User(userId, firstname, lastname, username, dateOfBirth, email, firebaseImageUrl),
+                                        user = User(userId, firstname, lastname, username, dateOfBirth, firebaseImageUrl),
                                         context = context
                                     ) { isVerified ->
                                         viewModel.setLoading(false)
@@ -393,7 +393,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
                                 }
                             } ?: run {
                                 saveUserData(
-                                    user = User(userId, firstname, lastname, username, dateOfBirth, email, imageUrl),
+                                    user = User(userId, firstname, lastname, username, dateOfBirth, imageUrl),
                                     context = context
                                 ) { isVerified ->
                                     viewModel.setLoading(false)

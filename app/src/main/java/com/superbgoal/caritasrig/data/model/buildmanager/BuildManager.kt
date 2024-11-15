@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.data.model.test
+package com.superbgoal.caritasrig.data.model.buildmanager
 
 object BuildManager {
     // This will hold the current build title globally

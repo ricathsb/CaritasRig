@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -35,16 +35,17 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Casing
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.Headphones
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class CasingActivity : ComponentActivity() {
+class HeadphoneActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
     val buildTitle = BuildManager.getBuildTitle()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,13 +54,12 @@ class CasingActivity : ComponentActivity() {
         val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
         database = FirebaseDatabase.getInstance(databaseUrl).reference
         val currentUser = FirebaseAuth.getInstance().currentUser
-        val buildTitle = BuildManager.getBuildTitle()
 
         // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<Casing>>() {}.type
-        val casing: List<Casing> = loadItemsFromResources(
+        val typeToken = object : TypeToken<List<Headphones>>() {}.type
+        val headphones: List<Headphones> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.casing
+            resourceId = R.raw.headphones
         )
 
         setContent {
@@ -75,7 +75,7 @@ class CasingActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and CasingList
+                    // Main content with TopAppBar and Headphone List
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -97,7 +97,7 @@ class CasingActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Casing",
+                                        text = "Headphones",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -107,7 +107,7 @@ class CasingActivity : ComponentActivity() {
                                 IconButton(
                                     onClick = {
                                         // Navigate back to BuildActivity
-                                        val intent = Intent(this@CasingActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@HeadphoneActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -134,12 +134,12 @@ class CasingActivity : ComponentActivity() {
                             }
                         )
 
-                        // CasingList content
+                        // Headphone List content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            CasingList(casing, currentUser?.uid.toString())
+                            HeadphoneList(headphones, currentUser?.uid.toString())
                         }
                     }
                 }
@@ -148,37 +148,47 @@ class CasingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun CasingList(casing: List<Casing>, userId: String) {
+    fun HeadphoneList(headphones: List<Headphones>, userId: String) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(casing) { casingItem ->
-                Log.d("CasingActivity", "Rendering casing item: ${casingItem.name}")
+            items(headphones) { headphoneItem ->
                 ComponentCard(
-                    title = casingItem.name,
-                    details = "${casingItem.type} | ${casingItem.color} | PSU: ${casingItem.psu ?: "Not included"} | Volume: ${casingItem.externalVolume} L | 3.5\" Bays: ${casingItem.internal35Bays}",
+                    title = headphoneItem.name,
+                    details = "Type: ${headphoneItem.type} | Color: ${headphoneItem.color} | Battery Life: ${headphoneItem.frequencyResponse} hrs",
                     onAddClick = {
-                        Log.d("CasingActivity", "Selected Casing: ${casingItem.name}")
+                        Log.d("HeadphoneActivity", "Selected Headphone: ${headphoneItem.name}")
+
+                        // Get the current user and build title
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
+
+                        // Use the BuildManager singleton to get the current build title
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Check if buildTitle is available before storing data in Firebase
                         buildTitle?.let { title ->
+                            // Menyimpan headphone menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "casing",
-                                componentName = casingItem.name,
+                                componentType = "headphone", // Menyimpan headphone dengan tipe "headphone"
+                                componentData = headphoneItem, // Nama headphone
                                 onSuccess = {
-                                    Log.d("CasingActivity", "Casing saved successfully")
+                                    Log.d("HeadphoneActivity", "Headphone ${headphoneItem.name} saved successfully under build title: $title")
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("CasingActivity", errorMessage)
+                                    Log.e("HeadphoneActivity", "Failed to store Headphone under build title: ${errorMessage}")
                                 }
                             )
                         } ?: run {
-                            // Handle case where buildTitle is null
-                            Log.e("BuildManager", "Build title is null")
+                            // Handle the case where buildTitle is null
+                            Log.e("HeadphoneActivity", "Build title is null; unable to store Headphone.")
                         }
                     }
                 )
+
             }
         }
     }

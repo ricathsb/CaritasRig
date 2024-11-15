@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,14 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -31,35 +24,26 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Mouse
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.VideoCard
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class MouseActivity : ComponentActivity() {
-    private lateinit var database: DatabaseReference
-    val buildTitle = BuildManager.getBuildTitle()
-
-
+class VideoCardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val buildTitle = BuildManager.getBuildTitle()
 
-        // Initialize Firebase database reference
-        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-        database = FirebaseDatabase.getInstance(databaseUrl).reference
-        val currentUser = FirebaseAuth.getInstance().currentUser
 
-        // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<Mouse>>() {}.type
-        val mice: List<Mouse> = loadItemsFromResources(
+        // Load video cards from JSON resource
+        val typeToken = object : TypeToken<List<VideoCard>>() {}.type
+        val videoCards: List<VideoCard> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.mouse
+            resourceId = R.raw.videocard // Ensure this JSON file exists
         )
 
         setContent {
@@ -67,7 +51,7 @@ class MouseActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Background Image
+                    // Background image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -75,7 +59,7 @@ class MouseActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and Mouse List
+                    // Main content with TopAppBar and VideoCardList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -97,7 +81,7 @@ class MouseActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Mice",
+                                        text = "Video Card",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -106,8 +90,7 @@ class MouseActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigate back to BuildActivity
-                                        val intent = Intent(this@MouseActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@VideoCardActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -122,7 +105,7 @@ class MouseActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Action for filter button
+                                        // Filter action (not implemented)
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -134,12 +117,12 @@ class MouseActivity : ComponentActivity() {
                             }
                         )
 
-                        // Mouse List content
+                        // VideoCardList content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            MouseList(mice, currentUser?.uid.toString())
+                            VideoCardList(videoCards)
                         }
                     }
                 }
@@ -148,17 +131,18 @@ class MouseActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MouseList(mice: List<Mouse>, userId: String) {
+    fun VideoCardList(videoCards: List<VideoCard>) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(mice) { mouseItem ->
+            items(videoCards) { videoCard ->
+                // Use ComponentCard for each video card
                 ComponentCard(
-                    title = mouseItem.name,
-                    details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
+                    title = videoCard.name,
+                    details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
                     onAddClick = {
-                        Log.d("MouseActivity", "Selected Mouse: ${mouseItem.name}")
+                        Log.d("VideoCardActivity", "Selected Video Card: ${videoCard.name}")
 
                         // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -169,22 +153,22 @@ class MouseActivity : ComponentActivity() {
 
                         // Check if buildTitle is available before storing data in Firebase
                         buildTitle?.let { title ->
-                            // Menyimpan mouse menggunakan fungsi saveComponent
+                            // Menyimpan video card menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "mouse", // Menyimpan mouse dengan tipe "mouse"
-                                componentName = mouseItem.name, // Nama mouse
+                                componentType = "videoCard", // Menyimpan video card dengan tipe "videoCard"
+                                componentData = videoCard, // Nama video card
                                 onSuccess = {
-                                    Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
+                                    Log.d("VideoCardActivity", "Video Card ${videoCard.name} saved successfully under build title: $title")
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("MouseActivity", "Failed to store Mouse under build title: ${errorMessage}")
+                                    Log.e("VideoCardActivity", "Failed to store Video Card under build title: ${errorMessage}")
                                 }
                             )
                         } ?: run {
                             // Handle the case where buildTitle is null
-                            Log.e("MouseActivity", "Build title is null; unable to store Mouse.")
+                            Log.e("VideoCardActivity", "Build title is null; unable to store Video Card.")
                         }
                     }
                 )

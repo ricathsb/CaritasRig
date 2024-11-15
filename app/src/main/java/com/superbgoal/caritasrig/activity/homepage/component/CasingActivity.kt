@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,7 +6,14 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -28,24 +35,31 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.InternalHardDrive
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.Casing
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class InternalHardDriveActivity : ComponentActivity() {
+class CasingActivity : ComponentActivity() {
+    private lateinit var database: DatabaseReference
+    val buildTitle = BuildManager.getBuildTitle()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Firebase database reference
+        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
+        database = FirebaseDatabase.getInstance(databaseUrl).reference
+        val currentUser = FirebaseAuth.getInstance().currentUser
         val buildTitle = BuildManager.getBuildTitle()
 
-
-        // Mengisi data dari file JSON untuk InternalHardDrive
-        val typeToken = object : TypeToken<List<InternalHardDrive>>() {}.type
-        val internalHardDrives: List<InternalHardDrive> = loadItemsFromResources(
+        // Define the type explicitly for Gson TypeToken
+        val typeToken = object : TypeToken<List<Casing>>() {}.type
+        val casing: List<Casing> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.internalharddrive
+            resourceId = R.raw.casing
         )
 
         setContent {
@@ -53,7 +67,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Menambahkan Image sebagai background
+                    // Background Image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -61,7 +75,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Konten utama dengan TopAppBar dan InternalHardDriveList
+                    // Main content with TopAppBar and CasingList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -83,7 +97,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Internal Hard Drive",
+                                        text = "Casing",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -92,7 +106,8 @@ class InternalHardDriveActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        val intent = Intent(this@InternalHardDriveActivity, BuildActivity::class.java)
+                                        // Navigate back to BuildActivity
+                                        val intent = Intent(this@CasingActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -107,7 +122,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Aksi untuk tombol filter
+                                        // Action for filter button
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -119,12 +134,12 @@ class InternalHardDriveActivity : ComponentActivity() {
                             }
                         )
 
-                        // Konten InternalHardDriveList
+                        // CasingList content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            InternalHardDriveList(internalHardDrives)
+                            CasingList(casing, currentUser?.uid.toString())
                         }
                     }
                 }
@@ -133,52 +148,37 @@ class InternalHardDriveActivity : ComponentActivity() {
     }
 
     @Composable
-    fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>) {
+    fun CasingList(casing: List<Casing>, userId: String) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(internalHardDrives) { hardDrive ->
-                // Menggunakan ComponentCard untuk setiap item hard drive
+            items(casing) { casingItem ->
+                Log.d("CasingActivity", "Rendering casing item: ${casingItem.name}")
                 ComponentCard(
-                    title = hardDrive.name,
-                    details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
+                    title = casingItem.name,
+                    details = "${casingItem.type} | ${casingItem.color} | PSU: ${casingItem.psu ?: "Not included"} | Volume: ${casingItem.externalVolume} L | 3.5\" Bays: ${casingItem.internal35Bays}",
                     onAddClick = {
-                        Log.d("HardDriveActivity", "Selected Hard Drive: ${hardDrive.name}")
-
-                        // Get the current user and build title
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
-                        val buildTitle = BuildManager.getBuildTitle()
-
-                        // Check if buildTitle is available before storing data in Firebase
+                        Log.d("CasingActivity", "Selected Casing: ${casingItem.name}")
                         buildTitle?.let { title ->
-                            // Menyimpan hard drive menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "internalHardDrive", // Menyimpan hard drive dengan tipe "internalHardDrive"
-                                componentName = hardDrive.name, // Nama hard drive
+                                componentType = "casing",
+                                componentData = casingItem,
                                 onSuccess = {
-                                    Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
+                                    Log.d("CasingActivity", "Casing saved successfully")
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: ${errorMessage}")
+                                    Log.e("CasingActivity", errorMessage)
                                 }
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
-                            Log.e("HardDriveActivity", "Build title is null; unable to store Hard Drive.")
+                            // Handle case where buildTitle is null
+                            Log.e("BuildManager", "Build title is null")
                         }
-
-                        // Return to the previous activity
-                        setResult(RESULT_OK, intent)
-                        finish()
                     }
                 )
-
             }
         }
     }

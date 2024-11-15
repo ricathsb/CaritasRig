@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -19,14 +19,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Processor
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
@@ -149,9 +146,11 @@ class CpuActivity : ComponentActivity() {
                                 userId = userId,
                                 buildTitle = title,
                                 componentType = "cpu", // Menyimpan processor dengan tipe "cpu"
-                                componentName = processor.name, // Nama processor
+                                componentData = processor, // Nama processor
                                 onSuccess = {
                                     Log.d("BuildActivity", "Processor ${processor.name} saved successfully under build title: $title")
+                                    Log.d("ProcessorDebug", "Processor Data: $processor")
+
                                 },
                                 onFailure = { errorMessage ->
                                     Log.e("BuildActivity", "Failed to store CPU under build title: ${errorMessage}")

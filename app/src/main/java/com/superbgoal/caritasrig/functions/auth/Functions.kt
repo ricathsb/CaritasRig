@@ -1,8 +1,6 @@
 // Function.kt
 package com.superbgoal.caritasrig.functions.auth
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,8 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.getDatabaseReference
-import com.superbgoal.caritasrig.data.model.Processor
-import com.superbgoal.caritasrig.data.model.VideoCard
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.VideoCard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -199,7 +197,7 @@ fun saveComponent(
     userId: String,
     buildTitle: String,
     componentType: String,
-    componentName: String,
+    componentData: Any, // Objek komponen (berupa data class)
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit
 ) {
@@ -213,8 +211,9 @@ fun saveComponent(
                 // Mengambil key dari build yang sesuai dengan title yang diberikan
                 val buildId = dataSnapshot.children.first().key
                 if (buildId != null) {
-                    database.child("users").child(userId).child("builds").child(buildId).child("components").child(componentType)
-                        .setValue(componentName)
+                    database.child("users").child(userId).child("builds").child(buildId)
+                        .child("components").child(componentType)
+                        .setValue(componentData)
                         .addOnSuccessListener {
                             onSuccess()
                         }
@@ -232,6 +231,7 @@ fun saveComponent(
             onFailure("Failed to find build: ${error.message}")
         }
 }
+
 
 
 

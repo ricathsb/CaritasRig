@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage
+package com.superbgoal.caritasrig.activity.homepage.home
 
 import android.content.Intent
 import android.os.Bundle
@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,7 +46,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,10 +62,12 @@ import coil3.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsActivity
+import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
 import com.superbgoal.caritasrig.data.getUserBuilds
-import com.superbgoal.caritasrig.data.model.Build
+import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.User
 
 class HomeActivity : ComponentActivity() {
@@ -325,8 +327,9 @@ fun UserProfile(viewModel: HomeViewModel) {
     val isLoading = remember { mutableStateOf(true) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
 
+    // Fetch builds when this Composable is launched
     LaunchedEffect(Unit) {
-        getUserBuilds(
+        fetchBuildsWithAuth(
             onSuccess = { buildsList ->
                 builds.value = buildsList
                 isLoading.value = false
@@ -367,6 +370,7 @@ fun UserProfile(viewModel: HomeViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Horizontal scrollable items
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -411,9 +415,6 @@ fun UserProfile(viewModel: HomeViewModel) {
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-//                        .clickable {
-//                            context.startActivity(Intent(context, TrendingActivity::class.java))
-//                        },
                 ) {
                     Row(
                         modifier = Modifier
@@ -440,11 +441,11 @@ fun UserProfile(viewModel: HomeViewModel) {
             }
 
             item {
+                // Benchmarking Card
                 Card(
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-//
                 ) {
                     Row(
                         modifier = Modifier
@@ -470,9 +471,10 @@ fun UserProfile(viewModel: HomeViewModel) {
                 }
             }
         }
+
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Horizontal Scrollable Cards for AMD, NVIDIA, Intel, etc. without text, with icons sized 20x20 dp
+        // Horizontal Scrollable Cards for AMD, NVIDIA, Intel, etc.
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -500,15 +502,12 @@ fun UserProfile(viewModel: HomeViewModel) {
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-//                        .clickable {
-//                            context.startActivity(Intent(context, NvidiaActivity::class.java))
-//                        }
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.nvidia_logo), // Replace with your NVIDIA icon resource
+                        painter = painterResource(id = R.drawable.nvidia_logo),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(100.dp) // Set icon size to 20x20 dp
+                            .size(100.dp)
                             .padding(4.dp)
                     )
                 }
@@ -520,37 +519,42 @@ fun UserProfile(viewModel: HomeViewModel) {
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-//                        .clickable {
-//                            context.startActivity(Intent(context, IntelActivity::class.java))
-//                        }
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.intel_logo), // Replace with your Intel icon resource
+                        painter = painterResource(id = R.drawable.intel_logo),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(100.dp) // Set icon size to 20x20 dp
+                            .size(100.dp)
                             .padding(4.dp)
                     )
                 }
             }
-
-            // Add more items for other brands if needed
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Section for displaying the list of builds
         Column(modifier = Modifier.padding(3.dp)) {
             if (isLoading.value) {
                 Text("Loading...")
             } else if (errorMessage.value != null) {
                 Text("Error: ${errorMessage.value}")
             } else {
-                BuildList(builds = builds.value)
+                BuildList(
+                    builds = builds.value,
+                    onBuildClick = { build ->
+                        val intent = Intent(context, BuildActivity::class.java).apply {
+                            putExtra("build", build) // Pass build data
+                        }
+                        context.startActivity(intent)
+                    }
+                )
+                }
             }
         }
-
     }
-}
+
+
 
 @Composable
 fun LoadingScreen() {
@@ -592,32 +596,95 @@ fun getCurrentUserEmail(): String? {
 //}
 
 @Composable
-fun BuildCard(build: Build) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = build.title,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-    }
-}
-@Composable
-fun BuildList(builds: List<Build>) {
+fun BuildList(builds: List<Build>, onBuildClick: (Build) -> Unit) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(builds.size) { index ->
-            BuildCard(build = builds[index])
+        items(builds) { build ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .clickable {
+                        // Action on card click
+                        onBuildClick(build)  // Pass the clicked build to the onBuildClick function
+                    },
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // Display build title
+                    Text(
+                        text = build.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Display processor name if available
+                    build.components?.processor?.let { processor ->
+                        Text(
+                            text = "Processor: ${processor.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    // Display casing name if available
+                    build.components?.casing?.let { casing ->
+                        Text(
+                            text = "Casing: ${casing.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    // Display motherboard name if available
+                    build.components?.motherboard?.let { motherboard ->
+                        Text(
+                            text = "Motherboard: ${motherboard.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    // Display video card name if available
+                    build.components?.videoCard?.let { videoCard ->
+                        Text(
+                            text = "Video Card: ${videoCard.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    // Display headphone name if available
+                    build.components?.headphone?.let { headphone ->
+                        Text(
+                            text = "Headphone: ${headphone.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    // Display internal hard drive name if available
+                    build.components?.internalHardDrive?.let { internalHardDrive ->
+                        Text(
+                            text = "Internal Hard Drive: ${internalHardDrive.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    // Display keyboard name if available
+                    build.components?.keyboard?.let { keyboard ->
+                        Text(
+                            text = "Keyboard: ${keyboard.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
+
