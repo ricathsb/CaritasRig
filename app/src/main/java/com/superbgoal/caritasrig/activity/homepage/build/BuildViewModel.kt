@@ -1,6 +1,5 @@
 import android.app.Application
 import android.content.Context
-import android.system.Os.remove
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -13,7 +12,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.removeBuildComponent
 
 class BuildViewModel(application: Application) : AndroidViewModel(application) {
-    private val _selectedComponents = MutableLiveData<Map<String, String>>() // key: kategori, value: detail
+    private val _selectedComponents = MutableLiveData<Map<String, String>>()
     val selectedComponents: LiveData<Map<String, String>> = _selectedComponents
 
     private val sharedPreferences =
@@ -21,17 +20,33 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     private val _buildTitle = MutableLiveData<String>()
     val buildTitle: LiveData<String> get() = _buildTitle
 
-    private val _components = MutableLiveData<Map<String, String?>>()
-    val components: LiveData<Map<String, String?>> get() = _components
-
     private val _buildData = MutableLiveData<Build?>()
     val buildData: LiveData<Build?> get() = _buildData
 
     private val _componentDetail = MutableLiveData<String?>()
-    val componentDetail: LiveData<String?> get() = _componentDetail
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> get() = _loading
+
+
+
+
+
+    private val defaultCategories = mapOf(
+        "CPU" to "No CPU Selected",
+        "Case" to "No Case Selected",
+        "GPU" to "No GPU Selected",
+        "Motherboard" to "No Motherboard Selected",
+        "RAM" to "No RAM Selected",
+        "InternalHardDrive" to "No Storage Selected",
+        "PowerSupply" to "No PSU Selected",
+        "CPU Cooler" to "No CPU Cooler Selected",
+        "Headphone" to "No Headphone Selected",
+        "Keyboard" to "No Keyboard Selected",
+        "Mouse" to "No Mouse Selected"
+    )
+
+
 
     init {
         // Load buildTitle from SharedPreferences
@@ -53,36 +68,48 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Memastikan `LiveData` diperbarui saat data build atau komponen diubah.
-    fun setBuildData(build: Build) {
+    fun setBuildData(build: Build?) {
+        if (build == null) {
+            // Tangani jika build null (gunakan data kosong atau default)
+            _buildData.value = null
+            _selectedComponents.value = defaultCategories // Tampilkan kategori kosong
+            Log.w("BuildViewModel", "Build is null, setting default components.")
+            return
+        }
+
+        // Jika build tidak null, perbarui LiveData
         _buildData.value = build
-        saveBuildTitle(build.title) // Simpan judul build baru
+
+        // Simpan judul build
+        saveBuildTitle(build.title)
+
+        // Perbarui detail komponen
         updateComponentDetail(build)
 
-        // Update komponen dalam LiveData
-        build.components?.let { components ->
-            val updatedComponents = mapOf(
-                "CPU" to components.processor?.let { "Processor: ${it.name}, Cores: ${it.core_count}, ${it.core_clock} GHz" },
-                "Case" to components.casing?.let { "Case: ${it.name}, Type: ${it.type}" },
-                "GPU" to components.videoCard?.let { "GPU: ${it.name}, Memory: ${it.memory} GB" },
-                "Motherboard" to components.motherboard?.let { "Motherboard: ${it.name}, Chipset: ${it.formFactor}" },
-                "RAM" to components.memory?.let { "RAM: ${it.name}, Size: ${it.pricePerGb} GB, Speed: ${it.speed} MHz" },
-                "InternalHardDrive" to components.internalHardDrive?.let { "Storage: ${it.name}, Capacity: ${it.capacity} GB" },
-                "PowerSupply" to components.powerSupply?.let { "PSU: ${it.name}, Wattage: ${it.wattage} W" },
-                "CPU Cooler" to components.cpuCooler?.let { "CPU Cooler: ${it.name}, Fan Speed: ${it.rpm} RPM" },
-                "Headphone" to components.headphone?.let { "Headphone: ${it.name}, Type: ${it.type}" },
-                "Keyboard" to components.keyboard?.let { "Keyboard: ${it.name}, Type: ${it.switches}" },
-                "Mouse" to components.mouse?.let { "Mouse: ${it.name}, Max DPI: ${it.maxDpi}" }
-            ).filterValues { it != null } // Remove null values
+        // Perbarui komponen di UI
+        val components = build.components?.let {
+            mapOf(
+                "CPU" to it.processor?.let { "Processor: ${it.name}, Cores: ${it.core_count}, ${it.core_clock} GHz" },
+                "Case" to it.casing?.let { "Case: ${it.name}, Type: ${it.type}" },
+                "GPU" to it.videoCard?.let { "GPU: ${it.name}, Memory: ${it.memory} GB" },
+                "Motherboard" to it.motherboard?.let { "Motherboard: ${it.name}, Chipset: ${it.formFactor}" },
+                "RAM" to it.memory?.let { "RAM: ${it.name}, Size: ${it.pricePerGb} GB, Speed: ${it.speed} MHz" },
+                "InternalHardDrive" to it.internalHardDrive?.let { "Storage: ${it.name}, Capacity: ${it.capacity} GB" },
+                "PowerSupply" to it.powerSupply?.let { "PSU: ${it.name}, Wattage: ${it.wattage} W" },
+                "CPU Cooler" to it.cpuCooler?.let { "CPU Cooler: ${it.name}, Fan Speed: ${it.rpm} RPM" },
+                "Headphone" to it.headphone?.let { "Headphone: ${it.name}, Type: ${it.type}" },
+                "Keyboard" to it.keyboard?.let { "Keyboard: ${it.name}, Type: ${it.switches}" },
+                "Mouse" to it.mouse?.let { "Mouse: ${it.name}, Max DPI: ${it.maxDpi}" }
+            )
+        } ?: emptyMap()
 
-            _components.value = updatedComponents.mapValues { it.value!! }
-            _selectedComponents.value = updatedComponents.mapValues { it.value!! }
+        // Gabungkan dengan kategori default
+        _selectedComponents.value = defaultCategories.mapValues { entry ->
+            components[entry.key] ?: entry.value
         }
 
         Log.d("BuildViewModel", "Build data and components updated.")
     }
-
-
-
 
     private fun updateComponentDetail(build: Build) {
         build.components?.let { components ->
@@ -153,6 +180,8 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                     setBuildData(build)
                     Log.d("BuildViewModel", "Build Data Fetched by Title: $build")
                 } else {
+                    // Jika tidak ada build, tetap tampilkan kategori default
+                    _selectedComponents.value = defaultCategories
                     Log.w("BuildViewModel", "No Build Found with Title: $title")
                 }
                 _loading.value = false // Stop loading
@@ -160,20 +189,42 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
             onFailure = { errorMessage ->
                 Log.e("BuildViewModel", "Error fetching build by title: $errorMessage")
                 _loading.value = false // Stop loading
+
+                _selectedComponents.value = defaultCategories
             }
         )
     }
 
+
     fun removeComponent(category: String) {
         val currentBuildData = _buildData.value
         if (currentBuildData != null) {
-            // Update UI terlebih dahulu
-            val updatedComponents = _selectedComponents.value?.toMutableMap()?.apply {
-                remove(category)
-            } ?: emptyMap()
-            _selectedComponents.value = updatedComponents // Perbarui LiveData untuk UI
+            // Salin buildData dan hapus komponen sesuai kategori
+            val updatedBuildData = currentBuildData.copy(
+                components = currentBuildData.components?.copy(
+                    processor = if (category == "CPU") null else currentBuildData.components.processor,
+                    casing = if (category == "Case") null else currentBuildData.components.casing,
+                    videoCard = if (category == "GPU") null else currentBuildData.components.videoCard,
+                    motherboard = if (category == "Motherboard") null else currentBuildData.components.motherboard,
+                    memory = if (category == "RAM") null else currentBuildData.components.memory,
+                    internalHardDrive = if (category == "InternalHardDrive") null else currentBuildData.components.internalHardDrive,
+                    powerSupply = if (category == "PowerSupply") null else currentBuildData.components.powerSupply,
+                    cpuCooler = if (category == "CPU Cooler") null else currentBuildData.components.cpuCooler,
+                    headphone = if (category == "Headphone") null else currentBuildData.components.headphone,
+                    keyboard = if (category == "Keyboard") null else currentBuildData.components.keyboard,
+                    mouse = if (category == "Mouse") null else currentBuildData.components.mouse
+                )
+            )
+            _buildData.value = updatedBuildData // Perbarui buildData
 
-            // Lanjutkan penghapusan di server
+            // Update selectedComponents dengan nilai default untuk kategori yang dihapus
+            val updatedComponents = _selectedComponents.value?.toMutableMap()?.apply {
+                this[category] = "No $category Selected" // Tampilkan kondisi awal
+            } ?: mapOf(category to "No $category Selected")
+
+            _selectedComponents.value = updatedComponents // Perbarui selectedComponents
+
+            // Hapus data di server
             removeBuildComponent(
                 userId = Firebase.auth.currentUser?.uid ?: "",
                 buildId = currentBuildData.buildId,
@@ -182,9 +233,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d("BuildViewModel", "$category removed successfully from server.")
                 },
                 onFailure = { errorMessage ->
-                    // Jika gagal, tambahkan kembali komponen yang telah dihapus
+                    // Jika gagal, restore nilai sebelumnya
                     _selectedComponents.value = _selectedComponents.value?.toMutableMap()?.apply {
-                        put(category, "Failed to remove, restored") // Anda bisa mengembalikan nilai sebenarnya
+                        this[category] = "Failed to remove, restored"
                     }
                     Log.e("BuildViewModel", "Failed to remove $category: $errorMessage")
                 }
@@ -193,4 +244,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
             Log.w("BuildViewModel", "Current build data is null, cannot remove component.")
         }
     }
+
+
+
 }

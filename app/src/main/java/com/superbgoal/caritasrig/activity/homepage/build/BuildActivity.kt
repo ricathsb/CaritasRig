@@ -1,7 +1,8 @@
+@file:Suppress("NAME_SHADOWING")
+
 package com.superbgoal.caritasrig.activity.homepage.build
 
 import BuildViewModel
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -57,26 +59,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material.CircularProgressIndicator
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.component.CasingActivity
-import com.superbgoal.caritasrig.activity.homepage.component.CpuActivity
-import com.superbgoal.caritasrig.activity.homepage.component.CpuCoolerActivity
-import com.superbgoal.caritasrig.activity.homepage.component.HeadphoneActivity
-import com.superbgoal.caritasrig.activity.homepage.component.InternalHardDriveActivity
-import com.superbgoal.caritasrig.activity.homepage.component.KeyboardActivity
-import com.superbgoal.caritasrig.activity.homepage.component.MemoryActivity
-import com.superbgoal.caritasrig.activity.homepage.component.MotherboardActivity
-import com.superbgoal.caritasrig.activity.homepage.component.MouseActivity
-import com.superbgoal.caritasrig.activity.homepage.component.PowerSupplyActivity
-import com.superbgoal.caritasrig.activity.homepage.component.VideoCardActivity
+import com.superbgoal.caritasrig.activity.homepage.component.*
 import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
-import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.removeBuildComponent
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
 
@@ -95,11 +84,11 @@ class BuildActivity : ComponentActivity() {
     }
     override fun onResume() {
         super.onResume()
-        // Tangani Intent jika aktivitas kembali dari background
         intent?.let { processIntent(it) }
         buildViewModel.refreshBuildData()
         Log.d("BuildActivity", "onResume called")
     }
+
 
     private fun processIntent(intent: Intent?) {
         val buildData = intent?.getParcelableExtra<Build>("build")
@@ -121,6 +110,9 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
     val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
+
+
+
 
     if (loading) {
         // Full-screen loading indicator
@@ -196,7 +188,7 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                 containerColor = Color.Transparent
             ) { paddingValues ->
 
-                val components = listOf(
+                val activityMap = mapOf(
                     "CPU" to CpuActivity::class.java,
                     "Case" to CasingActivity::class.java,
                     "GPU" to VideoCardActivity::class.java,
@@ -210,6 +202,7 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                     "Mouse" to MouseActivity::class.java
                 )
 
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -217,73 +210,102 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                         .padding(horizontal = 16.dp, vertical = 0.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    components.forEach { (title, activityClass) ->
+                    Log.d("BuildScreen", "Rendering LazyColumn with components: $selectedComponents")
+
+                    // Iterasi melalui komponen yang dipilih
+                    selectedComponents.forEach { (title, activityClass) ->
+                        Log.d("BuildScreen", "Rendering component: $title with activity: $activityClass")
+
                         item {
+                            // Dapatkan detail komponen berdasarkan kategori
                             val componentDetail = when (title) {
                                 "CPU" -> buildViewModel.buildData.value?.components?.processor?.let {
+                                    Log.d("BuildScreen", "CPU detail: ${it.name}")
                                     "Processor: ${it.name}\nCores: ${it.core_count}\nSpeed: ${it.core_clock} GHz"
-//                                Log.d("BuildScreen", "Component Detail: $it")
                                 }
 
                                 "Case" -> buildViewModel.buildData.value?.components?.casing?.let {
+                                    Log.d("BuildScreen", "Case detail: ${it.name}")
                                     "Case: ${it.name}\nType: ${it.type}"
                                 }
 
                                 "GPU" -> buildViewModel.buildData.value?.components?.videoCard?.let {
+                                    Log.d("BuildScreen", "GPU detail: ${it.name}")
                                     "GPU: ${it.name}\nMemory: ${it.memory} GB"
                                 }
 
                                 "Motherboard" -> buildViewModel.buildData.value?.components?.motherboard?.let {
+                                    Log.d("BuildScreen", "Motherboard detail: ${it.name}")
                                     "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
                                 }
 
                                 "RAM" -> buildViewModel.buildData.value?.components?.memory?.let {
+                                    Log.d("BuildScreen", "RAM detail: ${it.name}")
                                     "Memory: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
                                 }
 
                                 "InternalHardDrive" -> buildViewModel.buildData.value?.components?.internalHardDrive?.let {
+                                    Log.d("BuildScreen", "InternalHardDrive detail: ${it.name}")
                                     "InternalHardDrive: ${it.name}\nCapacity: ${it.capacity} GB"
                                 }
 
                                 "PowerSupply" -> buildViewModel.buildData.value?.components?.powerSupply?.let {
+                                    Log.d("BuildScreen", "PowerSupply detail: ${it.name}")
                                     "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
                                 }
 
                                 "CPU Cooler" -> buildViewModel.buildData.value?.components?.cpuCooler?.let {
+                                    Log.d("BuildScreen", "CPU Cooler detail: ${it.name}")
                                     "CPU Cooler: ${it.name}\nFan Speed: ${it.rpm} RPM"
                                 }
 
                                 "Headphone" -> buildViewModel.buildData.value?.components?.headphone?.let {
+                                    Log.d("BuildScreen", "Headphone detail: ${it.name}")
                                     "Headphone: ${it.name}\nType: ${it.type}"
                                 }
 
                                 "Keyboard" -> buildViewModel.buildData.value?.components?.keyboard?.let {
+                                    Log.d("BuildScreen", "Keyboard detail: ${it.name}")
                                     "Keyboard: ${it.name}\nType: ${it.switches}"
                                 }
 
                                 "Mouse" -> buildViewModel.buildData.value?.components?.mouse?.let {
+                                    Log.d("BuildScreen", "Mouse detail: ${it.name}")
                                     "Mouse: ${it.name}\nType: ${it.maxDpi}"
                                 }
 
-                                else -> null
+                                else -> {
+                                    Log.d("BuildScreen", "No detail found for $title")
+                                    null
+                                }
                             }
 
+                            // Log untuk komponen
+                            Log.d("BuildScreen", "ComponentCard: $title, Detail: $componentDetail")
+
+                            // Tampilkan ComponentCard
                             ComponentCard(
                                 title = title,
                                 onClick = {
-                                    val intent = Intent(context, activityClass)
-                                    context.startActivity(intent)
+                                    val activityClass = activityMap[title]
+                                    if (activityClass != null) {
+                                        context.startActivity(Intent(context, activityClass))
+                                    } else {
+                                        Log.e("BuildScreen", "Activity not found for $title")
+                                    }
                                 },
                                 componentDetail = componentDetail,
                                 category = title,
                                 onRemove = {
+                                    Log.d("BuildScreen", "$title Remove Button Clicked")
                                     buildViewModel.removeComponent(title)
                                 }
                             )
                         }
-
                     }
                 }
+
+
             }
         }
     }
@@ -330,17 +352,8 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                     Text("OK")
                 }
             },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        // Dismiss the dialog and navigate to HomeActivity
-                        context.startActivity(Intent(context, HomeActivity::class.java))
-                    }
-                ) {
-                    Text("Cancel")
-                }
-            }
         )
+
     }
 }
 
@@ -352,8 +365,13 @@ fun ComponentCard(
     category: String, // Kategori komponen
     onClick: () -> Unit,
     componentDetail: String?,
-    onRemove: () -> Unit // Tambahkan callback untuk remove
+    onRemove: () -> Unit // Callback untuk remove
 ) {
+    val tag = "ComponentCard"
+
+    Log.d(tag, "Rendering ComponentCard for $title with category $category")
+    Log.d(tag, "Component detail: ${componentDetail ?: "No details available"}")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -365,6 +383,7 @@ fun ComponentCard(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
+            // Title
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium.copy(fontSize = 20.sp),
@@ -375,6 +394,7 @@ fun ComponentCard(
                     .padding(10.dp)
             )
 
+            // Detail Section
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -391,7 +411,11 @@ fun ComponentCard(
                 ) {
                     Spacer(modifier = Modifier.height(5.dp))
 
-                    if (!componentDetail.isNullOrEmpty() && category == title) {
+                    // Periksa apakah detail komponen ada
+                    if (!componentDetail.isNullOrEmpty()) {
+                        Log.d(tag, "Displaying component detail for $title: $componentDetail")
+
+                        // Tampilkan detail komponen
                         Text(
                             text = componentDetail,
                             color = Color.White,
@@ -399,16 +423,36 @@ fun ComponentCard(
                             textAlign = TextAlign.Start
                         )
                         Spacer(modifier = Modifier.height(8.dp))
+
+                        // Tombol Remove
                         Button(
-                            onClick = { onRemove() },
+                            onClick = {
+                                Log.d(tag, "Remove button clicked for $title")
+                                onRemove()
+                            },
                             modifier = Modifier.background(Color.Transparent),
                             elevation = ButtonDefaults.buttonElevation(0.dp)
                         ) {
                             Text(text = "Remove Component")
                         }
                     } else {
+                        Log.d(tag, "No component detail found for $title. Showing default view.")
+
+                        // Tampilkan teks default untuk kondisi awal
+                        Text(
+                            text = "No $title Selected",
+                            color = Color.Gray,
+                            modifier = Modifier.padding(8.dp),
+                            textAlign = TextAlign.Start
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Tombol Add
                         Button(
-                            onClick = { onClick() },
+                            onClick = {
+                                Log.d(tag, "Add button clicked for $title")
+                                onClick()
+                            },
                             modifier = Modifier.background(Color.Transparent),
                             elevation = ButtonDefaults.buttonElevation(0.dp)
                         ) {
@@ -428,6 +472,9 @@ fun ComponentCard(
         }
     }
 }
+
+
+
 
 
 
