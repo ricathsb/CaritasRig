@@ -11,6 +11,7 @@ data class Motherboard(
     val formFactor: String = "",
     val maxMemory: Int =0, // Maximum memory in GB
     val memorySlots: Int = 0, // Number of memory slots
-    val color: String = ""
+    val color: String = "",
+    val imageUrl: String = ""
 ):Parcelable
 

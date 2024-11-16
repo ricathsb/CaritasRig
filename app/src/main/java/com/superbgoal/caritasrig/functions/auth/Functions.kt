@@ -1,6 +1,7 @@
 // Function.kt
 package com.superbgoal.caritasrig.functions.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,10 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.component.Processor
@@ -139,11 +143,11 @@ fun VideoCardInfo(videoCard: VideoCard) {
     Text(text = "Boost Clock: ${videoCard.boostClock} MHz")
 //    Text(text = "TDP: ${videoCard.tdp}W")
 }
-
 @Composable
 fun ComponentCard(
     title: String,
     details: String,
+    imageUrl: String? = null, // Optional image URL
     onAddClick: () -> Unit,
     backgroundColor: Color = Color(0xFF3E2C47), // Default purple background color
     buttonColor: Color = Color(0xFF6E5768) // Default button color
@@ -162,10 +166,24 @@ fun ComponentCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Optional image on the left
+            if (!imageUrl.isNullOrEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageUrl),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(end = 16.dp)
+                        .clip(MaterialTheme.shapes.medium),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // Text content
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium, // Adjusted to h6 for visibility
+                    style = MaterialTheme.typography.titleMedium, // Adjusted for visibility
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(4.dp)) // Spacing between title and details
@@ -176,6 +194,7 @@ fun ComponentCard(
                 )
             }
 
+            // Add button
             Button(
                 onClick = onAddClick,
                 colors = ButtonDefaults.buttonColors(buttonColor) // Set button color
@@ -192,6 +211,7 @@ fun ComponentCard(
         }
     }
 }
+
 
 fun saveComponent(
     userId: String,

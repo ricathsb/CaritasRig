@@ -152,11 +152,6 @@ fun updateUserProfileData(
     }
 }
 
-
-
-
-
-
     fun loadUserData(userId: String, onUserDataLoaded: (User) -> Unit, onFailure: (String) -> Unit) {
     val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
     val database = FirebaseDatabase.getInstance(databaseUrl).reference

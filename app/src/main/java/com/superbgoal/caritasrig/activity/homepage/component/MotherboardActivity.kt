@@ -139,6 +139,7 @@ class MotherboardActivity : ComponentActivity() {
             items(motherboards) { motherboard ->
                 // Use ComponentCard for each motherboard
                 ComponentCard(
+                    imageUrl = "https://firebasestorage.googleapis.com/v0/b/caritas-rig.appspot.com/o/component%2Fmotherboard%2Fmsi-am5.jpg?alt=media&token=a074c07e-e02e-4f45-9b65-a15ab3265fcb",
                     title = motherboard.name,
                     details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
                     onAddClick = {
