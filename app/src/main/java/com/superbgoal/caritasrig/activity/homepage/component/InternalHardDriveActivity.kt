@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -132,6 +133,7 @@ class InternalHardDriveActivity : ComponentActivity() {
 
     @Composable
     fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>) {
+        val context = LocalContext.current
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -141,6 +143,7 @@ class InternalHardDriveActivity : ComponentActivity() {
                 ComponentCard(
                     title = hardDrive.name,
                     details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
+                    context = context,
                     onAddClick = {
                         Log.d("HardDriveActivity", "Selected Hard Drive: ${hardDrive.name}")
 

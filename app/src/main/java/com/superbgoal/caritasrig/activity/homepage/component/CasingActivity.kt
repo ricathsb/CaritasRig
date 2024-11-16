@@ -42,6 +42,8 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
+import androidx.compose.ui.platform.LocalContext
+
 class CasingActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
     val buildTitle = BuildManager.getBuildTitle()
@@ -149,6 +151,9 @@ class CasingActivity : ComponentActivity() {
 
     @Composable
     fun CasingList(casing: List<Casing>, userId: String) {
+        // Get context from LocalContext
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -158,6 +163,7 @@ class CasingActivity : ComponentActivity() {
                 ComponentCard(
                     title = casingItem.name,
                     details = "${casingItem.type} | ${casingItem.color} | PSU: ${casingItem.psu ?: "Not included"} | Volume: ${casingItem.externalVolume} L | 3.5\" Bays: ${casingItem.internal35Bays}",
+                    context = context, // Pass context from LocalContext
                     onAddClick = {
                         Log.d("CasingActivity", "Selected Casing: ${casingItem.name}")
                         buildTitle?.let { title ->
@@ -183,3 +189,4 @@ class CasingActivity : ComponentActivity() {
         }
     }
 }
+

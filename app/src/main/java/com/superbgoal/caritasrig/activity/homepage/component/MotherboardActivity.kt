@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -132,6 +133,7 @@ class MotherboardActivity : ComponentActivity() {
 
     @Composable
     fun MotherboardList(motherboards: List<Motherboard>) {
+        val context = LocalContext.current
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -139,11 +141,12 @@ class MotherboardActivity : ComponentActivity() {
             items(motherboards) { motherboard ->
                 // Use ComponentCard for each motherboard
                 ComponentCard(
-                    imageUrl = "https://firebasestorage.googleapis.com/v0/b/caritas-rig.appspot.com/o/component%2Fmotherboard%2Fmsi-am5.jpg?alt=media&token=a074c07e-e02e-4f45-9b65-a15ab3265fcb",
+                    imageUrl = motherboard.imageUrl,
                     title = motherboard.name,
                     details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
+                    context = context,
                     onAddClick = {
-                        Log.d("MotherboardActivity", "Selected Motherboard: ${motherboard.name}")
+                        Log.d("MotherboardActivity", "Selected Motherboard: ${motherboard.imageUrl}")
 
                         // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser

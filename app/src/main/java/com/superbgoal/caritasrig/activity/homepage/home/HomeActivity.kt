@@ -562,8 +562,6 @@ fun UserProfile(viewModel: HomeViewModel) {
         }
     }
 
-
-
 @Composable
 fun LoadingScreen() {
     Box(

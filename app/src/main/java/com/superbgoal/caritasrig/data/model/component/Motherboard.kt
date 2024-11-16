@@ -1,6 +1,7 @@
 package com.superbgoal.caritasrig.data.model.component
 
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -12,6 +13,6 @@ data class Motherboard(
     val maxMemory: Int =0, // Maximum memory in GB
     val memorySlots: Int = 0, // Number of memory slots
     val color: String = "",
-    val imageUrl: String = ""
+    @SerializedName("image_url") val imageUrl: String = ""
 ):Parcelable
 

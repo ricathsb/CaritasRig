@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -149,6 +150,7 @@ class KeyboardActivity : ComponentActivity() {
 
     @Composable
     fun KeyboardList(keyboards: List<Keyboard>, userId: String) {
+        val context = LocalContext.current
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -157,6 +159,7 @@ class KeyboardActivity : ComponentActivity() {
                 ComponentCard(
                     title = keyboardItem.name,
                     details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
+                    context = context,
                     onAddClick = {
                         Log.d("KeyboardActivity", "Selected Keyboard: ${keyboardItem.name}")
 

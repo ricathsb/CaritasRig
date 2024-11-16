@@ -1,6 +1,7 @@
 package com.superbgoal.caritasrig.activity.homepage.build
 
 import BuildViewModel
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.CircularProgressIndicator
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
@@ -85,15 +87,18 @@ class BuildActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             BuildScreen(buildViewModel)
+            Log.d("BuildActivity", "onCreate called")
         }
 
-        // Tangani Intent saat aktivitas dibuat
+
         processIntent(intent)
     }
     override fun onResume() {
         super.onResume()
         // Tangani Intent jika aktivitas kembali dari background
         intent?.let { processIntent(it) }
+        buildViewModel.refreshBuildData()
+        Log.d("BuildActivity", "onResume called")
     }
 
     private fun processIntent(intent: Intent?) {
@@ -106,169 +111,178 @@ class BuildActivity : ComponentActivity() {
 
 }
 
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
     getDatabaseReference()
     val context = LocalContext.current
+    val loading by buildViewModel.loading.observeAsState(false) // Observe the loading state
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
     var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
-    val components by buildViewModel.components.observeAsState(emptyMap())
+    val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
 
-
-
-    // Main UI
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.bg_build),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.fillMaxSize()
-        )
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(text = buildTitle.ifEmpty { "Build Name" })
-                    },
-                    modifier = Modifier.height(145.dp),
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                context.startActivity(Intent(context, HomeActivity::class.java))
-                            },
-                            modifier = Modifier
-                                .padding(start = 30.dp, top = 60.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_home),
-                                contentDescription = "Home",
-                                modifier = Modifier.size(80.dp),
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                // Show the dialog to enter a new title
-                                showDialog = true
-                                dialogText = "" // Clear the input for a new title
-                            },
-                            modifier = Modifier
-                                .padding(end = 30.dp, top = 60.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_save),
-                                contentDescription = "Reset Build Title",
-                                tint = Color.White,
-                                modifier = Modifier.size(80.dp)
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        navigationIconContentColor = Color.White,
-                        actionIconContentColor = Color.White
-                    )
-                )
-            },
-            containerColor = Color.Transparent
-        ) { paddingValues ->
-
-            val components = listOf(
-                "CPU" to CpuActivity::class.java,
-                "Case" to CasingActivity::class.java,
-                "GPU" to VideoCardActivity::class.java,
-                "Motherboard" to MotherboardActivity::class.java,
-                "RAM" to MemoryActivity::class.java,
-                "InternalHardDrive" to InternalHardDriveActivity::class.java,
-                "PowerSupply" to PowerSupplyActivity::class.java,
-                "CPU Cooler" to CpuCoolerActivity::class.java,
-                "Headphone" to HeadphoneActivity::class.java,
-                "Keyboard" to KeyboardActivity::class.java,
-                "Mouse" to MouseActivity::class.java
+    if (loading) {
+        // Full-screen loading indicator
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(60.dp)
             )
+        }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.bg_build),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+            )
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(text = buildTitle.ifEmpty { "Build Name" })
+                        },
+                        modifier = Modifier.height(145.dp),
+                        navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    context.startActivity(Intent(context, HomeActivity::class.java))
+                                },
+                                modifier = Modifier
+                                    .padding(start = 30.dp, top = 60.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_home),
+                                    contentDescription = "Home",
+                                    modifier = Modifier.size(80.dp),
+                                    tint = Color.White
+                                )
+                            }
+                        },
+                        actions = {
+                            IconButton(
+                                onClick = {
+                                    // Show the dialog to enter a new title
+                                    showDialog = true
+                                    dialogText = "" // Clear the input for a new title
+                                },
+                                modifier = Modifier
+                                    .padding(end = 30.dp, top = 60.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_save),
+                                    contentDescription = "Reset Build Title",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(80.dp)
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            navigationIconContentColor = Color.White,
+                            actionIconContentColor = Color.White
+                        )
+                    )
+                },
+                containerColor = Color.Transparent
+            ) { paddingValues ->
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp, vertical = 0.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                components.forEach { (title, activityClass) ->
-                    item {
-                        val componentDetail = when (title) {
-                            "CPU" -> buildViewModel.buildData.value?.components?.processor?.let {
-                                "Processor: ${it.name}\nCores: ${it.core_count}\nSpeed: ${it.core_clock} GHz"
+                val components = listOf(
+                    "CPU" to CpuActivity::class.java,
+                    "Case" to CasingActivity::class.java,
+                    "GPU" to VideoCardActivity::class.java,
+                    "Motherboard" to MotherboardActivity::class.java,
+                    "RAM" to MemoryActivity::class.java,
+                    "InternalHardDrive" to InternalHardDriveActivity::class.java,
+                    "PowerSupply" to PowerSupplyActivity::class.java,
+                    "CPU Cooler" to CpuCoolerActivity::class.java,
+                    "Headphone" to HeadphoneActivity::class.java,
+                    "Keyboard" to KeyboardActivity::class.java,
+                    "Mouse" to MouseActivity::class.java
+                )
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 16.dp, vertical = 0.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    components.forEach { (title, activityClass) ->
+                        item {
+                            val componentDetail = when (title) {
+                                "CPU" -> buildViewModel.buildData.value?.components?.processor?.let {
+                                    "Processor: ${it.name}\nCores: ${it.core_count}\nSpeed: ${it.core_clock} GHz"
 //                                Log.d("BuildScreen", "Component Detail: $it")
+                                }
+
+                                "Case" -> buildViewModel.buildData.value?.components?.casing?.let {
+                                    "Case: ${it.name}\nType: ${it.type}"
+                                }
+
+                                "GPU" -> buildViewModel.buildData.value?.components?.videoCard?.let {
+                                    "GPU: ${it.name}\nMemory: ${it.memory} GB"
+                                }
+
+                                "Motherboard" -> buildViewModel.buildData.value?.components?.motherboard?.let {
+                                    "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
+                                }
+
+                                "RAM" -> buildViewModel.buildData.value?.components?.memory?.let {
+                                    "Memory: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
+                                }
+
+                                "InternalHardDrive" -> buildViewModel.buildData.value?.components?.internalHardDrive?.let {
+                                    "InternalHardDrive: ${it.name}\nCapacity: ${it.capacity} GB"
+                                }
+
+                                "PowerSupply" -> buildViewModel.buildData.value?.components?.powerSupply?.let {
+                                    "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
+                                }
+
+                                "CPU Cooler" -> buildViewModel.buildData.value?.components?.cpuCooler?.let {
+                                    "CPU Cooler: ${it.name}\nFan Speed: ${it.rpm} RPM"
+                                }
+
+                                "Headphone" -> buildViewModel.buildData.value?.components?.headphone?.let {
+                                    "Headphone: ${it.name}\nType: ${it.type}"
+                                }
+
+                                "Keyboard" -> buildViewModel.buildData.value?.components?.keyboard?.let {
+                                    "Keyboard: ${it.name}\nType: ${it.switches}"
+                                }
+
+                                "Mouse" -> buildViewModel.buildData.value?.components?.mouse?.let {
+                                    "Mouse: ${it.name}\nType: ${it.maxDpi}"
+                                }
+
+                                else -> null
                             }
-                            "Case" -> buildViewModel.buildData.value?.components?.casing?.let {
-                                "Case: ${it.name}\nType: ${it.type}"
-                            }
-                            "GPU" -> buildViewModel.buildData.value?.components?.videoCard?.let {
-                                "GPU: ${it.name}\nMemory: ${it.memory} GB"
-                            }
-                            "Motherboard" -> buildViewModel.buildData.value?.components?.motherboard?.let {
-                                "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
-                            }
-                            "RAM" -> buildViewModel.buildData.value?.components?.memory?.let {
-                                "Memory: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
-                            }
-                            "InternalHardDrive" -> buildViewModel.buildData.value?.components?.internalHardDrive?.let {
-                                "InternalHardDrive: ${it.name}\nCapacity: ${it.capacity} GB"
-                            }
-                            "PowerSupply" -> buildViewModel.buildData.value?.components?.powerSupply?.let {
-                                "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
-                            }
-                            "CPU Cooler" -> buildViewModel.buildData.value?.components?.cpuCooler?.let {
-                                "CPU Cooler: ${it.name}\nFan Speed: ${it.rpm} RPM"
-                            }
-                            "Headphone" -> buildViewModel.buildData.value?.components?.headphone?.let {
-                                "Headphone: ${it.name}\nType: ${it.type}"
-                            }
-                            "Keyboard" -> buildViewModel.buildData.value?.components?.keyboard?.let {
-                                "Keyboard: ${it.name}\nType: ${it.switches}"
-                            }
-                            "Mouse" -> buildViewModel.buildData.value?.components?.mouse?.let {
-                                "Mouse: ${it.name}\nType: ${it.maxDpi}"
-                            }
-                            else -> null
+
+                            ComponentCard(
+                                title = title,
+                                onClick = {
+                                    val intent = Intent(context, activityClass)
+                                    context.startActivity(intent)
+                                },
+                                componentDetail = componentDetail,
+                                category = title,
+                                onRemove = {
+                                    buildViewModel.removeComponent(title)
+                                }
+                            )
                         }
 
-                        ComponentCard(
-                            title = title,
-                            onClick = {
-                                val intent = Intent(context, activityClass)
-                                context.startActivity(intent)
-                            },
-                            componentDetail = componentDetail,
-                            category = title,
-                            onRemove = {
-                                removeBuildComponent(
-                                    userId = Firebase.auth.currentUser?.uid ?: "",
-                                    componentCategory = title.lowercase(),
-                                    onSuccess = {
-                                        Log.d("BuildScreen", "$title removed successfully")
-                                        buildViewModel.refreshBuildData()
-                                    },
-                                    onFailure = { errorMessage ->
-                                        Log.e("BuildScreen", "Failed to remove $title: $errorMessage")
-                                    },
-                                    buildId = buildViewModel.buildData.value?.buildId ?: ""
-                                )
-                                Log.d("BuildScreen", "Component Detail for $title: $componentDetail")
-                            }
-                        )
                     }
-
                 }
             }
         }
@@ -329,6 +343,7 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
         )
     }
 }
+
 
 
 @Composable

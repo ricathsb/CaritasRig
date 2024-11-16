@@ -1,6 +1,9 @@
 // Function.kt
 package com.superbgoal.caritasrig.functions.auth
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
@@ -148,7 +152,8 @@ fun ComponentCard(
     title: String,
     details: String,
     imageUrl: String? = null, // Optional image URL
-    onAddClick: () -> Unit,
+    onAddClick: () -> Unit = {}, // Default to empty lambda
+    context: Context, // Context for starting the intent
     backgroundColor: Color = Color(0xFF3E2C47), // Default purple background color
     buttonColor: Color = Color(0xFF6E5768) // Default button color
 ) {
@@ -196,7 +201,15 @@ fun ComponentCard(
 
             // Add button
             Button(
-                onClick = onAddClick,
+                    onClick = {
+                        // Call onAddClick lambda
+                        onAddClick()
+
+                        // Create and start intent for BuildActivity
+                        val intent = Intent(context, BuildActivity::class.java)
+                        context.startActivity(intent) // Gunakan `context` untuk memulai aktivitas
+                    }
+                ,
                 colors = ButtonDefaults.buttonColors(buttonColor) // Set button color
             ) {
                 Icon(
@@ -210,6 +223,10 @@ fun ComponentCard(
             }
         }
     }
+}
+
+fun putExtra(s: String, title: String) {
+
 }
 
 

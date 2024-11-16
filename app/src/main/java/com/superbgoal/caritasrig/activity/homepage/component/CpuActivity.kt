@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -123,6 +124,9 @@ class CpuActivity : ComponentActivity() {
 
     @Composable
     fun ProcessorList(processors: List<Processor>) {
+        // Get context from LocalContext
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -132,6 +136,7 @@ class CpuActivity : ComponentActivity() {
                 ComponentCard(
                     title = processor.name,
                     details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
+                    context = context, // Passing context from LocalContext
                     onAddClick = {
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString() // Dapatkan ID pengguna
@@ -142,7 +147,7 @@ class CpuActivity : ComponentActivity() {
                         // Check if buildTitle is available before storing data in Firebase
                         buildTitle?.let { title ->
                             // Menyimpan processor dengan memanggil saveComponent
-                                saveComponent(
+                            saveComponent(
                                 userId = userId,
                                 buildTitle = title,
                                 componentType = "cpu", // Menyimpan processor dengan tipe "cpu"
@@ -150,7 +155,6 @@ class CpuActivity : ComponentActivity() {
                                 onSuccess = {
                                     Log.d("BuildActivity", "Processor ${processor.name} saved successfully under build title: $title")
                                     Log.d("ProcessorDebug", "Processor Data: $processor")
-
                                 },
                                 onFailure = { errorMessage ->
                                     Log.e("BuildActivity", "Failed to store CPU under build title: ${errorMessage}")
@@ -162,9 +166,7 @@ class CpuActivity : ComponentActivity() {
                         }
                     }
                 )
-
             }
-
         }
     }
 }

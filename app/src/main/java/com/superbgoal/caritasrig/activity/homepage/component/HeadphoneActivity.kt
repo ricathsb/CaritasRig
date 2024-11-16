@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,7 +46,6 @@ import com.superbgoal.caritasrig.functions.auth.saveComponent
 class HeadphoneActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
     val buildTitle = BuildManager.getBuildTitle()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,6 +149,8 @@ class HeadphoneActivity : ComponentActivity() {
 
     @Composable
     fun HeadphoneList(headphones: List<Headphones>, userId: String) {
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -157,12 +159,9 @@ class HeadphoneActivity : ComponentActivity() {
                 ComponentCard(
                     title = headphoneItem.name,
                     details = "Type: ${headphoneItem.type} | Color: ${headphoneItem.color} | Battery Life: ${headphoneItem.frequencyResponse} hrs",
+                    context = context,
                     onAddClick = {
                         Log.d("HeadphoneActivity", "Selected Headphone: ${headphoneItem.name}")
-
-                        // Get the current user and build title
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        val userId = currentUser?.uid.toString()
 
                         // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
