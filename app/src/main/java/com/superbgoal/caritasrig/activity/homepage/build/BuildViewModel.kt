@@ -7,16 +7,33 @@ import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
+import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
+import com.superbgoal.caritasrig.data.model.component.Casing
+import com.superbgoal.caritasrig.data.model.component.CpuCooler
+import com.superbgoal.caritasrig.data.model.component.Headphones
+import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.component.Keyboard
+import com.superbgoal.caritasrig.data.model.component.Memory
+import com.superbgoal.caritasrig.data.model.component.Motherboard
+import com.superbgoal.caritasrig.data.model.component.Mouse
+import com.superbgoal.caritasrig.data.model.component.PowerSupply
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.VideoCard
 import com.superbgoal.caritasrig.data.removeBuildComponent
 
 class BuildViewModel(application: Application) : AndroidViewModel(application) {
+
+    var lastScrollIndex: Int = 0
+    var lastScrollOffset: Int = 0
+
     private val _selectedComponents = MutableLiveData<Map<String, String>>()
     val selectedComponents: LiveData<Map<String, String>> = _selectedComponents
 
     private val sharedPreferences =
         application.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+
     private val _buildTitle = MutableLiveData<String>()
     val buildTitle: LiveData<String> get() = _buildTitle
 
@@ -27,10 +44,6 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> get() = _loading
-
-
-
-
 
     private val defaultCategories = mapOf(
         "CPU" to "No CPU Selected",
@@ -59,6 +72,8 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
         fetchBuildByTitle(savedBuildTitle)
     }
+
+
 
     fun resetBuildData() {
 
@@ -172,20 +187,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    fun refreshBuildData() {
-        _buildData.value?.let { currentBuild ->
-            val refreshedBuild = currentBuild.copy(
-                title = currentBuild.title, // Mempertahankan title saat ini
-                components = currentBuild.components // Mempertahankan komponen yang ada
-            )
-            setBuildData(refreshedBuild) // Memperbarui data build dengan instance baru
-            Log.d("BuildViewModel", "Build Data Refreshed: $refreshedBuild")
-        } ?: run {
-            Log.w("BuildViewModel", "No Build Data to Refresh")
-        }
-    }
-
-     fun fetchBuildByTitle(title: String) {
+    fun fetchBuildByTitle(title: String) {
         _loading.value = true // Start loading
 
         fetchBuildsWithAuth(
@@ -260,10 +262,65 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setLoading(isLoading: Boolean) {
-        _loading.value = isLoading
+    fun updateBuildComponentWithViewModel(
+        category: String,
+        updatedData: Map<String, Any>
+    ) {
+        _loading.value = true
+
+        val userId = Firebase.auth.currentUser?.uid
+        val currentBuildData = _buildData.value
+
+        if (userId == null || currentBuildData == null) {
+            Log.e("BuildViewModel", "User not authenticated or build data is null.")
+            _loading.value = false
+            return
+        }
+
+        val buildId = currentBuildData.buildId
+        val componentPath = "users/$userId/builds/$buildId/components/${category.lowercase()}"
+
+        getDatabaseReference().child(componentPath).updateChildren(updatedData)
+            .addOnSuccessListener {
+                Log.d("BuildViewModel", "Successfully updated $category in Firebase.")
+
+                // Update data lokal setelah sukses
+                val components = currentBuildData.components ?: return@addOnSuccessListener
+                val updatedComponents = when (category) {
+                    "CPU" -> components.copy(processor = updatedData["processor"] as? Processor ?: components.processor)
+                    "Case" -> components.copy(casing = updatedData["casing"] as? Casing ?: components.casing)
+                    "GPU" -> components.copy(videoCard = updatedData["videoCard"] as? VideoCard ?: components.videoCard)
+                    "Motherboard" -> components.copy(motherboard = updatedData["motherboard"] as? Motherboard ?: components.motherboard)
+                    "RAM" -> components.copy(memory = updatedData["memory"] as? Memory ?: components.memory)
+                    "InternalHardDrive" -> components.copy(internalHardDrive = updatedData["internalHardDrive"] as? InternalHardDrive ?: components.internalHardDrive)
+                    "PowerSupply" -> components.copy(powerSupply = updatedData["powerSupply"] as? PowerSupply ?: components.powerSupply)
+                    "CPU Cooler" -> components.copy(cpuCooler = updatedData["cpuCooler"] as? CpuCooler ?: components.cpuCooler)
+                    "Headphone" -> components.copy(headphone = updatedData["headphone"] as? Headphones ?: components.headphone)
+                    "Keyboard" -> components.copy(keyboard = updatedData["keyboard"] as? Keyboard ?: components.keyboard)
+                    "Mouse" -> components.copy(mouse = updatedData["mouse"] as? Mouse ?: components.mouse)
+                    else -> components
+                }.copy() // Buat salinan baru untuk memastikan perubahan referensi
+
+                val updatedBuildData = currentBuildData.copy(components = updatedComponents)
+
+                // Paksa perubahan agar terdeteksi Jetpack Compose
+                _buildData.value = null
+                _buildData.value = updatedBuildData
+
+                // Update selectedComponents untuk UI
+                val updatedSelectedComponents = _selectedComponents.value?.toMutableMap()?.apply {
+                    this[category] = "Updated $category Successfully"
+                } ?: mapOf(category to "Updated $category Successfully")
+                _selectedComponents.value = updatedSelectedComponents
+
+                _loading.value = false // Selesai loading
+            }
+            .addOnFailureListener { error ->
+                Log.e("BuildViewModel", "Failed to update $category in Firebase: ${error.message}")
+                _selectedComponents.value = _selectedComponents.value?.toMutableMap()?.apply {
+                    this[category] = "Failed to update $category"
+                }
+                _loading.value = false // Selesai loading, meskipun gagal
+            }
     }
-
-
-
 }

@@ -3,6 +3,7 @@
 package com.superbgoal.caritasrig.activity.homepage.build
 
 import BuildViewModel
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -24,7 +25,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
 import androidx.compose.material3.AlertDialog
@@ -42,11 +45,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +60,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -113,11 +119,28 @@ class BuildActivity : ComponentActivity() {
 fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
     getDatabaseReference()
     val context = LocalContext.current
-    val loading by buildViewModel.loading.observeAsState(false) // Observe the loading state
+
+    val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
+    val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
     var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
-    val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
+    val loading by buildViewModel.loading.observeAsState(false)
+
+    // LazyListState untuk melacak posisi scroll
+    val lazyListState = rememberLazyListState(
+        initialFirstVisibleItemIndex = buildViewModel.lastScrollIndex,
+        initialFirstVisibleItemScrollOffset = buildViewModel.lastScrollOffset
+    )
+
+    // Menyimpan posisi scroll di ViewModel
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
+            .collect { (index, offset) ->
+                buildViewModel.lastScrollIndex = index
+                buildViewModel.lastScrollOffset = offset
+            }
+    }
 
     if (loading) {
         // Full-screen loading indicator
@@ -133,21 +156,20 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
             )
         }
     } else {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Background image
             Image(
                 painter = painterResource(id = R.drawable.bg_build),
                 contentDescription = null,
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier.fillMaxSize()
             )
+
+            // TopAppBar with title and actions
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = {
-                            Text(text = buildTitle.ifEmpty { "Build Name" })
-                        },
+                        title = { Text(text = buildTitle.ifEmpty { "Build Name" }) },
                         modifier = Modifier.height(145.dp),
                         navigationIcon = {
                             IconButton(
@@ -168,16 +190,15 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                         actions = {
                             IconButton(
                                 onClick = {
-                                    // Show the dialog to enter a new title
                                     showDialog = true
-                                    dialogText = "" // Clear the input for a new title
+                                    dialogText = buildTitle // Load current title for editing
                                 },
                                 modifier = Modifier
                                     .padding(end = 30.dp, top = 60.dp)
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_save),
-                                    contentDescription = "Reset Build Title",
+                                    contentDescription = "Edit Build Title",
                                     tint = Color.White,
                                     modifier = Modifier.size(80.dp)
                                 )
@@ -193,6 +214,7 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                 containerColor = Color.Transparent
             ) { paddingValues ->
 
+                // Activity mapping for navigation
                 val activityMap = mapOf(
                     "CPU" to CpuActivity::class.java,
                     "Case" to CasingActivity::class.java,
@@ -207,113 +229,107 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                     "Mouse" to MouseActivity::class.java
                 )
 
-
                 LazyColumn(
+                    state = lazyListState, // Gunakan LazyListState di sini
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(horizontal = 16.dp, vertical = 0.dp),
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Log.d("BuildScreen", "Rendering LazyColumn with components: $selectedComponents")
-
-                    // Iterasi melalui komponen yang dipilih
+                    // Iterate through selected components
                     selectedComponents.forEach { (title, activityClass) ->
-                        Log.d("BuildScreen", "Rendering component: $title with activity: $activityClass")
-
                         item {
-                            // Dapatkan detail komponen berdasarkan kategori
                             val componentDetail = when (title) {
-                                "CPU" -> buildViewModel.buildData.value?.components?.processor?.let {
-                                    Log.d("BuildScreen", "CPU detail: ${it.name}")
+                                "CPU" -> buildData?.components?.processor?.let {
                                     "Processor: ${it.name}\nCores: ${it.core_count}\nSpeed: ${it.core_clock} GHz"
                                 }
 
-                                "Case" -> buildViewModel.buildData.value?.components?.casing?.let {
-                                    Log.d("BuildScreen", "Case detail: ${it.name}")
+                                "Case" -> buildData?.components?.casing?.let {
                                     "Case: ${it.name}\nType: ${it.type}"
                                 }
 
-                                "GPU" -> buildViewModel.buildData.value?.components?.videoCard?.let {
-                                    Log.d("BuildScreen", "GPU detail: ${it.name}")
+                                "GPU" -> buildData?.components?.videoCard?.let {
                                     "GPU: ${it.name}\nMemory: ${it.memory} GB"
                                 }
 
-                                "Motherboard" -> buildViewModel.buildData.value?.components?.motherboard?.let {
-                                    Log.d("BuildScreen", "Motherboard detail: ${it.name}")
+                                "Motherboard" -> buildData?.components?.motherboard?.let {
                                     "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
                                 }
 
-                                "RAM" -> buildViewModel.buildData.value?.components?.memory?.let {
-                                    Log.d("BuildScreen", "RAM detail: ${it.name}")
+                                "RAM" -> buildData?.components?.memory?.let {
                                     "Memory: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
                                 }
 
-                                "InternalHardDrive" -> buildViewModel.buildData.value?.components?.internalHardDrive?.let {
-                                    Log.d("BuildScreen", "InternalHardDrive detail: ${it.name}")
-                                    "InternalHardDrive: ${it.name}\nCapacity: ${it.capacity} GB"
+                                "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
+                                    "Internal Hard Drive: ${it.name}\nCapacity: ${it.capacity} GB"
                                 }
 
-                                "PowerSupply" -> buildViewModel.buildData.value?.components?.powerSupply?.let {
-                                    Log.d("BuildScreen", "PowerSupply detail: ${it.name}")
+                                "PowerSupply" -> buildData?.components?.powerSupply?.let {
                                     "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
                                 }
 
-                                "CPU Cooler" -> buildViewModel.buildData.value?.components?.cpuCooler?.let {
-                                    Log.d("BuildScreen", "CPU Cooler detail: ${it.name}")
+                                "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
                                     "CPU Cooler: ${it.name}\nFan Speed: ${it.rpm} RPM"
                                 }
 
-                                "Headphone" -> buildViewModel.buildData.value?.components?.headphone?.let {
-                                    Log.d("BuildScreen", "Headphone detail: ${it.name}")
+                                "Headphone" -> buildData?.components?.headphone?.let {
                                     "Headphone: ${it.name}\nType: ${it.type}"
                                 }
 
-                                "Keyboard" -> buildViewModel.buildData.value?.components?.keyboard?.let {
-                                    Log.d("BuildScreen", "Keyboard detail: ${it.name}")
+                                "Keyboard" -> buildData?.components?.keyboard?.let {
                                     "Keyboard: ${it.name}\nType: ${it.switches}"
                                 }
 
-                                "Mouse" -> buildViewModel.buildData.value?.components?.mouse?.let {
-                                    Log.d("BuildScreen", "Mouse detail: ${it.name}")
+                                "Mouse" -> buildData?.components?.mouse?.let {
                                     "Mouse: ${it.name}\nType: ${it.maxDpi}"
                                 }
 
-                                else -> {
-                                    Log.d("BuildScreen", "No detail found for $title")
-                                    null
-                                }
+                                else -> null
                             }
 
-                            // Log untuk komponen
-                            Log.d("BuildScreen", "ComponentCard: $title, Detail: $componentDetail")
-
-                            // Tampilkan ComponentCard
+                            // Render ComponentCard
                             ComponentCard(
                                 title = title,
-                                onClick = {
-                                    val activityClass = activityMap[title]
-                                    if (activityClass != null) {
-                                        context.startActivity(Intent(context, activityClass))
-                                    } else {
-                                        Log.e("BuildScreen", "Activity not found for $title")
-                                    }
-                                },
                                 componentDetail = componentDetail,
-                                category = title,
+                                currentPrice = buildData?.components?.let {
+                                    when (title) {
+                                        "CPU" -> it.processor?.price?.toString()
+                                        "Case" -> it.casing?.price?.toString()
+                                        "GPU" -> it.videoCard?.price?.toString()
+                                        "Motherboard" -> it.motherboard?.price?.toString()
+                                        "RAM" -> it.memory?.price?.toString()
+                                        "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
+                                        "PowerSupply" -> it.powerSupply?.price?.toString()
+                                        "CPU Cooler" -> it.cpuCooler?.price?.toString()
+                                        "Headphone" -> it.headphone?.price?.toString()
+                                        "Keyboard" -> it.keyboard?.price?.toString()
+                                        "Mouse" -> it.mouse?.price?.toString()
+                                        else -> "0.0"
+                                    }
+                                } ?: "0.0",
+                                onClick = {
+                                    context.startActivity(Intent(context, activityMap[title]))
+                                },
                                 onRemove = {
-                                    Log.d("BuildScreen", "$title Remove Button Clicked")
                                     buildViewModel.removeComponent(title)
+                                },
+                                onUpdatePrice = { newPrice ->
+                                    buildViewModel.updateBuildComponentWithViewModel(
+                                        category = title,
+                                        updatedData = mapOf("price" to newPrice.toDouble())
+                                    )
+                                    Log.d("BuildActivity", "Price updated for $title: $newPrice")
+                                    (context as? Activity)?.recreate()
                                 }
                             )
                         }
                     }
                 }
-
-
             }
         }
     }
+
 
     // Show dialog only if showDialog is true
     if (showDialog) {
@@ -381,15 +397,14 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
 @Composable
 fun ComponentCard(
     title: String,
-    category: String, // Kategori komponen
-    onClick: () -> Unit,
     componentDetail: String?,
-    onRemove: () -> Unit // Callback untuk remove
+    currentPrice: String,
+    onClick: () -> Unit,
+    onRemove: () -> Unit,
+    onUpdatePrice: (String) -> Unit // Callback untuk mengupdate harga
 ) {
-    val tag = "ComponentCard"
-
-    Log.d(tag, "Rendering ComponentCard for $title with category $category")
-    Log.d(tag, "Component detail: ${componentDetail ?: "No details available"}")
+    // State untuk menampilkan dialog
+    var showDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -430,34 +445,48 @@ fun ComponentCard(
                 ) {
                     Spacer(modifier = Modifier.height(5.dp))
 
-                    // Periksa apakah detail komponen ada
                     if (!componentDetail.isNullOrEmpty()) {
-                        Log.d(tag, "Displaying component detail for $title: $componentDetail")
-
-                        // Tampilkan detail komponen
                         Text(
                             text = componentDetail,
                             color = Color.White,
                             modifier = Modifier.padding(8.dp),
                             textAlign = TextAlign.Start
                         )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Harga Komponen
+                        Text(
+                            text = "Current Price: $$currentPrice",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+                            color = Color.White,
+                            modifier = Modifier.padding(8.dp)
+                        )
+
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Tombol Remove
                         Button(
-                            onClick = {
-                                Log.d(tag, "Remove button clicked for $title")
-                                onRemove()
-                            },
+                            onClick = onRemove,
                             modifier = Modifier.background(Color.Transparent),
                             elevation = ButtonDefaults.buttonElevation(0.dp)
                         ) {
                             Text(text = "Remove Component")
                         }
-                    } else {
-                        Log.d(tag, "No component detail found for $title. Showing default view.")
 
-                        // Tampilkan teks default untuk kondisi awal
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Tombol Configure
+                        Button(
+                            onClick = {
+                                showDialog = true // Tampilkan dialog
+                            },
+                            modifier = Modifier.background(Color.Transparent),
+                            elevation = ButtonDefaults.buttonElevation(0.dp)
+                        ) {
+                            Text(text = "Configure Component")
+                        }
+                    } else {
                         Text(
                             text = "No $title Selected",
                             color = Color.Gray,
@@ -468,10 +497,7 @@ fun ComponentCard(
 
                         // Tombol Add
                         Button(
-                            onClick = {
-                                Log.d(tag, "Add button clicked for $title")
-                                onClick()
-                            },
+                            onClick = onClick,
                             modifier = Modifier.background(Color.Transparent),
                             elevation = ButtonDefaults.buttonElevation(0.dp)
                         ) {
@@ -490,7 +516,93 @@ fun ComponentCard(
             }
         }
     }
+
+    // Dialog untuk mengedit harga
+    if (showDialog) {
+        PriceEditDialog(
+            category = title,
+            currentPrice = currentPrice,
+            onDismiss = { showDialog = false },
+            onConfirm = { newPrice ->
+                onUpdatePrice(newPrice) // Perbarui harga
+                showDialog = false // Tutup dialog
+            }
+        )
+    }
 }
+
+@Composable
+fun PriceEditDialog(
+    category: String,
+    currentPrice: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var newPrice by remember { mutableStateOf(currentPrice) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Edit Price for $category") },
+        text = {
+            Column {
+                Text(text = "Current Price: $currentPrice")
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = newPrice,
+                    onValueChange = { newPrice = it },
+                    label = { Text("New Price") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(newPrice) }) {
+                Text("Update")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun RememberScrollLazyColumn(
+    viewModel: BuildViewModel,
+    items: List<String>
+) {
+    // LazyListState untuk melacak posisi scroll
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = viewModel.lastScrollIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.lastScrollOffset
+    )
+
+    // Menyimpan posisi scroll ke ViewModel saat berubah
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .collect { (index, offset) ->
+                viewModel.lastScrollIndex = index
+                viewModel.lastScrollOffset = offset
+            }
+    }
+
+    // Tampilkan LazyColumn
+    LazyColumn(state = listState) {
+        items(items.size) { index ->
+            Text(
+                text = items[index],
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+        }
+    }
+}
+
+
+
 
 
 

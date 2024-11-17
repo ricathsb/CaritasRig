@@ -309,6 +309,30 @@ fun removeBuildComponent(
         }
 }
 
+fun updateBuildComponent(
+    userId: String,
+    buildId: String,
+    componentCategory: String,
+    updatedData: Map<String, Any>,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val database = getDatabaseReference()
+
+    // Path ke komponen spesifik dalam build
+    val componentPath = "users/$userId/builds/$buildId/components/$componentCategory"
+
+    // Perbarui data komponen di Firebase
+    database.child(componentPath).updateChildren(updatedData)
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to update component: ${error.message}")
+        }
+}
+
+
 
 
 

@@ -67,9 +67,8 @@ import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsActivity
 import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
-import com.superbgoal.caritasrig.data.getUserBuilds
-import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.User
+import com.superbgoal.caritasrig.data.model.buildmanager.Build
 
 class HomeActivity : ComponentActivity() {
     private val viewModel: HomeViewModel by viewModels()
