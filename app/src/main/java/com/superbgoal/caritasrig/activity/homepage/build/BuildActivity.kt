@@ -4,8 +4,11 @@ package com.superbgoal.caritasrig.activity.homepage.build
 
 import BuildViewModel
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -126,21 +129,26 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
     val loading by buildViewModel.loading.observeAsState(false)
+    val sharedPreferences = context.getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
 
     // LazyListState untuk melacak posisi scroll
     val lazyListState = rememberLazyListState(
-        initialFirstVisibleItemIndex = buildViewModel.lastScrollIndex,
-        initialFirstVisibleItemScrollOffset = buildViewModel.lastScrollOffset
+        initialFirstVisibleItemIndex = sharedPreferences.getInt("lastScrollIndex", 0),
+        initialFirstVisibleItemScrollOffset = sharedPreferences.getInt("lastScrollOffset", 0)
     )
 
-    // Menyimpan posisi scroll di ViewModel
+// Menyimpan posisi scroll di SharedPreferences
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
             .collect { (index, offset) ->
-                buildViewModel.lastScrollIndex = index
-                buildViewModel.lastScrollOffset = offset
+                sharedPreferences.edit().apply {
+                    putInt("lastScrollIndex", index)
+                    putInt("lastScrollOffset", offset)
+                    apply()
+                }
             }
     }
+
 
     if (loading) {
         // Full-screen loading indicator
@@ -320,8 +328,8 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                                         updatedData = mapOf("price" to newPrice.toDouble())
                                     )
                                     Log.d("BuildActivity", "Price updated for $title: $newPrice")
-                                    (context as? Activity)?.recreate()
-                                }
+                                },
+                                loading = loading
                             )
                         }
                     }
@@ -401,10 +409,12 @@ fun ComponentCard(
     currentPrice: String,
     onClick: () -> Unit,
     onRemove: () -> Unit,
-    onUpdatePrice: (String) -> Unit // Callback untuk mengupdate harga
+    onUpdatePrice: (String) -> Unit,
+    loading : Boolean = false
 ) {
     // State untuk menampilkan dialog
     var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -524,8 +534,14 @@ fun ComponentCard(
             currentPrice = currentPrice,
             onDismiss = { showDialog = false },
             onConfirm = { newPrice ->
-                onUpdatePrice(newPrice) // Perbarui harga
-                showDialog = false // Tutup dialog
+                showDialog = false
+                onUpdatePrice(newPrice)
+                Log.d("BuildActivity", "Price updated for $loading")
+                if (loading == false) {
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        (context as? Activity)?.recreate()
+                    }, 20)
+                }
             }
         )
     }
@@ -566,39 +582,6 @@ fun PriceEditDialog(
             }
         }
     )
-}
-
-@Composable
-fun RememberScrollLazyColumn(
-    viewModel: BuildViewModel,
-    items: List<String>
-) {
-    // LazyListState untuk melacak posisi scroll
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = viewModel.lastScrollIndex,
-        initialFirstVisibleItemScrollOffset = viewModel.lastScrollOffset
-    )
-
-    // Menyimpan posisi scroll ke ViewModel saat berubah
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
-            .collect { (index, offset) ->
-                viewModel.lastScrollIndex = index
-                viewModel.lastScrollOffset = offset
-            }
-    }
-
-    // Tampilkan LazyColumn
-    LazyColumn(state = listState) {
-        items(items.size) { index ->
-            Text(
-                text = items[index],
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
-        }
-    }
 }
 
 

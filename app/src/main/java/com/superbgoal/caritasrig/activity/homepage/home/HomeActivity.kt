@@ -91,16 +91,19 @@ class HomeActivity : ComponentActivity() {
 
         setContent {
             HomeScreen(viewModel = viewModel, onLogout = {
-                // Hapus data SharedPreferences
+                // Hapus semua data SharedPreferences
                 val sharedPreferences = getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+                val sharedPreferences3 = getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
                 sharedPreferences.edit().clear().apply()
+                sharedPreferences3.edit().clear().apply()
 
                 // Logout dari Firebase
                 FirebaseAuth.getInstance().signOut()
 
                 // Redirect ke LoginActivity
-                val intent = Intent(this, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                val intent = Intent(this, LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
                 startActivity(intent)
                 finish()
             })
@@ -385,6 +388,7 @@ fun UserProfile(viewModel: HomeViewModel) {
             item {
                 // Build Card
                 Card(
+                    shape = RoundedCornerShape(60.dp),
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()

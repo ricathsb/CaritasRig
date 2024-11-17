@@ -25,14 +25,14 @@ import com.superbgoal.caritasrig.data.removeBuildComponent
 
 class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
+
     var lastScrollIndex: Int = 0
     var lastScrollOffset: Int = 0
 
     private val _selectedComponents = MutableLiveData<Map<String, String>>()
     val selectedComponents: LiveData<Map<String, String>> = _selectedComponents
 
-    private val sharedPreferences =
-        application.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+    private val sharedPreferences = application.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
 
     private val _buildTitle = MutableLiveData<String>()
     val buildTitle: LiveData<String> get() = _buildTitle

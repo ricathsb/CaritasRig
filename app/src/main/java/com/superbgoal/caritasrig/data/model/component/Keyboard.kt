@@ -8,8 +8,8 @@ data class Keyboard(
     val name: String = "",
     val price: Double = 0.0,
     val style: String = "",
-    val switches: String? = null, // switches is nullable
-    val backlit: String = "",
+    val switches: String? = null,
+    val backlit: String? = "",
     val tenkeyless: Boolean = false,
     val connectionType: String = "",
     val color: String = ""
