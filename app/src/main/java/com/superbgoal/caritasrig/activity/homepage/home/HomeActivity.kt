@@ -552,7 +552,8 @@ fun UserProfile(viewModel: HomeViewModel) {
                     builds = builds.value,
                     onBuildClick = { build ->
                         val intent = Intent(context, BuildActivity::class.java).apply {
-                            putExtra("build", build) // Pass build data
+                            putExtra("fromHomeActivity", true)  // Add an extra flag to indicate the source
+                            putExtra("build", build.title) // Pass build data
                         }
                         context.startActivity(intent)
                     }

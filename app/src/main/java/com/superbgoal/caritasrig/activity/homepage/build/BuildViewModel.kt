@@ -60,6 +60,21 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         fetchBuildByTitle(savedBuildTitle)
     }
 
+    fun resetBuildData() {
+
+        // Reset components to default values
+        _selectedComponents.value = defaultCategories
+
+        // Clear build data
+        _buildData.value = null
+
+        // Optionally, clear component details
+        _componentDetail.value = null
+
+        Log.d("BuildViewModel", "Build title and components have been reset.")
+    }
+
+
     fun saveBuildTitle(title: String) {
         _buildTitle.value = title
         sharedPreferences.edit().putString("buildTitle", title).apply()
@@ -170,7 +185,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun fetchBuildByTitle(title: String) {
+     fun fetchBuildByTitle(title: String) {
         _loading.value = true // Start loading
 
         fetchBuildsWithAuth(
@@ -243,6 +258,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             Log.w("BuildViewModel", "Current build data is null, cannot remove component.")
         }
+    }
+
+    fun setLoading(isLoading: Boolean) {
+        _loading.value = isLoading
     }
 
 

@@ -23,6 +23,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -140,7 +142,7 @@ class MouseActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            MouseList(mice, currentUser?.uid.toString())
+                            MouseList(mice)
                         }
                     }
                 }
@@ -149,48 +151,67 @@ class MouseActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MouseList(mice: List<Mouse>, userId: String) {
+    fun MouseList(mice: List<Mouse>) {
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(mice) { mouseItem ->
+                // Track loading state for each mouse
+                val isLoading = remember { mutableStateOf(false) }
+
+                // Menggunakan ComponentCard untuk setiap mouse
                 ComponentCard(
                     title = mouseItem.name,
                     details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
-                    context = LocalContext.current,
+                    context = context,
+                    component = mouseItem,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
+                        // Mulai proses loading ketika tombol Add ditekan
+                        isLoading.value = true
                         Log.d("MouseActivity", "Selected Mouse: ${mouseItem.name}")
 
-                        // Get the current user and build title
+                        // Mendapatkan userId dan buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Simpan mouse jika buildTitle tersedia
                         buildTitle?.let { title ->
-                            // Menyimpan mouse menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "mouse", // Menyimpan mouse dengan tipe "mouse"
-                                componentData = mouseItem, // Nama mouse
+                                componentType = "mouse", // Tipe komponen
+                                componentData = mouseItem, // Data mouse
                                 onSuccess = {
+                                    // Berhenti loading ketika sukses
+                                    isLoading.value = false
                                     Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
+
+                                    // Navigasi ke BuildActivity setelah berhasil
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", mouseItem.name)
+                                        putExtra("component_data", mouseItem) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("MouseActivity", "Failed to store Mouse under build title: ${errorMessage}")
-                                }
+                                    // Berhenti loading ketika gagal
+                                    isLoading.value = false
+                                    Log.e("MouseActivity", "Failed to store Mouse under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
+                            // Berhenti loading jika buildTitle null
+                            isLoading.value = false
                             Log.e("MouseActivity", "Build title is null; unable to store Mouse.")
                         }
                     }
                 )
-
             }
         }
     }

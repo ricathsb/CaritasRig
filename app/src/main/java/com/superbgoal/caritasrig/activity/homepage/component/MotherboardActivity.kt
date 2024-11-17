@@ -16,6 +16,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -133,51 +135,70 @@ class MotherboardActivity : ComponentActivity() {
 
     @Composable
     fun MotherboardList(motherboards: List<Motherboard>) {
+        // Get context from LocalContext
         val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(motherboards) { motherboard ->
+                // Track loading state for each motherboard
+                val isLoading = remember { mutableStateOf(false) }
+
                 // Use ComponentCard for each motherboard
                 ComponentCard(
                     imageUrl = motherboard.imageUrl,
                     title = motherboard.name,
                     details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
-                    context = context,
+                    context = context, // Passing context from LocalContext
+                    component = motherboard,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
-                        Log.d("MotherboardActivity", "Selected Motherboard: ${motherboard.imageUrl}")
+                        // Start loading when the add button is clicked
+                        isLoading.value = true
+                        Log.d("MotherboardActivity", "Selected Motherboard: ${motherboard.name}")
 
                         // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Save motherboard if buildTitle is available
                         buildTitle?.let { title ->
-                            // Menyimpan motherboard menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "motherboard", // Menyimpan motherboard dengan tipe "motherboard"
-                                componentData = motherboard, // Nama motherboard
+                                componentType = "motherboard", // Specify component type
+                                componentData = motherboard, // Pass motherboard data
                                 onSuccess = {
+                                    // Stop loading on success
+                                    isLoading.value = false
                                     Log.d("MotherboardActivity", "Motherboard ${motherboard.name} saved successfully under build title: $title")
+
+                                    // Navigate to BuildActivity after success
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", motherboard.name)
+                                        putExtra("component_data", motherboard) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("MotherboardActivity", "Failed to store Motherboard under build title: ${errorMessage}")
-                                }
+                                    // Stop loading on failure
+                                    isLoading.value = false
+                                    Log.e("MotherboardActivity", "Failed to store Motherboard under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
+                            // Stop loading if buildTitle is null
+                            isLoading.value = false
                             Log.e("MotherboardActivity", "Build title is null; unable to store Motherboard.")
                         }
                     }
                 )
-
             }
         }
     }
+
 }

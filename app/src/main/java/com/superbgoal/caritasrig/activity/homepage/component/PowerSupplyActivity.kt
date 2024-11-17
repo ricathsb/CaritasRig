@@ -16,6 +16,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -133,49 +135,68 @@ class PowerSupplyActivity : ComponentActivity() {
 
     @Composable
     fun PowerSupplyList(powerSupplies: List<PowerSupply>) {
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(powerSupplies) { powerSupply ->
-                // Use ComponentCard for each power supply
+                // Track loading state for each power supply
+                val isLoading = remember { mutableStateOf(false) }
+
+                // Menggunakan ComponentCard untuk setiap power supply
                 ComponentCard(
                     title = powerSupply.name,
                     details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
-                    context = LocalContext.current,
+                    context = context,
+                    component = powerSupply,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
+                        // Mulai proses loading ketika tombol Add ditekan
+                        isLoading.value = true
                         Log.d("PowerSupplyActivity", "Selected Power Supply: ${powerSupply.name}")
 
-                        // Get the current user and build title
+                        // Mendapatkan userId dan buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Simpan power supply jika buildTitle tersedia
                         buildTitle?.let { title ->
-                            // Menyimpan power supply menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "powersupply", // Menyimpan power supply dengan tipe "powerSupply"
-                                componentData = powerSupply, // Nama power supply
+                                componentType = "powersupply", // Tipe komponen
+                                componentData = powerSupply, // Data power supply
                                 onSuccess = {
+                                    // Berhenti loading ketika sukses
+                                    isLoading.value = false
                                     Log.d("PowerSupplyActivity", "Power Supply ${powerSupply.name} saved successfully under build title: $title")
+
+                                    // Navigasi ke BuildActivity setelah berhasil
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", powerSupply.name)
+                                        putExtra("component_data", powerSupply) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("PowerSupplyActivity", "Failed to store Power Supply under build title: ${errorMessage}")
-                                }
+                                    // Berhenti loading ketika gagal
+                                    isLoading.value = false
+                                    Log.e("PowerSupplyActivity", "Failed to store Power Supply under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
+                            // Berhenti loading jika buildTitle null
+                            isLoading.value = false
                             Log.e("PowerSupplyActivity", "Build title is null; unable to store Power Supply.")
                         }
                     }
                 )
-
             }
         }
     }
+
 }

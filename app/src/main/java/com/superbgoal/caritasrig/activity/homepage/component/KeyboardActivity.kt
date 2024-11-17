@@ -23,6 +23,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -140,7 +142,7 @@ class KeyboardActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            KeyboardList(keyboards, currentUser?.uid.toString())
+                            KeyboardList(keyboards)
                         }
                     }
                 }
@@ -149,49 +151,68 @@ class KeyboardActivity : ComponentActivity() {
     }
 
     @Composable
-    fun KeyboardList(keyboards: List<Keyboard>, userId: String) {
+    fun KeyboardList(keyboards: List<Keyboard>) {
+        // Get context from LocalContext
         val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(keyboards) { keyboardItem ->
+                // Track loading state for each keyboard
+                val isLoading = remember { mutableStateOf(false) }
+
+                // Use ComponentCard for each keyboard
                 ComponentCard(
                     title = keyboardItem.name,
                     details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
-                    context = context,
+                    context = context, // Passing context from LocalContext
+                    component = keyboardItem,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
+                        // Start loading when the add button is clicked
+                        isLoading.value = true
                         Log.d("KeyboardActivity", "Selected Keyboard: ${keyboardItem.name}")
 
                         // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Save keyboard if buildTitle is available
                         buildTitle?.let { title ->
-                            // Menyimpan keyboard menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "keyboard", // Menyimpan keyboard dengan tipe "keyboard"
-                                componentData = keyboardItem, // Nama keyboard
+                                componentType = "keyboard", // Specify component type
+                                componentData = keyboardItem, // Pass keyboard data
                                 onSuccess = {
+                                    // Stop loading on success
+                                    isLoading.value = false
                                     Log.d("KeyboardActivity", "Keyboard ${keyboardItem.name} saved successfully under build title: $title")
+
+                                    // Navigate to BuildActivity after success
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", keyboardItem.name)
+                                        putExtra("component_data", keyboardItem) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("KeyboardActivity", "Failed to store Keyboard under build title: ${errorMessage}")
-                                }
+                                    // Stop loading on failure
+                                    isLoading.value = false
+                                    Log.e("KeyboardActivity", "Failed to store Keyboard under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
+                            // Stop loading if buildTitle is null
+                            isLoading.value = false
                             Log.e("KeyboardActivity", "Build title is null; unable to store Keyboard.")
                         }
                     }
                 )
-
             }
         }
     }

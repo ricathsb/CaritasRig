@@ -23,6 +23,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -139,7 +141,7 @@ class HeadphoneActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            HeadphoneList(headphones, currentUser?.uid.toString())
+                            HeadphoneList(headphones)
                         }
                     }
                 }
@@ -148,47 +150,69 @@ class HeadphoneActivity : ComponentActivity() {
     }
 
     @Composable
-    fun HeadphoneList(headphones: List<Headphones>, userId: String) {
+    fun HeadphoneList(headphones: List<Headphones>) {
+        // Get context from LocalContext
         val context = LocalContext.current
 
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(headphones) { headphoneItem ->
+            items(headphones) { headphone ->
+                // Track loading state for each headphone
+                val isLoading = remember { mutableStateOf(false) }
+
                 ComponentCard(
-                    title = headphoneItem.name,
-                    details = "Type: ${headphoneItem.type} | Color: ${headphoneItem.color} | Battery Life: ${headphoneItem.frequencyResponse} hrs",
-                    context = context,
+                    title = headphone.name,
+                    details = "Type: ${headphone.type} | Color: ${headphone.color} | Frequency Response: ${headphone.frequencyResponse} Hz",
+                    context = context, // Passing context from LocalContext
+                    component = headphone,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
-                        Log.d("HeadphoneActivity", "Selected Headphone: ${headphoneItem.name}")
+                        // Start loading when the add button is clicked
+                        isLoading.value = true
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
 
                         // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
                         buildTitle?.let { title ->
-                            // Menyimpan headphone menggunakan fungsi saveComponent
+                            // Save the component to the database
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "headphone", // Menyimpan headphone dengan tipe "headphone"
-                                componentData = headphoneItem, // Nama headphone
+                                componentType = "headphone", // Specify the component type
+                                componentData = headphone, // Pass headphone data
                                 onSuccess = {
-                                    Log.d("HeadphoneActivity", "Headphone ${headphoneItem.name} saved successfully under build title: $title")
+                                    // Stop loading on success
+                                    isLoading.value = false
+                                    Log.d("HeadphoneActivity", "Headphone ${headphone.name} saved successfully under build title: $title")
+
+                                    // After success, navigate to BuildActivity
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", headphone.name)
+                                        putExtra("component_data", headphone) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("HeadphoneActivity", "Failed to store Headphone under build title: ${errorMessage}")
-                                }
+                                    // Stop loading on failure
+                                    isLoading.value = false
+                                    Log.e("HeadphoneActivity", "Failed to store headphone under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update the loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
-                            Log.e("HeadphoneActivity", "Build title is null; unable to store Headphone.")
+                            // Stop loading if buildTitle is null
+                            isLoading.value = false
+                            Log.e("HeadphoneActivity", "Build title is null; unable to store headphone.")
                         }
                     }
                 )
-
             }
         }
     }
+
+
 }

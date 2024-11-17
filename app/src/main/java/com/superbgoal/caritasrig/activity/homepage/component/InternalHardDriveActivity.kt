@@ -16,6 +16,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -133,53 +135,66 @@ class InternalHardDriveActivity : ComponentActivity() {
 
     @Composable
     fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>) {
+        // Get context from LocalContext
         val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(internalHardDrives) { hardDrive ->
-                // Menggunakan ComponentCard untuk setiap item hard drive
+                // Track loading state for each hard drive
+                val isLoading = remember { mutableStateOf(false) }
+
+                // Use ComponentCard for each hard drive
                 ComponentCard(
                     title = hardDrive.name,
                     details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
-                    context = context,
+                    context = context, // Passing context from LocalContext
+                    component = hardDrive,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
-                        Log.d("HardDriveActivity", "Selected Hard Drive: ${hardDrive.name}")
+                        // Start loading when the add button is clicked
+                        isLoading.value = true
 
-                        // Get the current user and build title
+                        // Get userId and buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Save hard drive if buildTitle is available
                         buildTitle?.let { title ->
-                            // Menyimpan hard drive menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "internalharddrive", // Menyimpan hard drive dengan tipe "internalHardDrive"
-                                componentData = hardDrive, // Nama hard drive
+                                componentType = "internalharddrive", // Specify component type
+                                componentData = hardDrive, // Pass hard drive data
                                 onSuccess = {
+                                    // Stop loading on success
+                                    isLoading.value = false
                                     Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
+
+                                    // Navigate to BuildActivity after success
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", hardDrive.name)
+                                        putExtra("component_data", hardDrive) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: ${errorMessage}")
-                                }
+                                    // Stop loading on failure
+                                    isLoading.value = false
+                                    Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
+                            // Stop loading if buildTitle is null
+                            isLoading.value = false
                             Log.e("HardDriveActivity", "Build title is null; unable to store Hard Drive.")
                         }
-
-                        // Return to the previous activity
-                        setResult(RESULT_OK, intent)
-                        finish()
                     }
                 )
-
             }
         }
     }

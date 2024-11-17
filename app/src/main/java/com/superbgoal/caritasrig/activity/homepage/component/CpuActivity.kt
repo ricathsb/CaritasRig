@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -132,36 +134,54 @@ class CpuActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(processors) { processor ->
+                // Track loading state for each processor
+                val isLoading = remember { mutableStateOf(false) }
+
                 // Use ComponentCard for each processor
                 ComponentCard(
                     title = processor.name,
                     details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
                     context = context, // Passing context from LocalContext
+                    component = processor,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
+                        // Start loading when the add button is clicked
+                        isLoading.value = true
                         val currentUser = FirebaseAuth.getInstance().currentUser
-                        val userId = currentUser?.uid.toString() // Dapatkan ID pengguna
+                        val userId = currentUser?.uid.toString()
 
                         // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
                         buildTitle?.let { title ->
-                            // Menyimpan processor dengan memanggil saveComponent
+                            // Simpan komponen ke database
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "cpu", // Menyimpan processor dengan tipe "cpu"
-                                componentData = processor, // Nama processor
+                                componentType = "cpu",
+                                componentData = processor,
                                 onSuccess = {
+                                    // Stop loading on success
+                                    isLoading.value = false
                                     Log.d("BuildActivity", "Processor ${processor.name} saved successfully under build title: $title")
-                                    Log.d("ProcessorDebug", "Processor Data: $processor")
+
+                                    // Setelah sukses, pindahkan ke BuildActivity
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", processor.name)
+                                        putExtra("component_data", processor) // Komponen yang dikirim sebagai Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("BuildActivity", "Failed to store CPU under build title: ${errorMessage}")
-                                }
+                                    // Stop loading on failure
+                                    isLoading.value = false
+                                    Log.e("BuildActivity", "Failed to store CPU under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update the loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
+                            // Stop loading if buildTitle is null
+                            isLoading.value = false
                             Log.e("BuildActivity", "Build title is null; unable to store CPU.")
                         }
                     }

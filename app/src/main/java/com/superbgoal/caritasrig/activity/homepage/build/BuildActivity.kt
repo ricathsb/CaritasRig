@@ -62,10 +62,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.component.*
+import com.superbgoal.caritasrig.activity.homepage.component.CasingActivity
+import com.superbgoal.caritasrig.activity.homepage.component.CpuActivity
+import com.superbgoal.caritasrig.activity.homepage.component.CpuCoolerActivity
+import com.superbgoal.caritasrig.activity.homepage.component.HeadphoneActivity
+import com.superbgoal.caritasrig.activity.homepage.component.InternalHardDriveActivity
+import com.superbgoal.caritasrig.activity.homepage.component.KeyboardActivity
+import com.superbgoal.caritasrig.activity.homepage.component.MemoryActivity
+import com.superbgoal.caritasrig.activity.homepage.component.MotherboardActivity
+import com.superbgoal.caritasrig.activity.homepage.component.MouseActivity
+import com.superbgoal.caritasrig.activity.homepage.component.PowerSupplyActivity
+import com.superbgoal.caritasrig.activity.homepage.component.VideoCardActivity
 import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.data.getDatabaseReference
-import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
 
@@ -74,31 +83,30 @@ class BuildActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if the intent comes from HomeActivity
+        if (intent?.getBooleanExtra("fromHomeActivity", false) == true) {
+            processIntent(intent)  // Process the intent only if it's from HomeActivity
+        } else {
+            Log.w("BuildActivity", "Not from HomeActivity, skipping processIntent.")
+        }
+
+        buildViewModel.buildTitle.value?.let { title ->
+            buildViewModel.fetchBuildByTitle(title) // Fetch build data based on title
+        } ?: Log.w("BuildActivity", "Build title is null, cannot fetch data.")
+
         setContent {
             BuildScreen(buildViewModel)
             Log.d("BuildActivity", "onCreate called")
         }
-
-
-        processIntent(intent)
     }
-    override fun onResume() {
-        super.onResume()
-        intent?.let { processIntent(it) }
-        buildViewModel.refreshBuildData()
-        Log.d("BuildActivity", "onResume called")
-    }
-
 
     private fun processIntent(intent: Intent?) {
-        val buildData = intent?.getParcelableExtra<Build>("build")
-        buildData?.let {
-            buildViewModel.setBuildData(it)
-        }
+        val title = intent?.getStringExtra("build")
+        buildViewModel.saveBuildTitle(title ?: "")  // Save the build title
     }
-
-
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,9 +118,6 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
     val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
-
-
-
 
     if (loading) {
         // Full-screen loading indicator
@@ -340,6 +345,7 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                                 onSuccess = {
                                     showDialog = false
                                     buildViewModel.saveBuildTitle(dialogText)
+                                    buildViewModel.resetBuildData()
                                 },
                                 onFailure = { errorMessage ->
                                     Log.e("BuildScreen", errorMessage)
@@ -352,6 +358,19 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                     Text("OK")
                 }
             },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        if(buildViewModel.buildTitle.value?.isNotEmpty() == true){
+                            showDialog = false
+                        } else {
+                            context.startActivity(Intent(context, HomeActivity::class.java))
+                        }
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
         )
 
     }
