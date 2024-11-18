@@ -26,9 +26,6 @@ import com.superbgoal.caritasrig.data.removeBuildComponent
 class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
 
-    var lastScrollIndex: Int = 0
-    var lastScrollOffset: Int = 0
-
     private val _selectedComponents = MutableLiveData<Map<String, String>>()
     val selectedComponents: LiveData<Map<String, String>> = _selectedComponents
 

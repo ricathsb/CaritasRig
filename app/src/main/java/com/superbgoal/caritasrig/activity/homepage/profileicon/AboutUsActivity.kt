@@ -39,6 +39,7 @@ class AboutUsActivity : ComponentActivity() {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutUsContent(onBackPressed: () -> Unit) {
@@ -174,3 +175,64 @@ fun ProfileCard(
         }
     }
 }
+
+@Composable
+fun AboutUsScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Judul
+        Text(
+            text = "About Us",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Daftar kartu
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                ProfileCard(
+                    imageRes = R.drawable.profile1,
+                    name = "Hotbaen Eliezer",
+                    instagram = "@exaudi._",
+                    github = "exaudi26",
+                    email = "eliezerstmrg@gmail.com"
+                )
+            }
+            item {
+                ProfileCard(
+                    imageRes = R.drawable.profile2,
+                    name = "Ferry Sirait",
+                    instagram = "@ferry_srt",
+                    github = "ferrysrt",
+                    email = "ferrypb123pb123@gmail.com"
+                )
+            }
+            item {
+                ProfileCard(
+                    imageRes = R.drawable.profile3,
+                    name = "Richard Hasibuan",
+                    instagram = "@ricathsb",
+                    github = "ricathsb",
+                    email = "ricat1907111@gmail.com"
+                )
+            }
+            item {
+                ProfileCard(
+                    imageRes = R.drawable.profile4,
+                    name = "Samuel Sitanggang",
+                    instagram = "@samuel_bryan_ps",
+                    github = "SamuelSitanggang125",
+                    email = "samuelsitanggang04@gmail.com"
+                )
+            }
+        }
+    }
+}
+
+

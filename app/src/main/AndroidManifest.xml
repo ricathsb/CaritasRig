@@ -51,6 +51,7 @@
         <activity android:name=".activity.homepage.component.HeadphoneActivity"/>
         <activity android:name=".activity.homepage.component.KeyboardActivity"/>
         <activity android:name=".activity.homepage.component.MouseActivity"/>
+        <activity android:name=".activity.homepage.AfterLoginActivity"/>
     </application>
 
 </manifest>

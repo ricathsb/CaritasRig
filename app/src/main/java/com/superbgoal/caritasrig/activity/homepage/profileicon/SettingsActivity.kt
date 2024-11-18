@@ -35,20 +35,12 @@ class SettingsActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(id = R.string.settings)) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
-            )
-        }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,12 +65,14 @@ fun SettingsScreen() {
                 setLocale(context, languageCode)
                 goToHomeActivity(context)
                 context.startActivity(Intent(context, SettingsActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                 })
             }
         )
     }
 }
+
+
 
 @Composable
 fun SettingOption(optionText: String, onClick: () -> Unit) {

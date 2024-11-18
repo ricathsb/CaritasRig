@@ -90,32 +90,15 @@ class HomeActivity : ComponentActivity() {
         viewModel.loadUserData(userId)
 
         setContent {
-            HomeScreen(viewModel = viewModel, onLogout = {
-                // Hapus semua data SharedPreferences
-                val sharedPreferences = getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
-                val sharedPreferences3 = getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
-                sharedPreferences.edit().clear().apply()
-                sharedPreferences3.edit().clear().apply()
-
-                // Logout dari Firebase
-                FirebaseAuth.getInstance().signOut()
-
-                // Redirect ke LoginActivity
-                val intent = Intent(this, LoginActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-                startActivity(intent)
-                finish()
-            })
+            HomeScreen(viewModel = viewModel)
         }
     }
 }
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
+fun HomeScreen(viewModel: HomeViewModel) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    val isProfileDialogVisible by viewModel.isProfileDialogVisible.collectAsStateWithLifecycle()
     Box(modifier = Modifier.fillMaxSize()) {
         // Background Image
         Image(
@@ -136,6 +119,7 @@ fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Log.d("user", user.toString())
                 if (user != null) {
                     UserProfile(viewModel)
                 } else if (errorMessage != null) {
@@ -144,19 +128,6 @@ fun HomeScreen(viewModel: HomeViewModel, onLogout: () -> Unit) {
                     LoadingScreen()
                 }
             }
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(18.dp)
-        ) {
-            ProfileIcon(
-                user = user,
-                onLogout = onLogout,
-                showDialog = isProfileDialogVisible,
-                toggleDialog = viewModel::toggleProfileDialog
-            )
         }
     }
 }
@@ -332,27 +303,6 @@ fun TransparentIconButton(
 
 @Composable
 fun UserProfile(viewModel: HomeViewModel) {
-    val context = LocalContext.current
-    val builds = remember { mutableStateOf<List<Build>>(emptyList()) }
-    val isLoading = remember { mutableStateOf(true) }
-    val errorMessage = remember { mutableStateOf<String?>(null) }
-
-    // Fetch builds when this Composable is launched
-    LaunchedEffect(Unit) {
-        fetchBuildsWithAuth(
-            onSuccess = { buildsList ->
-                builds.value = buildsList
-                isLoading.value = false
-                Log.d("BuildScreen", "Builds fetched successfully: $buildsList")
-            },
-            onFailure = { error ->
-                errorMessage.value = error
-                isLoading.value = false
-                Log.e("BuildScreen", "Error fetching builds: $error")
-            }
-        )
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -377,192 +327,6 @@ fun UserProfile(viewModel: HomeViewModel) {
                 }
             }
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Horizontal scrollable items
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                // Build Card
-                Card(
-                    shape = RoundedCornerShape(60.dp),
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                        .clickable {
-                            context.startActivity(Intent(context, BuildActivity::class.java))
-                        },
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icons_build),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = stringResource(id = R.string.build),
-                                style = MaterialTheme.typography.headlineMedium,
-                            )
-                            Text(text = stringResource(id = R.string.create_your_own_setup))
-                        }
-                    }
-                }
-            }
-
-            item {
-                // Trending Card
-                Card(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.trend),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = stringResource(id = R.string.trending),
-                                style = MaterialTheme.typography.headlineMedium,
-                            )
-                            Text(text = stringResource(id = R.string.find_popular_part))
-                        }
-                    }
-                }
-            }
-
-            item {
-                // Benchmarking Card
-                Card(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_hourglass_bottom_24),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = stringResource(id = R.string.benchmarking),
-                                style = MaterialTheme.typography.headlineMedium,
-                            )
-                            Text(text = stringResource(id = R.string.compare))
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        // Horizontal Scrollable Cards for AMD, NVIDIA, Intel, etc.
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                // AMD Card
-                Card(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.amd_logo),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(4.dp)
-                    )
-                }
-            }
-
-            item {
-                // NVIDIA Card
-                Card(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.nvidia_logo),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(4.dp)
-                    )
-                }
-            }
-
-            item {
-                // Intel Card
-                Card(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.intel_logo),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(4.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Section for displaying the list of builds
-        Column(modifier = Modifier.padding(3.dp)) {
-            if (isLoading.value) {
-                Text("Loading...")
-            } else if (errorMessage.value != null) {
-                Text("Error: ${errorMessage.value}")
-            } else {
-                BuildList(
-                    builds = builds.value,
-                    onBuildClick = { build ->
-                        val intent = Intent(context, BuildActivity::class.java).apply {
-                            putExtra("fromHomeActivity", true)  // Add an extra flag to indicate the source
-                            putExtra("build", build.title) // Pass build data
-                        }
-                        context.startActivity(intent)
-                    }
-                )
-                }
-            }
         }
     }
 
@@ -713,6 +477,8 @@ fun BuildList(builds: List<Build>, onBuildClick: (Build) -> Unit) {
         }
     }
 }
+
+
 
 
 

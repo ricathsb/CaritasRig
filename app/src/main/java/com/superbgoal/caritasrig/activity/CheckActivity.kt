@@ -27,6 +27,7 @@ class CheckActivity : ComponentActivity() {
         }
     }
 
+
     private fun navigateToLoginActivity() {
         startActivity(Intent(this, LoginActivity::class.java))
         finish()

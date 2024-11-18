@@ -16,6 +16,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.auth.register.RegisterActivity
+import com.superbgoal.caritasrig.activity.homepage.AfterLoginActivity
 import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -43,7 +44,7 @@ class AuthenticationManager(private val context: Context) {
                         // User exists in the database and email is verified, redirect to HomeActivity
                         if (currentUser.isEmailVerified) {
                             Log.d("checkUserInDatabase", "User exists and email is verified, redirecting to HomeActivity")
-                            Intent(context, HomeActivity::class.java).also {
+                            Intent(context, AfterLoginActivity::class.java).also {
                                 it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 context.startActivity(it)
                             }

@@ -127,6 +127,8 @@ fun updateUserProfileData(
             }
     }
 
+
+
     if (imageUri != null && imageUri.scheme == "content") {
         Log.d("ProfileUpdate", "Uploading new image with valid URI: $imageUri")
 
