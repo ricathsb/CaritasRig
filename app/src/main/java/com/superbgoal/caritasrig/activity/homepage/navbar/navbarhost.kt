@@ -3,7 +3,15 @@ package com.superbgoal.caritasrig.activity.homepage.navbar
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material.BottomAppBar
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
@@ -25,6 +33,7 @@ import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
+import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsScreen
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
 
@@ -45,6 +54,7 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel()) {
                 currentRoute == "home" -> "Home"
                 currentRoute?.startsWith("profile") == true -> "Profile"
                 currentRoute == "settings" -> "Settings"
+                currentRoute == "aboutus" -> "About Us"
                 else -> "CaritasRig"
             }
 
@@ -56,7 +66,10 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel()) {
                     navController.navigate("settings")
                 },
                 isProfileScreen = isProfileScreen,
-                title = title
+                title = title,
+                navigateToAboutUs = {
+                    navController.navigate("aboutus")
+                }
             )
         },
         bottomBar = {
@@ -85,6 +98,9 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel()) {
             composable("settings") {
                 SettingsScreen()
             }
+            composable ("aboutus"){
+                AboutUsScreen()
+            }
         }
     }
 }
@@ -96,6 +112,7 @@ fun AppTopBar(
     homeViewModel: HomeViewModel = viewModel(),
     navigateToProfile: (User?) -> Unit,
     navigateToSettings: () -> Unit,
+    navigateToAboutUs: () -> Unit,
     isProfileScreen: Boolean = false,
     title: String
 ) {
@@ -106,15 +123,32 @@ fun AppTopBar(
             Text(text = title, fontSize = 20.sp)
         },
         actions = {
+            // Menambahkan Row untuk menyusun icon bersebelahan
             if (isProfileScreen) {
-                IconButton(onClick = { navigateToSettings() }) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings Icon",
-                        modifier = Modifier.size(28.dp)
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Icon Settings
+                    IconButton(onClick = { navigateToSettings() }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings Icon",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    // Icon Tanda Seru
+                    IconButton(onClick = { navigateToAboutUs() }) {
+                        Icon(
+                            imageVector = Icons.Default.Error,  // Ikon tanda seru
+                            contentDescription = "Error Icon",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             } else {
+                // Jika bukan di halaman profil, hanya tampilkan icon profil
                 IconButton(onClick = { navigateToProfile(user) }) {
                     if (user?.profileImageUrl != null) {
                         AsyncImage(
@@ -141,6 +175,7 @@ fun AppTopBar(
         elevation = 4.dp
     )
 }
+
 
 
 @Composable
@@ -233,7 +268,6 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Full Name
         Text(
             text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
             style = MaterialTheme.typography.h6,
@@ -242,7 +276,6 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Username
         Text(
             text = "@${currentUser?.username ?: "username"}",
             style = MaterialTheme.typography.body2,
@@ -251,7 +284,6 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Placeholder for future content
     }
 }
 
