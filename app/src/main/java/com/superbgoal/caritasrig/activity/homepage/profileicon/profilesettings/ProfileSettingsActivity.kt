@@ -78,7 +78,7 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.HomeActivity
+import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.updateUserProfileData
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme

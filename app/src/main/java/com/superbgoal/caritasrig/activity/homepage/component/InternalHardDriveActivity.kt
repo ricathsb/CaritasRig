@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,36 +16,37 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.PowerSupply
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class PowerSupplyActivity : ComponentActivity() {
+class InternalHardDriveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val buildTitle = BuildManager.getBuildTitle()
 
 
-        // Load power supplies from JSON resource
-        val typeToken = object : TypeToken<List<PowerSupply>>() {}.type
-        val powerSupplies: List<PowerSupply> = loadItemsFromResources(
+        // Mengisi data dari file JSON untuk InternalHardDrive
+        val typeToken = object : TypeToken<List<InternalHardDrive>>() {}.type
+        val internalHardDrives: List<InternalHardDrive> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.powersupply // Ensure this JSON file exists
+            resourceId = R.raw.internalharddrive
         )
 
         setContent {
@@ -53,7 +54,7 @@ class PowerSupplyActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Background image
+                    // Menambahkan Image sebagai background
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -61,7 +62,7 @@ class PowerSupplyActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and PowerSupplyList
+                    // Konten utama dengan TopAppBar dan InternalHardDriveList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -83,7 +84,7 @@ class PowerSupplyActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Power Supply",
+                                        text = "Internal Hard Drive",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -92,7 +93,7 @@ class PowerSupplyActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        val intent = Intent(this@PowerSupplyActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@InternalHardDriveActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -107,7 +108,7 @@ class PowerSupplyActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Filter action (not implemented)
+                                        // Aksi untuk tombol filter
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -119,12 +120,12 @@ class PowerSupplyActivity : ComponentActivity() {
                             }
                         )
 
-                        // PowerSupplyList content
+                        // Konten InternalHardDriveList
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            PowerSupplyList(powerSupplies)
+                            InternalHardDriveList(internalHardDrives)
                         }
                     }
                 }
@@ -133,48 +134,67 @@ class PowerSupplyActivity : ComponentActivity() {
     }
 
     @Composable
-    fun PowerSupplyList(powerSupplies: List<PowerSupply>) {
+    fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>) {
+        // Get context from LocalContext
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(powerSupplies) { powerSupply ->
-                // Use ComponentCard for each power supply
-                ComponentCard(
-                    title = powerSupply.name,
-                    details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
-                    onAddClick = {
-                        Log.d("PowerSupplyActivity", "Selected Power Supply: ${powerSupply.name}")
+            items(internalHardDrives) { hardDrive ->
+                // Track loading state for each hard drive
+                val isLoading = remember { mutableStateOf(false) }
 
-                        // Get the current user and build title
+                // Use ComponentCard for each hard drive
+                ComponentCard(
+                    title = hardDrive.name,
+                    details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
+                    context = context, // Passing context from LocalContext
+                    component = hardDrive,
+                    isLoading = isLoading.value, // Pass loading state to card
+                    onAddClick = {
+                        // Start loading when the add button is clicked
+                        isLoading.value = true
+
+                        // Get userId and buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Save hard drive if buildTitle is available
                         buildTitle?.let { title ->
-                            // Menyimpan power supply menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "powerSupply", // Menyimpan power supply dengan tipe "powerSupply"
-                                componentName = powerSupply.name, // Nama power supply
+                                componentType = "internalharddrive", // Specify component type
+                                componentData = hardDrive, // Pass hard drive data
                                 onSuccess = {
-                                    Log.d("PowerSupplyActivity", "Power Supply ${powerSupply.name} saved successfully under build title: $title")
+                                    // Stop loading on success
+                                    isLoading.value = false
+                                    Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
+
+                                    // Navigate to BuildActivity after success
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", hardDrive.name)
+                                        putExtra("component_data", hardDrive) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("PowerSupplyActivity", "Failed to store Power Supply under build title: ${errorMessage}")
-                                }
+                                    // Stop loading on failure
+                                    isLoading.value = false
+                                    Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
-                            Log.e("PowerSupplyActivity", "Build title is null; unable to store Power Supply.")
+                            // Stop loading if buildTitle is null
+                            isLoading.value = false
+                            Log.e("HardDriveActivity", "Build title is null; unable to store Hard Drive.")
                         }
                     }
                 )
-
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

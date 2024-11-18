@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,36 +16,37 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.VideoCard
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.Motherboard
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class VideoCardActivity : ComponentActivity() {
+class MotherboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val buildTitle = BuildManager.getBuildTitle()
 
 
-        // Load video cards from JSON resource
-        val typeToken = object : TypeToken<List<VideoCard>>() {}.type
-        val videoCards: List<VideoCard> = loadItemsFromResources(
+        // Define the type explicitly for Gson TypeToken
+        val typeToken = object : TypeToken<List<Motherboard>>() {}.type
+        val motherboards: List<Motherboard> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.videocard // Ensure this JSON file exists
+            resourceId = R.raw.motherboard // Ensure this JSON file exists in resources
         )
 
         setContent {
@@ -53,7 +54,7 @@ class VideoCardActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Background image
+                    // Set background image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -61,7 +62,7 @@ class VideoCardActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and VideoCardList
+                    // Main content with TopAppBar and MotherboardList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -83,7 +84,7 @@ class VideoCardActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Video Card",
+                                        text = "Motherboard",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -92,7 +93,7 @@ class VideoCardActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        val intent = Intent(this@VideoCardActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@MotherboardActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -107,7 +108,7 @@ class VideoCardActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Filter action (not implemented)
+                                        // Action for filter button
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -119,12 +120,12 @@ class VideoCardActivity : ComponentActivity() {
                             }
                         )
 
-                        // VideoCardList content
+                        // Motherboard List content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            VideoCardList(videoCards)
+                            MotherboardList(motherboards)
                         }
                     }
                 }
@@ -133,49 +134,71 @@ class VideoCardActivity : ComponentActivity() {
     }
 
     @Composable
-    fun VideoCardList(videoCards: List<VideoCard>) {
+    fun MotherboardList(motherboards: List<Motherboard>) {
+        // Get context from LocalContext
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(videoCards) { videoCard ->
-                // Use ComponentCard for each video card
+            items(motherboards) { motherboard ->
+                // Track loading state for each motherboard
+                val isLoading = remember { mutableStateOf(false) }
+
+                // Use ComponentCard for each motherboard
                 ComponentCard(
-                    title = videoCard.name,
-                    details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
+                    imageUrl = motherboard.imageUrl,
+                    title = motherboard.name,
+                    details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
+                    context = context, // Passing context from LocalContext
+                    component = motherboard,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
-                        Log.d("VideoCardActivity", "Selected Video Card: ${videoCard.name}")
+                        // Start loading when the add button is clicked
+                        isLoading.value = true
+                        Log.d("MotherboardActivity", "Selected Motherboard: ${motherboard.name}")
 
                         // Get the current user and build title
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Save motherboard if buildTitle is available
                         buildTitle?.let { title ->
-                            // Menyimpan video card menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "videoCard", // Menyimpan video card dengan tipe "videoCard"
-                                componentName = videoCard.name, // Nama video card
+                                componentType = "motherboard", // Specify component type
+                                componentData = motherboard, // Pass motherboard data
                                 onSuccess = {
-                                    Log.d("VideoCardActivity", "Video Card ${videoCard.name} saved successfully under build title: $title")
+                                    // Stop loading on success
+                                    isLoading.value = false
+                                    Log.d("MotherboardActivity", "Motherboard ${motherboard.name} saved successfully under build title: $title")
+
+                                    // Navigate to BuildActivity after success
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", motherboard.name)
+                                        putExtra("component_data", motherboard) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("VideoCardActivity", "Failed to store Video Card under build title: ${errorMessage}")
-                                }
+                                    // Stop loading on failure
+                                    isLoading.value = false
+                                    Log.e("MotherboardActivity", "Failed to store Motherboard under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
-                            Log.e("VideoCardActivity", "Build title is null; unable to store Video Card.")
+                            // Stop loading if buildTitle is null
+                            isLoading.value = false
+                            Log.e("MotherboardActivity", "Build title is null; unable to store Motherboard.")
                         }
                     }
                 )
-
             }
         }
     }
+
 }

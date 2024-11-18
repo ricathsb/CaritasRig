@@ -12,9 +12,18 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
-import com.superbgoal.caritasrig.data.model.Build
+import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.User
-import com.superbgoal.caritasrig.functions.auth.AuthResponse.Success.toString
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
+import com.superbgoal.caritasrig.data.model.component.Casing
+import com.superbgoal.caritasrig.data.model.component.Headphones
+import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.component.Keyboard
+import com.superbgoal.caritasrig.data.model.component.Motherboard
+import com.superbgoal.caritasrig.data.model.component.Mouse
+import com.superbgoal.caritasrig.data.model.component.PowerSupply
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.VideoCard
 import java.util.UUID
 
 fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
@@ -143,11 +152,6 @@ fun updateUserProfileData(
     }
 }
 
-
-
-
-
-
     fun loadUserData(userId: String, onUserDataLoaded: (User) -> Unit, onFailure: (String) -> Unit) {
     val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
     val database = FirebaseDatabase.getInstance(databaseUrl).reference
@@ -223,6 +227,116 @@ fun getUserBuilds(onSuccess: (List<Build>) -> Unit, onFailure: (String) -> Unit)
         onFailure("User not authenticated.")
     }
 }
+
+fun fetchBuildsWithAuth(
+    onSuccess: (List<Build>) -> Unit,
+    onFailure: (String) -> Unit
+) {
+    // Ambil UID pengguna yang sedang login
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val userId = currentUser?.uid
+
+    if (userId == null) {
+        onFailure("User not authenticated or UID not found.")
+        return
+    }
+
+    val database = getDatabaseReference()
+
+    // Mendapatkan semua build dari user berdasarkan UID
+    database.child("users").child(userId).child("builds")
+        .get()
+        .addOnSuccessListener { dataSnapshot ->
+            if (dataSnapshot.exists()) {
+                // Memetakan data dari Firebase ke daftar Build
+                val buildList = dataSnapshot.children.mapNotNull { snapshot ->
+                    val buildId = snapshot.key ?: return@mapNotNull null
+                    val title = snapshot.child("title").value as? String ?: return@mapNotNull null
+
+                    // Memetakan komponen ke BuildComponents
+                    val componentsSnapshot = snapshot.child("components")
+                    val components = BuildComponents(
+                        casing = componentsSnapshot.child("case").getValue(Casing::class.java),
+                        processor = componentsSnapshot.child("cpu").getValue(Processor::class.java),
+                        motherboard = componentsSnapshot.child("motherboard").getValue(Motherboard::class.java),
+                        videoCard = componentsSnapshot.child("gpu").getValue(VideoCard::class.java),
+                        headphone = componentsSnapshot.child("headphone").getValue(Headphones::class.java),
+                        internalHardDrive = componentsSnapshot.child("internalharddrive").getValue(InternalHardDrive::class.java),
+                        keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java),
+                        powerSupply =componentsSnapshot.child("powersupply").getValue(PowerSupply::class.java),
+                        mouse = componentsSnapshot.child("mouse").getValue(Mouse::class.java),
+                    )
+
+                    // Buat objek Build
+                    Build(
+                        buildId = buildId,
+                        title = title,
+                        components = components
+                    )
+                }
+
+                onSuccess(buildList) // Kembalikan daftar build
+            } else {
+                onSuccess(emptyList()) // Tidak ada build
+            }
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to fetch builds: ${error.message}")
+        }
+}
+
+fun removeBuildComponent(
+    userId: String,
+    buildId: String,
+    componentCategory: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val path = "users/$userId/builds/$buildId/components/$componentCategory"
+    Log.d("RemoveComponent", "Removing from path: $path")
+
+    val databaseRef = getDatabaseReference()
+    val componentRef = databaseRef.child(path)
+
+    componentRef.removeValue()
+        .addOnSuccessListener {
+            Log.d("RemoveComponent", "Successfully removed: $path")
+            onSuccess()
+        }
+        .addOnFailureListener { exception ->
+            Log.e("RemoveComponent", "Failed to remove: $path, Error: ${exception.message}")
+            onFailure(exception.message ?: "Failed to remove component")
+        }
+}
+
+fun updateBuildComponent(
+    userId: String,
+    buildId: String,
+    componentCategory: String,
+    updatedData: Map<String, Any>,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val database = getDatabaseReference()
+
+    // Path ke komponen spesifik dalam build
+    val componentPath = "users/$userId/builds/$buildId/components/$componentCategory"
+
+    // Perbarui data komponen di Firebase
+    database.child(componentPath).updateChildren(updatedData)
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to update component: ${error.message}")
+        }
+}
+
+
+
+
+
+
 
 
 

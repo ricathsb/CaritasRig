@@ -58,7 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.auth.signup.SignUpActivity
-import com.superbgoal.caritasrig.activity.homepage.HomeActivity
+import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.functions.auth.AuthResponse
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme

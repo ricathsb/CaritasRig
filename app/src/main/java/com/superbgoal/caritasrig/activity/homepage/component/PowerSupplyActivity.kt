@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,14 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -23,43 +16,37 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Casing
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.PowerSupply
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class CasingActivity : ComponentActivity() {
-    private lateinit var database: DatabaseReference
-    val buildTitle = BuildManager.getBuildTitle()
-
+class PowerSupplyActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Initialize Firebase database reference
-        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-        database = FirebaseDatabase.getInstance(databaseUrl).reference
-        val currentUser = FirebaseAuth.getInstance().currentUser
         val buildTitle = BuildManager.getBuildTitle()
 
-        // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<Casing>>() {}.type
-        val casing: List<Casing> = loadItemsFromResources(
+
+        // Load power supplies from JSON resource
+        val typeToken = object : TypeToken<List<PowerSupply>>() {}.type
+        val powerSupplies: List<PowerSupply> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.casing
+            resourceId = R.raw.powersupply // Ensure this JSON file exists
         )
 
         setContent {
@@ -67,7 +54,7 @@ class CasingActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Background Image
+                    // Background image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -75,7 +62,7 @@ class CasingActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and CasingList
+                    // Main content with TopAppBar and PowerSupplyList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -97,7 +84,7 @@ class CasingActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Casing",
+                                        text = "Power Supply",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -106,8 +93,7 @@ class CasingActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigate back to BuildActivity
-                                        val intent = Intent(this@CasingActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@PowerSupplyActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -122,7 +108,7 @@ class CasingActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Action for filter button
+                                        // Filter action (not implemented)
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -134,12 +120,12 @@ class CasingActivity : ComponentActivity() {
                             }
                         )
 
-                        // CasingList content
+                        // PowerSupplyList content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            CasingList(casing, currentUser?.uid.toString())
+                            PowerSupplyList(powerSupplies)
                         }
                     }
                 }
@@ -148,38 +134,69 @@ class CasingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun CasingList(casing: List<Casing>, userId: String) {
+    fun PowerSupplyList(powerSupplies: List<PowerSupply>) {
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(casing) { casingItem ->
-                Log.d("CasingActivity", "Rendering casing item: ${casingItem.name}")
+            items(powerSupplies) { powerSupply ->
+                // Track loading state for each power supply
+                val isLoading = remember { mutableStateOf(false) }
+
+                // Menggunakan ComponentCard untuk setiap power supply
                 ComponentCard(
-                    title = casingItem.name,
-                    details = "${casingItem.type} | ${casingItem.color} | PSU: ${casingItem.psu ?: "Not included"} | Volume: ${casingItem.externalVolume} L | 3.5\" Bays: ${casingItem.internal35Bays}",
+                    title = powerSupply.name,
+                    details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
+                    context = context,
+                    component = powerSupply,
+                    isLoading = isLoading.value, // Pass loading state to card
                     onAddClick = {
-                        Log.d("CasingActivity", "Selected Casing: ${casingItem.name}")
+                        // Mulai proses loading ketika tombol Add ditekan
+                        isLoading.value = true
+                        Log.d("PowerSupplyActivity", "Selected Power Supply: ${powerSupply.name}")
+
+                        // Mendapatkan userId dan buildTitle
+                        val currentUser = FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid.toString()
+                        val buildTitle = BuildManager.getBuildTitle()
+
+                        // Simpan power supply jika buildTitle tersedia
                         buildTitle?.let { title ->
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "casing",
-                                componentName = casingItem.name,
+                                componentType = "powersupply", // Tipe komponen
+                                componentData = powerSupply, // Data power supply
                                 onSuccess = {
-                                    Log.d("CasingActivity", "Casing saved successfully")
+                                    // Berhenti loading ketika sukses
+                                    isLoading.value = false
+                                    Log.d("PowerSupplyActivity", "Power Supply ${powerSupply.name} saved successfully under build title: $title")
+
+                                    // Navigasi ke BuildActivity setelah berhasil
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", powerSupply.name)
+                                        putExtra("component_data", powerSupply) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("CasingActivity", errorMessage)
-                                }
+                                    // Berhenti loading ketika gagal
+                                    isLoading.value = false
+                                    Log.e("PowerSupplyActivity", "Failed to store Power Supply under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle case where buildTitle is null
-                            Log.e("BuildManager", "Build title is null")
+                            // Berhenti loading jika buildTitle null
+                            isLoading.value = false
+                            Log.e("PowerSupplyActivity", "Build title is null; unable to store Power Supply.")
                         }
                     }
                 )
             }
         }
     }
+
 }

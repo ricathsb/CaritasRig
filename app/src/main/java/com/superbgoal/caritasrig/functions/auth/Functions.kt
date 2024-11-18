@@ -1,8 +1,12 @@
 // Function.kt
 package com.superbgoal.caritasrig.functions.auth
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.os.Parcelable
 import android.util.Log
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,14 +38,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.getDatabaseReference
-import com.superbgoal.caritasrig.data.model.Processor
-import com.superbgoal.caritasrig.data.model.VideoCard
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.VideoCard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -120,39 +128,22 @@ fun Maintenance() {
         }
     }
 }
-@Composable
-fun ProcessorInfo(processor: Processor) {
-    Text(text = "Name: ${processor.name}")
-    Text(text = "Price: $${processor.price}")
-    Text(text = "Cores: ${processor.core_count}")
-    Text(text = "Core Clock: ${processor.core_clock} GHz")
-    Text(text = "Boost Clock: ${processor.boost_clock} GHz")
-    Text(text = "TDP: ${processor.tdp}W")
-    Text(text = "Graphics: ${processor.graphics}")
-    Text(text = "SMT: ${if (processor.smt) "Yes" else "No"}")
-}
-
-@Composable
-fun VideoCardInfo(videoCard: VideoCard) {
-    Text(text = "Name: ${videoCard.name}")
-    Text(text = "Price: $${videoCard.price}")
-    Text(text = "Memory: ${videoCard.memory} GB")
-    Text(text = "Core Clock: ${videoCard.coreClock} MHz")
-    Text(text = "Boost Clock: ${videoCard.boostClock} MHz")
-//    Text(text = "TDP: ${videoCard.tdp}W")
-}
 
 @Composable
 fun ComponentCard(
     title: String,
     details: String,
-    onAddClick: () -> Unit,
-    backgroundColor: Color = Color(0xFF3E2C47), // Default purple background color
-    buttonColor: Color = Color(0xFF6E5768) // Default button color
+    component: Parcelable, // Komponen yang akan dikirim melalui Intent
+    imageUrl: String? = null, // URL untuk gambar (opsional)
+    context: Context,
+    isLoading: Boolean, // Status loading untuk tombol
+    onAddClick: (onSuccess: () -> Unit) -> Unit, // Callback dengan aksi sukses
+    backgroundColor: Color = Color(0xFF3E2C47), // Warna latar belakang kartu
+    buttonColor: Color = Color(0xFF6E5768) // Warna tombol
 ) {
     Card(
         elevation = 4.dp,
-        backgroundColor = backgroundColor, // Set background color in Card
+        backgroundColor = backgroundColor,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
@@ -164,74 +155,128 @@ fun ComponentCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Tampilkan gambar jika URL diberikan
+            if (!imageUrl.isNullOrEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageUrl),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(end = 16.dp)
+                        .clip(MaterialTheme.shapes.medium),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // Kolom untuk judul dan detail
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium, // Adjusted to h6 for visibility
+                    style = MaterialTheme.typography.titleMedium,
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.height(4.dp)) // Spacing between title and details
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = details,
-                    style = MaterialTheme.typography.bodyMedium, // Adjusted for visibility
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.White
                 )
             }
 
-            Button(
-                onClick = onAddClick,
-                colors = ButtonDefaults.buttonColors(buttonColor) // Set button color
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.add_btn), // Ensure this drawable exists
-                    contentDescription = "Add Icon",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+            // Tampilkan indikator loading atau tombol Add
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Add", color = Color.White)
+            } else {
+                Button(
+                    onClick = {
+                        Log.d("ComponentCard", "onAddClick callback triggered")
+                        onAddClick {
+                            // Aksi setelah sukses, pindahkan ke BuildActivity
+                            Log.d("ComponentCard", "onSuccess triggered, navigating to BuildActivity")
+                            val intent = Intent(context, BuildActivity::class.java).apply {
+                                putExtra("component_title", title)
+                                putExtra("component_data", component)
+                            }
+                            context.startActivity(intent)
+                        }
+                    },
+                    enabled = !isLoading, // Nonaktifkan tombol saat loading
+                    colors = ButtonDefaults.buttonColors(buttonColor)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.add_btn),
+                        contentDescription = "Add Icon",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Add", color = Color.White)
+                }
             }
         }
     }
 }
 
+
+
+
+
+fun putExtra(s: String, title: String) {
+
+}
+
+
 fun saveComponent(
     userId: String,
     buildTitle: String,
     componentType: String,
-    componentName: String,
+    componentData: Any,
     onSuccess: () -> Unit,
-    onFailure: (String) -> Unit
+    onFailure: (String) -> Unit,
+    onLoading: ((Boolean) -> Unit)? = null // Membuat parameter opsional dengan nilai default null
 ) {
     val database = getDatabaseReference()
 
-    // Mencari build berdasarkan title dan menambahkan komponen
+    // Set loading state to true when the save process starts
+    onLoading?.invoke(true)
+
     database.child("users").child(userId).child("builds").orderByChild("title").equalTo(buildTitle)
         .get()
         .addOnSuccessListener { dataSnapshot ->
             if (dataSnapshot.exists()) {
-                // Mengambil key dari build yang sesuai dengan title yang diberikan
-                val buildId = dataSnapshot.children.first().key
+                val buildId = dataSnapshot.children.firstOrNull()?.key
                 if (buildId != null) {
-                    database.child("users").child(userId).child("builds").child(buildId).child("components").child(componentType)
-                        .setValue(componentName)
+                    database.child("users").child(userId).child("builds").child(buildId)
+                        .child("components").child(componentType)
+                        .setValue(componentData)
                         .addOnSuccessListener {
-                            onSuccess()
+                            onLoading?.invoke(false) // Set loading state to false on success
+                            onSuccess() // Panggil callback sukses
                         }
                         .addOnFailureListener { error ->
+                            onLoading?.invoke(false) // Set loading state to false on failure
                             onFailure("Failed to save component: ${error.message}")
                         }
                 } else {
+                    onLoading?.invoke(false) // Set loading state to false if buildId is not found
                     onFailure("Build ID not found.")
                 }
             } else {
+                onLoading?.invoke(false) // Set loading state to false if build is not found
                 onFailure("Build with title \"$buildTitle\" not found.")
             }
         }
         .addOnFailureListener { error ->
+            onLoading?.invoke(false) // Set loading state to false if there is a failure in the database query
             onFailure("Failed to find build: ${error.message}")
         }
 }
+
+
+
 
 
 

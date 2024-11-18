@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -23,10 +23,13 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -35,14 +38,14 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.Headphones
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.Mouse
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class HeadphoneActivity : ComponentActivity() {
+class MouseActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
     val buildTitle = BuildManager.getBuildTitle()
 
@@ -56,10 +59,10 @@ class HeadphoneActivity : ComponentActivity() {
         val currentUser = FirebaseAuth.getInstance().currentUser
 
         // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<Headphones>>() {}.type
-        val headphones: List<Headphones> = loadItemsFromResources(
+        val typeToken = object : TypeToken<List<Mouse>>() {}.type
+        val mice: List<Mouse> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.headphones
+            resourceId = R.raw.mouse
         )
 
         setContent {
@@ -75,7 +78,7 @@ class HeadphoneActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and Headphone List
+                    // Main content with TopAppBar and Mouse List
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -97,7 +100,7 @@ class HeadphoneActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "Headphones",
+                                        text = "Mice",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -107,7 +110,7 @@ class HeadphoneActivity : ComponentActivity() {
                                 IconButton(
                                     onClick = {
                                         // Navigate back to BuildActivity
-                                        val intent = Intent(this@HeadphoneActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@MouseActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -134,12 +137,12 @@ class HeadphoneActivity : ComponentActivity() {
                             }
                         )
 
-                        // Headphone List content
+                        // Mouse List content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            HeadphoneList(headphones, currentUser?.uid.toString())
+                            MouseList(mice)
                         }
                     }
                 }
@@ -148,47 +151,67 @@ class HeadphoneActivity : ComponentActivity() {
     }
 
     @Composable
-    fun HeadphoneList(headphones: List<Headphones>, userId: String) {
+    fun MouseList(mice: List<Mouse>) {
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(headphones) { headphoneItem ->
-                ComponentCard(
-                    title = headphoneItem.name,
-                    details = "Type: ${headphoneItem.type} | Color: ${headphoneItem.color} | Battery Life: ${headphoneItem.frequencyResponse} hrs",
-                    onAddClick = {
-                        Log.d("HeadphoneActivity", "Selected Headphone: ${headphoneItem.name}")
+            items(mice) { mouseItem ->
+                // Track loading state for each mouse
+                val isLoading = remember { mutableStateOf(false) }
 
-                        // Get the current user and build title
+                // Menggunakan ComponentCard untuk setiap mouse
+                ComponentCard(
+                    title = mouseItem.name,
+                    details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
+                    context = context,
+                    component = mouseItem,
+                    isLoading = isLoading.value, // Pass loading state to card
+                    onAddClick = {
+                        // Mulai proses loading ketika tombol Add ditekan
+                        isLoading.value = true
+                        Log.d("MouseActivity", "Selected Mouse: ${mouseItem.name}")
+
+                        // Mendapatkan userId dan buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Simpan mouse jika buildTitle tersedia
                         buildTitle?.let { title ->
-                            // Menyimpan headphone menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "headphone", // Menyimpan headphone dengan tipe "headphone"
-                                componentName = headphoneItem.name, // Nama headphone
+                                componentType = "mouse", // Tipe komponen
+                                componentData = mouseItem, // Data mouse
                                 onSuccess = {
-                                    Log.d("HeadphoneActivity", "Headphone ${headphoneItem.name} saved successfully under build title: $title")
+                                    // Berhenti loading ketika sukses
+                                    isLoading.value = false
+                                    Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
+
+                                    // Navigasi ke BuildActivity setelah berhasil
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", mouseItem.name)
+                                        putExtra("component_data", mouseItem) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("HeadphoneActivity", "Failed to store Headphone under build title: ${errorMessage}")
-                                }
+                                    // Berhenti loading ketika gagal
+                                    isLoading.value = false
+                                    Log.e("MouseActivity", "Failed to store Mouse under build title: $errorMessage")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
-                            Log.e("HeadphoneActivity", "Build title is null; unable to store Headphone.")
+                            // Berhenti loading jika buildTitle null
+                            isLoading.value = false
+                            Log.e("MouseActivity", "Build title is null; unable to store Mouse.")
                         }
                     }
                 )
-
             }
         }
     }
