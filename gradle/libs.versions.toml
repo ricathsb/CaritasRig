@@ -32,6 +32,7 @@ composeMaterial = "1.4.0"
 material3 = "1.3.0"
 materialIconsCore = "1.7.4"
 runtimeLivedata = "1.7.5"
+appcompat = "1.6.1"
 
 
 [libraries]
@@ -78,6 +79,7 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
