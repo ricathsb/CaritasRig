@@ -1,5 +1,9 @@
 package com.superbgoal.caritasrig.activity.homepage.navbar
 
+import BuildViewModel
+import android.util.Log
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,42 +25,57 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.build.BuildScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildListScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsScreen
 import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsScreen
+import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsScreen
+import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
 import com.superbgoal.caritasrig.data.model.User
 
-
 @Composable
-fun NavbarHost(homeViewModel: HomeViewModel = viewModel()) {
+fun NavbarHost(homeViewModel: HomeViewModel = viewModel(), profileViewModel: ProfileSettingsViewModel = viewModel(),buildViewModel: BuildViewModel = viewModel()) {
     val navController = rememberNavController()
 
     Scaffold(
         topBar = {
-            // Ambil rute saat ini
             val currentBackStackEntry = navController.currentBackStackEntryAsState()
             val currentRoute = currentBackStackEntry.value?.destination?.route
             val isProfileScreen = currentRoute?.startsWith("profile") == true
 
-            // Tentukan judul berdasarkan rute
+            // Daftar rute spesifik yang mengembalikan true
+            val specificRoutes = listOf("settings", "about_us", "settings_profile")
+            val isSpecificRoute = specificRoutes.contains(currentRoute)
+
             val title = when {
                 currentRoute == "home" -> "Home"
                 currentRoute?.startsWith("profile") == true -> "Profile"
                 currentRoute == "settings" -> "Settings"
-                currentRoute == "aboutus" -> "About Us"
+                currentRoute == "about_us" -> "About Us"
+                currentRoute == "settings_profile" -> stringResource(id = R.string.profile_settings)
+                currentRoute == "trending" -> "Trending"
+                currentRoute == "build" -> "Build"
+                currentRoute == "benchmark" -> "Benchmark"
+                currentRoute == "favorite" -> "Favorite Component"
                 else -> "CaritasRig"
             }
+                Log.d("NavbarHost", "Current Route: $currentRoute")
 
             AppTopBar(
                 navigateToProfile = { user ->
@@ -67,8 +86,9 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel()) {
                 },
                 isProfileScreen = isProfileScreen,
                 title = title,
-                navigateToAboutUs = {
-                    navController.navigate("aboutus")
+                isSpecificRoute = isSpecificRoute,
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         },
@@ -78,7 +98,10 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel()) {
                 onItemSelected = { index ->
                     when (index) {
                         0 -> navController.navigate("home")
-                        // Add other cases for other screens
+                        1 -> navController.navigate("trending")
+                        2 -> navController.navigate("build")
+                        3 -> navController.navigate("benchmark")
+                        4 -> navController.navigate("favorite")
                     }
                 }
             )
@@ -96,11 +119,45 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel()) {
                 ProfileScreen(homeViewModel = homeViewModel)
             }
             composable("settings") {
-                SettingsScreen()
+                SettingsScreen(navController)
             }
-            composable ("aboutus"){
+            composable("about_us") {
                 AboutUsScreen()
             }
+            composable("settings_profile") {
+                ProfileSettingsScreen(profileViewModel)
+            }
+            composable("trending") {
+                Text(text = "Trending")
+            }
+            composable("build") {
+                BuildListScreen(navController)
+            }
+            composable("benchmark") {
+                Text(text = "Benchmark")
+            }
+            composable("favorite") {
+                Text(text = "Favorite")
+            }
+            composable(
+                route = "build_details/{title}",
+                arguments = listOf(navArgument("title") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val title = backStackEntry.arguments?.getString("title") ?: ""
+                BuildScreen(title = title,buildViewModel,navController)
+            }
+            composable("cpu_screen") { CpuScreen(navController) }
+//            composable("casing_screen") { CasingScreen() }
+//            composable("gpu_screen") { GpuScreen() }
+//            composable("motherboard_screen") { MotherboardScreen() }
+//            composable("memory_screen") { MemoryScreen() }
+//            composable("internal_hard_drive_screen") { InternalHardDriveScreen() }
+//            composable("power_supply_screen") { PowerSupplyScreen() }
+//            composable("cpu_cooler_screen") { CpuCoolerScreen() }
+//            composable("headphone_screen") { HeadphoneScreen() }
+//            composable("keyboard_screen") { KeyboardScreen() }
+//            composable("mouse_screen") { MouseScreen() }
+
         }
     }
 }
@@ -112,19 +169,36 @@ fun AppTopBar(
     homeViewModel: HomeViewModel = viewModel(),
     navigateToProfile: (User?) -> Unit,
     navigateToSettings: () -> Unit,
-    navigateToAboutUs: () -> Unit,
+    onBackClick: () -> Unit = {},
     isProfileScreen: Boolean = false,
+    isSpecificRoute: Boolean = false,
     title: String
 ) {
     val user by homeViewModel.user.collectAsState(initial = null)
 
     TopAppBar(
         title = {
-            Text(text = title, fontSize = 20.sp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Tampilkan tombol back jika berada di specific route atau profile screen
+                if (isSpecificRoute || isProfileScreen) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back Icon",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+                Text(text = title, fontSize = 20.sp)
+            }
         },
         actions = {
-            // Menambahkan Row untuk menyusun icon bersebelahan
-            if (isProfileScreen) {
+            if (isSpecificRoute) {
+                // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
+            } else if (isProfileScreen) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -137,18 +211,9 @@ fun AppTopBar(
                             modifier = Modifier.size(28.dp)
                         )
                     }
-
-                    // Icon Tanda Seru
-                    IconButton(onClick = { navigateToAboutUs() }) {
-                        Icon(
-                            imageVector = Icons.Default.Error,  // Ikon tanda seru
-                            contentDescription = "Error Icon",
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
                 }
             } else {
-                // Jika bukan di halaman profil, hanya tampilkan icon profil
+                // Jika bukan di halaman profil, tampilkan icon profil
                 IconButton(onClick = { navigateToProfile(user) }) {
                     if (user?.profileImageUrl != null) {
                         AsyncImage(
@@ -176,10 +241,11 @@ fun AppTopBar(
     )
 }
 
-
-
 @Composable
-fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
+fun BottomNavigationBar(
+    selectedItem: Int,
+    onItemSelected: (Int) -> Unit
+) {
     val items = listOf(
         NavigationItem.Home,
         NavigationItem.Trending,
@@ -194,6 +260,8 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
     ) {
         items.forEachIndexed { index, item ->
             val isMiddle = index == 2
+            val isSelected = selectedItem == index
+
             if (isMiddle) {
                 FloatingActionButton(
                     onClick = { onItemSelected(index) },
@@ -206,11 +274,32 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
                     )
                 }
             } else {
+                // Menambahkan animasi untuk transisi warna ikon
+                val animatedIconTint = animateColorAsState(
+                    targetValue = if (isSelected) MaterialTheme.colors.primary else Color.Gray
+                )
+                val animatedSize = animateDpAsState(
+                    targetValue = if (isSelected) 30.dp else 24.dp
+                )
+
                 BottomNavigationItem(
-                    icon = { Icon(imageVector = item.icon, contentDescription = item.title) },
-                    selected = selectedItem == index,
+                    icon = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.title,
+                            tint = animatedIconTint.value, // Animasi warna
+                            modifier = Modifier.size(animatedSize.value) // Animasi ukuran
+                        )
+                    },
+                    selected = isSelected,
                     onClick = { onItemSelected(index) },
-                    label = { Text(text = item.title) },
+                    label = {
+                        Text(
+                            text = item.title,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) MaterialTheme.colors.primary else Color.Gray
+                        )
+                    },
                     selectedContentColor = MaterialTheme.colors.primary,
                     unselectedContentColor = Color.Gray
                 )
@@ -219,13 +308,15 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
     }
 }
 
+
 sealed class NavigationItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    object Home : NavigationItem("Home", Icons.Default.Home)
-    object Trending : NavigationItem("Trending", Icons.AutoMirrored.Filled.TrendingUp)
+    object Home : NavigationItem("Home", Icons.Default.Home) // Pastikan ikon ini valid
+    object Trending : NavigationItem("Trending", Icons.Filled.TrendingUp) // Ubah ke Icons.Filled agar lebih stabil
     object Build : NavigationItem("Build", Icons.Default.Build)
     object Benchmark : NavigationItem("Benchmark", Icons.Default.BarChart)
     object Favorite : NavigationItem("Favorite", Icons.Default.Favorite)
 }
+
 
 @Composable
 fun ProfileScreen(homeViewModel: HomeViewModel) {

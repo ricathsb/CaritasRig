@@ -355,19 +355,6 @@ fun getCurrentUserEmail(): String? {
     return currentUser?.email
 }
 
-//@Composable
-//fun BuildList(buildIds: List<String>) {
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    ) {
-//        buildIds.forEach { buildId ->
-//            BuildCard(buildId = buildId)
-//            Spacer(modifier = Modifier.height(16.dp))
-//        }
-//    }
-//}
 
 @Composable
 fun BuildList(builds: List<Build>, onBuildClick: (Build) -> Unit) {

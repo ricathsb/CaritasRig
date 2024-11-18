@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsActivity
@@ -36,7 +37,7 @@ class SettingsActivity : ComponentActivity() {
 }
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(navController: NavController? = null) {
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -50,10 +51,13 @@ fun SettingsScreen() {
             horizontalAlignment = Alignment.Start
         ) {
             SettingOption(stringResource(id = R.string.change_language)) {
-                showDialog = true // Show language selection dialog
+                showDialog = true
             }
             SettingOption(stringResource(id = R.string.profile_settings)) {
-                context.startActivity(Intent(context, ProfileSettingsActivity::class.java))
+                navController?.navigate("settings_profile")
+            }
+            SettingOption("AboutUs") {
+                navController?.navigate("about_us")
             }
         }
     }
@@ -63,10 +67,7 @@ fun SettingsScreen() {
             onDismiss = { showDialog = false },
             onLanguageSelected = { languageCode ->
                 setLocale(context, languageCode)
-                goToHomeActivity(context)
-                context.startActivity(Intent(context, SettingsActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                })
+
             }
         )
     }
@@ -158,11 +159,6 @@ fun getSavedLanguage(context: Context): String {
     return prefs.getString("app_language", "en") ?: "en"
 }
 
-fun goToHomeActivity(context: Context) {
-    val intent = Intent(context, HomeActivity::class.java)
-    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-    context.startActivity(intent)
-}
 
 
 

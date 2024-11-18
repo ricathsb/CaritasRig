@@ -48,7 +48,7 @@ class CpuCoolerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Load CPU Coolers from JSON resource
-        val typeToken = object : TypeToken<List<CpuCooler>>() {}.type
+        object : TypeToken<List<CpuCooler>>() {}.type
         val cpuCoolers: List<CpuCooler> = loadItemsFromResources(
             context = this,
             resourceId = R.raw.cpucooler // Ensure this JSON file exists

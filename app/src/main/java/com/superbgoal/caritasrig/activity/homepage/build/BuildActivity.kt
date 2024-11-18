@@ -68,6 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
@@ -105,7 +106,7 @@ class BuildActivity : ComponentActivity() {
         } ?: Log.w("BuildActivity", "Build title is null, cannot fetch data.")
 
         setContent {
-            BuildScreen(buildViewModel)
+//            BuildScreen(buildViewModel)
             Log.d("BuildActivity", "onCreate called")
         }
     }
@@ -119,9 +120,13 @@ class BuildActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
+fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),navController: NavController? = null) {
     getDatabaseReference()
     val context = LocalContext.current
+    LaunchedEffect(title) {
+        buildViewModel.saveBuildTitle(title)
+        buildViewModel.fetchBuildByTitle(title)
+    }
 
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
@@ -223,19 +228,20 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
             ) { paddingValues ->
 
                 // Activity mapping for navigation
-                val activityMap = mapOf(
-                    "CPU" to CpuActivity::class.java,
-                    "Case" to CasingActivity::class.java,
-                    "GPU" to VideoCardActivity::class.java,
-                    "Motherboard" to MotherboardActivity::class.java,
-                    "RAM" to MemoryActivity::class.java,
-                    "InternalHardDrive" to InternalHardDriveActivity::class.java,
-                    "PowerSupply" to PowerSupplyActivity::class.java,
-                    "CPU Cooler" to CpuCoolerActivity::class.java,
-                    "Headphone" to HeadphoneActivity::class.java,
-                    "Keyboard" to KeyboardActivity::class.java,
-                    "Mouse" to MouseActivity::class.java
+                val routeMap = mapOf(
+                    "CPU" to "cpu_screen",
+                    "Case" to "casing_screen",
+                    "GPU" to "gpu_screen",
+                    "Motherboard" to "motherboard_screen",
+                    "RAM" to "memory_screen",
+                    "InternalHardDrive" to "internal_hard_drive_screen",
+                    "PowerSupply" to "power_supply_screen",
+                    "CPU Cooler" to "cpu_cooler_screen",
+                    "Headphone" to "headphone_screen",
+                    "Keyboard" to "keyboard_screen",
+                    "Mouse" to "mouse_screen"
                 )
+
 
                 LazyColumn(
                     state = lazyListState, // Gunakan LazyListState di sini
@@ -317,7 +323,12 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                                     }
                                 } ?: "0.0",
                                 onClick = {
-                                    context.startActivity(Intent(context, activityMap[title]))
+                                    val route = routeMap[title]
+                                    if (route != null) {
+                                        navController?.navigate(route)
+                                    } else {
+                                        Log.e("NavigationError", "No route found for title: $title")
+                                    }
                                 },
                                 onRemove = {
                                     buildViewModel.removeComponent(title)

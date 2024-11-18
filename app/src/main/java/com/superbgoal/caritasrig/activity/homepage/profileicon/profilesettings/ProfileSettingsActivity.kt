@@ -93,12 +93,10 @@ class ProfileSettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CaritasRigTheme {
-                Scaffold {
                     ProfileSettingsScreen(
-                        modifier = Modifier.padding(it),
                         viewModel = profileSettingsViewModel
                     )
-                }
+
             }
         }
     }
@@ -106,10 +104,7 @@ class ProfileSettingsActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileSettingsScreen(
-    modifier: Modifier = Modifier,
-    viewModel: ProfileSettingsViewModel
-) {
+fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel ){
     val firstname by viewModel.firstname.collectAsState()
     val lastname by viewModel.lastname.collectAsState()
     val username by viewModel.username.collectAsState()
@@ -155,7 +150,7 @@ fun ProfileSettingsScreen(
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .background(backgroundColor)
             .fillMaxSize()
             .padding(20.dp)
@@ -163,8 +158,6 @@ fun ProfileSettingsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = stringResource(id = R.string.profile_settings), style = MaterialTheme.typography.titleLarge)
-
         var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
 
 //        val imagePickerLauncher = rememberLauncherForActivityResult(

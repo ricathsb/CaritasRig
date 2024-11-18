@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
@@ -117,7 +118,7 @@ class CpuActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            ProcessorList(processors = filteredProcessors)
+//                            ProcessorList(processors = filteredProcessors)
                         }
                     }
 
@@ -136,6 +137,111 @@ class CpuActivity : ComponentActivity() {
                         )
                     }
                 }
+            }
+        }
+    }
+
+
+    @Composable
+    fun CpuScreen(navController: NavController) {
+        // Load processors data
+        val context = LocalContext.current
+        val processors: List<Processor> = remember {
+            loadItemsFromResources(
+                context = context,
+                resourceId = R.raw.processor
+            )
+        }
+
+        var showFilterDialog by remember { mutableStateOf(false) }
+        var filteredProcessors by remember { mutableStateOf(processors) }
+
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Set background image
+            Image(
+                painter = painterResource(id = R.drawable.component_bg),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Main content with TopAppBar and ProcessorList
+            Column {
+                TopAppBar(
+                    backgroundColor = Color.Transparent,
+                    contentColor = Color.White,
+                    elevation = 0.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    title = {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, bottom = 10.dp)
+                        ) {
+                            Text(
+                                text = "Part Pick",
+                                style = MaterialTheme.typography.h4,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = "CPU",
+                                style = MaterialTheme.typography.subtitle1,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                navController.navigateUp()
+                            },
+                            modifier = Modifier.padding(start = 20.dp, top = 10.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = { showFilterDialog = true },
+                            modifier = Modifier.padding(end = 20.dp, top = 10.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_filter),
+                                contentDescription = "Filter"
+                            )
+                        }
+                    }
+                )
+
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Color.Transparent
+                ) {
+                    ProcessorList(processors = filteredProcessors)
+                }
+            }
+
+            if (showFilterDialog) {
+                FilterDialog(
+                    onDismiss = { showFilterDialog = false },
+                    onApply = { coreCount, coreClock, boostClock, brands ->
+                        showFilterDialog = false
+                        filteredProcessors = processors.filter { processor ->
+                            processor.core_count in coreCount &&
+                                    processor.core_clock in coreClock &&
+                                    processor.boost_clock in boostClock &&
+                                    brands.any { processor.name.contains(it, ignoreCase = true) }
+                        }
+                    }
+                )
             }
         }
     }
@@ -298,3 +404,5 @@ fun FilterDialog(
         }
     )
 }
+
+

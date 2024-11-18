@@ -37,7 +37,6 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.component.Casing
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
@@ -111,9 +110,9 @@ class CasingActivity : ComponentActivity() {
                                 IconButton(
                                     onClick = {
                                         // Navigate back to BuildActivity
-                                        val intent = Intent(this@CasingActivity, BuildActivity::class.java)
-                                        startActivity(intent)
-                                        finish()
+//                                        val intent = Intent(this@CasingActivity, BuildActivity::class.java)
+//                                        startActivity(intent)
+//                                        finish()
                                     },
                                     modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                                 ) {
@@ -193,11 +192,11 @@ class CasingActivity : ComponentActivity() {
                                     Log.d("CasingActivity", "Casing ${casing.name} saved successfully under build title: $title")
 
                                     // After success, navigate to BuildActivity
-                                    val intent = Intent(context, BuildActivity::class.java).apply {
-                                        putExtra("component_title", casing.name)
-                                        putExtra("component_data", casing) // Component sent as Parcelable
-                                    }
-                                    context.startActivity(intent)
+//                                    val intent = Intent(context, BuildActivity::class.java).apply {
+//                                        putExtra("component_title", casing.name)
+//                                        putExtra("component_data", casing) // Component sent as Parcelable
+//                                    }
+//                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
                                     // Stop loading on failure
