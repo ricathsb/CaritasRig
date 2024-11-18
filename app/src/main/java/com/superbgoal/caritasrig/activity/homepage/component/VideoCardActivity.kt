@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.component
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,14 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -23,43 +16,37 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.reflect.TypeToken
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.BuildActivity
+import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.loadItemsFromResources
-import com.superbgoal.caritasrig.data.model.CpuCooler
-import com.superbgoal.caritasrig.data.model.test.BuildManager
+import com.superbgoal.caritasrig.data.model.component.VideoCard
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
-class CpuCoolerActivity : ComponentActivity() {
-    private lateinit var database: DatabaseReference
-    val buildTitle = BuildManager.getBuildTitle()
-
-
+class VideoCardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val buildTitle = BuildManager.getBuildTitle()
 
-        // Initialize Firebase database reference
-        val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
-        database = FirebaseDatabase.getInstance(databaseUrl).reference
-        val currentUser = FirebaseAuth.getInstance().currentUser
 
-        // Define the type explicitly for Gson TypeToken
-        val typeToken = object : TypeToken<List<CpuCooler>>() {}.type
-        val cpuCoolers: List<CpuCooler> = loadItemsFromResources(
+        // Load video cards from JSON resource
+        val typeToken = object : TypeToken<List<VideoCard>>() {}.type
+        val videoCards: List<VideoCard> = loadItemsFromResources(
             context = this,
-            resourceId = R.raw.cpucooler // JSON file for CPU coolers
+            resourceId = R.raw.videocard // Ensure this JSON file exists
         )
 
         setContent {
@@ -67,7 +54,7 @@ class CpuCoolerActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Background Image
+                    // Background image
                     Image(
                         painter = painterResource(id = R.drawable.component_bg),
                         contentDescription = null,
@@ -75,7 +62,7 @@ class CpuCoolerActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Main content with TopAppBar and CpuCoolerList
+                    // Main content with TopAppBar and VideoCardList
                     Column {
                         TopAppBar(
                             backgroundColor = Color.Transparent,
@@ -97,7 +84,7 @@ class CpuCoolerActivity : ComponentActivity() {
                                         textAlign = TextAlign.Center
                                     )
                                     Text(
-                                        text = "CPU Cooler",
+                                        text = "Video Card",
                                         style = MaterialTheme.typography.subtitle1,
                                         textAlign = TextAlign.Center
                                     )
@@ -106,8 +93,7 @@ class CpuCoolerActivity : ComponentActivity() {
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        // Navigate back to BuildActivity
-                                        val intent = Intent(this@CpuCoolerActivity, BuildActivity::class.java)
+                                        val intent = Intent(this@VideoCardActivity, BuildActivity::class.java)
                                         startActivity(intent)
                                         finish()
                                     },
@@ -122,7 +108,7 @@ class CpuCoolerActivity : ComponentActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        // Action for filter button
+                                        // Filter action (not implemented)
                                     },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
@@ -134,12 +120,12 @@ class CpuCoolerActivity : ComponentActivity() {
                             }
                         )
 
-                        // CpuCoolerList content
+                        // VideoCardList content
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            CpuCoolerList(cpuCoolers, currentUser?.uid.toString())
+                            VideoCardList(videoCards)
                         }
                     }
                 }
@@ -148,49 +134,68 @@ class CpuCoolerActivity : ComponentActivity() {
     }
 
     @Composable
-    fun CpuCoolerList(cpuCoolers: List<CpuCooler>, userId: String) {
+    fun VideoCardList(videoCards: List<VideoCard>) {
+        val context = LocalContext.current
+
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(cpuCoolers) { cpuCooler ->
-                Log.d("CpuCoolerActivity", "Rendering CPU Cooler: ${cpuCooler.name}")
-                ComponentCard(
-                    title = cpuCooler.name,
-                    details = "${cpuCooler.color} | Noise Level: ${cpuCooler.noise_level} dBA | Fan Size: ${cpuCooler.rpm} RPM | RGB: ${cpuCooler.color}",
-                    onAddClick = {
-                        Log.d("CpuCoolerActivity", "Selected CPU Cooler: ${cpuCooler.name}")
+            items(videoCards) { videoCard ->
+                // Track loading state for each video card
+                val isLoading = remember { mutableStateOf(false) }
 
-                        // Get the current user and build title
+                // Menggunakan ComponentCard untuk setiap video card
+                ComponentCard(
+                    title = videoCard.name,
+                    details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
+                    context = context,
+                    component = videoCard,
+                    isLoading = isLoading.value, // Pass loading state to card
+                    onAddClick = {
+                        // Mulai proses loading ketika tombol Add ditekan
+                        isLoading.value = true
+                        Log.d("VideoCardActivity", "Selected Video Card: ${videoCard.name}")
+
+                        // Mendapatkan userId dan buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
-
-                        // Use the BuildManager singleton to get the current build title
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Check if buildTitle is available before storing data in Firebase
+                        // Simpan video card jika buildTitle tersedia
                         buildTitle?.let { title ->
-                            // Menyimpan CPU Cooler menggunakan fungsi saveComponent
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "cpuCooler", // Menyimpan CPU Cooler dengan tipe "cpuCooler"
-                                componentName = cpuCooler.name, // Nama CPU Cooler
+                                componentType = "gpu", // Tipe komponen
+                                componentData = videoCard, // Data video card
                                 onSuccess = {
-                                    Log.d("CpuCoolerActivity", "CPU Cooler ${cpuCooler.name} saved successfully under build title: $title")
+                                    // Berhenti loading ketika sukses
+                                    isLoading.value = false
+                                    Log.d("VideoCardActivity", "Video Card ${videoCard.name} saved successfully under build title: $title")
+
+                                    // Navigasi ke BuildActivity setelah berhasil
+                                    val intent = Intent(context, BuildActivity::class.java).apply {
+                                        putExtra("component_title", videoCard.name)
+                                        putExtra("component_data", videoCard) // Component sent as Parcelable
+                                    }
+                                    context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    Log.e("CpuCoolerActivity", "Failed to store CPU Cooler under build title: ${errorMessage}")
-                                }
+                                    // Berhenti loading ketika gagal
+                                    isLoading.value = false
+                                    Log.e("VideoCardActivity", "Failed to store Video Card under build title: ${errorMessage}")
+                                },
+                                onLoading = { isLoading.value = it } // Update loading state
                             )
                         } ?: run {
-                            // Handle the case where buildTitle is null
-                            Log.e("CpuCoolerActivity", "Build title is null; unable to store CPU Cooler.")
+                            // Berhenti loading jika buildTitle null
+                            isLoading.value = false
+                            Log.e("VideoCardActivity", "Build title is null; unable to store Video Card.")
                         }
                     }
                 )
-
             }
-
         }
-}}
+    }
+}

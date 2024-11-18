@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.HomeActivity
+import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsActivity
 import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import java.util.*
