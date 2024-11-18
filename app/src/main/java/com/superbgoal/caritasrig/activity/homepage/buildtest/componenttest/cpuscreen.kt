@@ -132,7 +132,7 @@ fun CpuScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                ProcessorList(processors = filteredProcessors)
+                ProcessorList(processors = filteredProcessors,navController)
             }
         }
 
@@ -154,7 +154,7 @@ fun CpuScreen(navController: NavController) {
 }
 
 @Composable
-fun ProcessorList(processors: List<Processor>) {
+fun ProcessorList(processors: List<Processor>,navController: NavController) {
     val context = LocalContext.current
 
     LazyColumn(
@@ -169,6 +169,7 @@ fun ProcessorList(processors: List<Processor>) {
                 context = context,
                 component = processor,
                 isLoading = isLoading.value,
+                navController = navController,
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -182,15 +183,12 @@ fun ProcessorList(processors: List<Processor>) {
                             componentData = processor,
                             onSuccess = {
                                 isLoading.value = false
-                                val intent = Intent(context, BuildActivity::class.java).apply {
-                                    putExtra("component_title", processor.name)
-                                    putExtra("component_data", processor)
-                                }
-                                context.startActivity(intent)
+                                navController.navigateUp()
+                                Log.e("test", "ketriger")
                             },
                             onFailure = { errorMessage ->
                                 isLoading.value = false
-                                Log.e("BuildActivity", "Failed to store CPU under build title: $errorMessage")
+
                             },
                             onLoading = { isLoading.value = it }
                         )

@@ -39,11 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode.Companion.Screen
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
@@ -139,8 +141,10 @@ fun ComponentCard(
     isLoading: Boolean, // Status loading untuk tombol
     onAddClick: (onSuccess: () -> Unit) -> Unit, // Callback dengan aksi sukses
     backgroundColor: Color = Color(0xFF3E2C47), // Warna latar belakang kartu
-    buttonColor: Color = Color(0xFF6E5768) // Warna tombol
+    buttonColor: Color = Color(0xFF6E5768), // Warna tombol
+    navController: NavController? = null
 ) {
+    Log.d(" ComponentCard", "meme$navController")
     Card(
         elevation = 4.dp,
         backgroundColor = backgroundColor,
@@ -196,11 +200,7 @@ fun ComponentCard(
                         onAddClick {
                             // Aksi setelah sukses, pindahkan ke BuildActivity
                             Log.d("ComponentCard", "onSuccess triggered, navigating to BuildActivity")
-                            val intent = Intent(context, BuildActivity::class.java).apply {
-                                putExtra("component_title", title)
-                                putExtra("component_data", component)
-                            }
-                            context.startActivity(intent)
+                            navController?.navigateUp()
                         }
                     },
                     enabled = !isLoading, // Nonaktifkan tombol saat loading
