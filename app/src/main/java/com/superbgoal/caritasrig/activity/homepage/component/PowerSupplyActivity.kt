@@ -9,11 +9,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -35,12 +38,14 @@ import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 class PowerSupplyActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val buildTitle = BuildManager.getBuildTitle()
 
+        val buildTitle = BuildManager.getBuildTitle()
 
         // Load power supplies from JSON resource
         val typeToken = object : TypeToken<List<PowerSupply>>() {}.type
@@ -51,6 +56,9 @@ class PowerSupplyActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
+                var showFilterDialog by remember { mutableStateOf(false) }
+                var filteredPowerSupplies by remember { mutableStateOf(powerSupplies) }
+
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -107,9 +115,7 @@ class PowerSupplyActivity : ComponentActivity() {
                             },
                             actions = {
                                 IconButton(
-                                    onClick = {
-                                        // Filter action (not implemented)
-                                    },
+                                    onClick = { showFilterDialog = true },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
@@ -125,8 +131,23 @@ class PowerSupplyActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            PowerSupplyList(powerSupplies)
+                            PowerSupplyList(filteredPowerSupplies)
                         }
+                    }
+
+                    // Filter dialog
+                    if (showFilterDialog) {
+                        FilterDialog(
+                            onDismiss = { showFilterDialog = false },
+                            onApply = { selectedTypes, selectedWattages, selectedModularities ->
+                                showFilterDialog = false
+                                filteredPowerSupplies = powerSupplies.filter { powerSupply ->
+                                    (selectedTypes.isEmpty() || selectedTypes.contains(powerSupply.type)) &&
+                                            (selectedWattages.isEmpty() || powerSupply.wattage in selectedWattages) &&
+                                            (selectedModularities.isEmpty() || selectedModularities.contains(powerSupply.modular))
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -142,54 +163,41 @@ class PowerSupplyActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(powerSupplies) { powerSupply ->
-                // Track loading state for each power supply
                 val isLoading = remember { mutableStateOf(false) }
 
-                // Menggunakan ComponentCard untuk setiap power supply
                 ComponentCard(
                     title = powerSupply.name,
                     details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
                     context = context,
                     component = powerSupply,
-                    isLoading = isLoading.value, // Pass loading state to card
+                    isLoading = isLoading.value,
                     onAddClick = {
-                        // Mulai proses loading ketika tombol Add ditekan
                         isLoading.value = true
-                        Log.d("PowerSupplyActivity", "Selected Power Supply: ${powerSupply.name}")
-
-                        // Mendapatkan userId dan buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Simpan power supply jika buildTitle tersedia
                         buildTitle?.let { title ->
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "powersupply", // Tipe komponen
-                                componentData = powerSupply, // Data power supply
+                                componentType = "powersupply",
+                                componentData = powerSupply,
                                 onSuccess = {
-                                    // Berhenti loading ketika sukses
                                     isLoading.value = false
-                                    Log.d("PowerSupplyActivity", "Power Supply ${powerSupply.name} saved successfully under build title: $title")
-
-                                    // Navigasi ke BuildActivity setelah berhasil
                                     val intent = Intent(context, BuildActivity::class.java).apply {
                                         putExtra("component_title", powerSupply.name)
-                                        putExtra("component_data", powerSupply) // Component sent as Parcelable
+                                        putExtra("component_data", powerSupply)
                                     }
                                     context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    // Berhenti loading ketika gagal
                                     isLoading.value = false
-                                    Log.e("PowerSupplyActivity", "Failed to store Power Supply under build title: $errorMessage")
+                                    Log.e("PowerSupplyActivity", "Failed to store Power Supply: $errorMessage")
                                 },
-                                onLoading = { isLoading.value = it } // Update loading state
+                                onLoading = { isLoading.value = it }
                             )
                         } ?: run {
-                            // Berhenti loading jika buildTitle null
                             isLoading.value = false
                             Log.e("PowerSupplyActivity", "Build title is null; unable to store Power Supply.")
                         }
@@ -199,4 +207,91 @@ class PowerSupplyActivity : ComponentActivity() {
         }
     }
 
+    @Composable
+    fun FilterDialog(
+        onDismiss: () -> Unit,
+        onApply: (selectedTypes: List<String>, selectedWattages: List<Int>, selectedModularities: List<String>) -> Unit
+    ) {
+        val availableTypes = listOf("ATX", "SFX", "Mini ITX")
+        val selectedTypes = remember { mutableStateOf(availableTypes.toMutableList()) }
+
+        val availableWattages = listOf(400, 500, 600, 750, 850, 1000, 1200)
+        val selectedWattages = remember { mutableStateOf(availableWattages.toMutableList()) }
+
+        val availableModularities = listOf("Full", "Semi", "Non")
+        val selectedModularities = remember { mutableStateOf(availableModularities.toMutableList()) }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Filter Power Supplies") },
+            text = {
+                Column {
+                    Text("Type:")
+                    availableTypes.forEach { type ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = type in selectedTypes.value,
+                                onCheckedChange = { isChecked ->
+                                    val updatedList = selectedTypes.value.toMutableList()
+                                    if (isChecked) updatedList.add(type) else updatedList.remove(type)
+                                    selectedTypes.value = updatedList
+                                }
+                            )
+                            Text(text = type)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Wattage (W):")
+                    availableWattages.forEach { wattage ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = wattage in selectedWattages.value,
+                                onCheckedChange = { isChecked ->
+                                    val updatedList = selectedWattages.value.toMutableList()
+                                    if (isChecked) updatedList.add(wattage) else updatedList.remove(wattage)
+                                    selectedWattages.value = updatedList
+                                }
+                            )
+                            Text(text = "$wattage W")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Modularity:")
+                    availableModularities.forEach { modularity ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = modularity in selectedModularities.value,
+                                onCheckedChange = { isChecked ->
+                                    val updatedList = selectedModularities.value.toMutableList()
+                                    if (isChecked) updatedList.add(modularity) else updatedList.remove(modularity)
+                                    selectedModularities.value = updatedList
+                                }
+                            )
+                            Text(text = modularity)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onApply(
+                        selectedTypes.value,
+                        selectedWattages.value,
+                        selectedModularities.value
+                    )
+                }) {
+                    Text("Apply")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }

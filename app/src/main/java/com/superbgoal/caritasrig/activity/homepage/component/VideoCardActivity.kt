@@ -9,15 +9,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,8 +32,8 @@ import com.superbgoal.caritasrig.functions.auth.saveComponent
 class VideoCardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val buildTitle = BuildManager.getBuildTitle()
 
+        val buildTitle = BuildManager.getBuildTitle()
 
         // Load video cards from JSON resource
         val typeToken = object : TypeToken<List<VideoCard>>() {}.type
@@ -51,6 +44,9 @@ class VideoCardActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
+                var showFilterDialog by remember { mutableStateOf(false) }
+                var filteredVideoCards by remember { mutableStateOf(videoCards) }
+
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -107,9 +103,7 @@ class VideoCardActivity : ComponentActivity() {
                             },
                             actions = {
                                 IconButton(
-                                    onClick = {
-                                        // Filter action (not implemented)
-                                    },
+                                    onClick = { showFilterDialog = true },
                                     modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                                 ) {
                                     Icon(
@@ -125,8 +119,23 @@ class VideoCardActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             color = Color.Transparent
                         ) {
-                            VideoCardList(videoCards)
+                            VideoCardList(filteredVideoCards)
                         }
+                    }
+
+                    // Filter dialog
+                    if (showFilterDialog) {
+                        FilterDialog(
+                            onDismiss = { showFilterDialog = false },
+                            onApply = { selectedBrands, selectedMemorySizes, selectedCoreClocks ->
+                                showFilterDialog = false
+                                filteredVideoCards = videoCards.filter { videoCard ->
+                                    (selectedBrands.isEmpty() || selectedBrands.any { videoCard.name.contains(it, ignoreCase = true) }) &&
+                                            (selectedMemorySizes.isEmpty() || videoCard.memory in selectedMemorySizes) &&
+                                            (selectedCoreClocks.isEmpty() || videoCard.coreClock.toInt() in selectedCoreClocks)
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -142,54 +151,41 @@ class VideoCardActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(videoCards) { videoCard ->
-                // Track loading state for each video card
                 val isLoading = remember { mutableStateOf(false) }
 
-                // Menggunakan ComponentCard untuk setiap video card
                 ComponentCard(
                     title = videoCard.name,
                     details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
                     context = context,
                     component = videoCard,
-                    isLoading = isLoading.value, // Pass loading state to card
+                    isLoading = isLoading.value,
                     onAddClick = {
-                        // Mulai proses loading ketika tombol Add ditekan
                         isLoading.value = true
-                        Log.d("VideoCardActivity", "Selected Video Card: ${videoCard.name}")
-
-                        // Mendapatkan userId dan buildTitle
                         val currentUser = FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid.toString()
                         val buildTitle = BuildManager.getBuildTitle()
 
-                        // Simpan video card jika buildTitle tersedia
                         buildTitle?.let { title ->
                             saveComponent(
                                 userId = userId,
                                 buildTitle = title,
-                                componentType = "gpu", // Tipe komponen
-                                componentData = videoCard, // Data video card
+                                componentType = "gpu",
+                                componentData = videoCard,
                                 onSuccess = {
-                                    // Berhenti loading ketika sukses
                                     isLoading.value = false
-                                    Log.d("VideoCardActivity", "Video Card ${videoCard.name} saved successfully under build title: $title")
-
-                                    // Navigasi ke BuildActivity setelah berhasil
                                     val intent = Intent(context, BuildActivity::class.java).apply {
                                         putExtra("component_title", videoCard.name)
-                                        putExtra("component_data", videoCard) // Component sent as Parcelable
+                                        putExtra("component_data", videoCard)
                                     }
                                     context.startActivity(intent)
                                 },
                                 onFailure = { errorMessage ->
-                                    // Berhenti loading ketika gagal
                                     isLoading.value = false
-                                    Log.e("VideoCardActivity", "Failed to store Video Card under build title: ${errorMessage}")
+                                    Log.e("VideoCardActivity", "Failed to store Video Card: $errorMessage")
                                 },
-                                onLoading = { isLoading.value = it } // Update loading state
+                                onLoading = { isLoading.value = it }
                             )
                         } ?: run {
-                            // Berhenti loading jika buildTitle null
                             isLoading.value = false
                             Log.e("VideoCardActivity", "Build title is null; unable to store Video Card.")
                         }
@@ -197,5 +193,92 @@ class VideoCardActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun FilterDialog(
+        onDismiss: () -> Unit,
+        onApply: (
+            selectedBrands: List<String>,
+            selectedMemorySizes: List<Double>,
+            selectedCoreClocks: IntRange
+        ) -> Unit
+    ) {
+        val availableBrands = listOf("AMD", "NVIDIA", "Intel")
+        val selectedBrands = remember { mutableStateOf(availableBrands.toMutableList()) }
+
+        val availableMemorySizes = listOf(4.0, 6.0, 8.0, 12.0, 16.0)
+        val selectedMemorySizes = remember { mutableStateOf(availableMemorySizes.toMutableList()) }
+
+        val coreClockRange = remember { mutableStateOf(500..3000) }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(text = "Filter Video Cards") },
+            text = {
+                Column {
+                    Text("Brand:")
+                    availableBrands.forEach { brand ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = brand in selectedBrands.value,
+                                onCheckedChange = { isChecked ->
+                                    val updatedList = selectedBrands.value.toMutableList()
+                                    if (isChecked) updatedList.add(brand) else updatedList.remove(brand)
+                                    selectedBrands.value = updatedList
+                                }
+                            )
+                            Text(text = brand)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Memory Size (GB):")
+                    availableMemorySizes.forEach { size ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = size in selectedMemorySizes.value,
+                                onCheckedChange = { isChecked ->
+                                    val updatedList = selectedMemorySizes.value.toMutableList()
+                                    if (isChecked) updatedList.add(size) else updatedList.remove(size)
+                                    selectedMemorySizes.value = updatedList
+                                }
+                            )
+                            Text(text = "$size GB")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(text = "Core Clock: ${coreClockRange.value.start} MHz - ${coreClockRange.value.endInclusive} MHz")
+                    RangeSlider(
+                        value = coreClockRange.value.start.toFloat()..coreClockRange.value.endInclusive.toFloat(),
+                        onValueChange = { range ->
+                            coreClockRange.value = range.start.toInt()..range.endInclusive.toInt()
+                        },
+                        valueRange = 500f..3000f,
+                        steps = 10
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onApply(
+                        selectedBrands.value,
+                        selectedMemorySizes.value,
+                        coreClockRange.value
+                    )
+                }) {
+                    Text("Apply")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
