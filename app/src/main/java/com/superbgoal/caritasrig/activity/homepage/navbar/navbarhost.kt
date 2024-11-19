@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,19 +39,33 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.build.BuildScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildListScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CasingScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuCoolerScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.HeadphoneScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.InternalHardDriveScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.KeyboardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MotherboardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MouseScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.PowerSupplyScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.VideoCardScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsScreen
-import com.superbgoal.caritasrig.activity.homepage.profileicon.SettingsScreen
-import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsScreen
 import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
+import com.superbgoal.caritasrig.activity.homepage.screentest.ProfileSettingsScreen
+import com.superbgoal.caritasrig.activity.homepage.screentest.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
 
 @Composable
-fun NavbarHost(homeViewModel: HomeViewModel = viewModel(), profileViewModel: ProfileSettingsViewModel = viewModel(),buildViewModel: BuildViewModel = viewModel()) {
+fun NavbarHost(
+    homeViewModel: HomeViewModel = viewModel(),
+    profileViewModel: ProfileSettingsViewModel = viewModel(),
+    buildViewModel: BuildViewModel = viewModel(),
+    appController : NavController
+) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -59,30 +74,33 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel(), profileViewModel: Pro
             val currentRoute = currentBackStackEntry.value?.destination?.route
             val isProfileScreen = currentRoute?.startsWith("profile") == true
 
-            // Daftar rute spesifik yang mengembalikan true
             val specificRoutes = listOf("settings", "about_us", "settings_profile")
             val isSpecificRoute = specificRoutes.contains(currentRoute)
 
-            val title = when {
-                currentRoute == "home" -> "Home"
-                currentRoute?.startsWith("profile") == true -> "Profile"
-                currentRoute == "settings" -> "Settings"
-                currentRoute == "about_us" -> "About Us"
-                currentRoute == "settings_profile" -> stringResource(id = R.string.profile_settings)
-                currentRoute == "trending" -> "Trending"
-                currentRoute == "build" -> "Build"
-                currentRoute == "benchmark" -> "Benchmark"
-                currentRoute == "favorite" -> "Favorite Component"
+            val title = when (currentRoute) {
+                "home" -> "Home"
+                "settings" -> "Settings"
+                "about_us" -> "About Us"
+                "settings_profile" -> stringResource(id = R.string.profile_settings)
+                "trending" -> "Trending"
+                "build" -> "Build"
+                "benchmark" -> "Benchmark"
+                "favorite" -> "Favorite Component"
                 else -> "CaritasRig"
             }
-                Log.d("NavbarHost", "Current Route: $currentRoute")
 
             AppTopBar(
                 navigateToProfile = { user ->
-                    navController.navigate("profile/${user?.username ?: "unknown"}")
+                    navController.navigate("profile/${user?.username ?: "unknown"}") {
+                        popUpTo("home") { inclusive = false }
+                        launchSingleTop = true
+                    }
                 },
                 navigateToSettings = {
-                    navController.navigate("settings")
+                    navController.navigate("settings") {
+                        popUpTo("home") { inclusive = false }
+                        launchSingleTop = true
+                    }
                 },
                 isProfileScreen = isProfileScreen,
                 title = title,
@@ -97,11 +115,26 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel(), profileViewModel: Pro
                 selectedItem = 0,
                 onItemSelected = { index ->
                     when (index) {
-                        0 -> navController.navigate("home")
-                        1 -> navController.navigate("trending")
-                        2 -> navController.navigate("build")
-                        3 -> navController.navigate("benchmark")
-                        4 -> navController.navigate("favorite")
+                        0 -> navController.navigate("home") {
+                            popUpTo("home") { inclusive = true }
+                            launchSingleTop = true
+                        }
+                        1 -> navController.navigate("trending") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                        2 -> navController.navigate("build") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                        3 -> navController.navigate("benchmark") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                        4 -> navController.navigate("favorite") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
@@ -119,13 +152,13 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel(), profileViewModel: Pro
                 ProfileScreen(homeViewModel = homeViewModel)
             }
             composable("settings") {
-                SettingsScreen(navController)
+                SettingsScreen(navController,appController)
             }
             composable("about_us") {
                 AboutUsScreen()
             }
             composable("settings_profile") {
-                ProfileSettingsScreen(profileViewModel)
+                ProfileSettingsScreen(profileViewModel, homeViewModel)
             }
             composable("trending") {
                 Text(text = "Trending")
@@ -144,23 +177,22 @@ fun NavbarHost(homeViewModel: HomeViewModel = viewModel(), profileViewModel: Pro
                 arguments = listOf(navArgument("title") { type = NavType.StringType })
             ) { backStackEntry ->
                 val title = backStackEntry.arguments?.getString("title") ?: ""
-                BuildScreen(title = title,buildViewModel,navController)
+                BuildScreen(title = title, buildViewModel, navController)
             }
             composable("cpu_screen") { CpuScreen(navController) }
-//            composable("casing_screen") { CasingScreen() }
-//            composable("gpu_screen") { GpuScreen() }
-//            composable("motherboard_screen") { MotherboardScreen() }
-//            composable("memory_screen") { MemoryScreen() }
-//            composable("internal_hard_drive_screen") { InternalHardDriveScreen() }
-//            composable("power_supply_screen") { PowerSupplyScreen() }
-//            composable("cpu_cooler_screen") { CpuCoolerScreen() }
-//            composable("headphone_screen") { HeadphoneScreen() }
-//            composable("keyboard_screen") { KeyboardScreen() }
-//            composable("mouse_screen") { MouseScreen() }
-
+            composable("casing_screen") { CasingScreen(navController) }
+            composable("cpu_cooler_screen") { CpuCoolerScreen(navController) }
+            composable("gpu_screen") { VideoCardScreen(navController) }
+            composable("motherboard_screen") { MotherboardScreen(navController) }
+            composable("internal_hard_drive_screen") { InternalHardDriveScreen(navController) }
+            composable("power_supply_screen") { PowerSupplyScreen(navController) }
+            composable("headphone_screen") { HeadphoneScreen(navController) }
+            composable("keyboard_screen") { KeyboardScreen(navController) }
+            composable("mouse_screen") { MouseScreen(navController) }
         }
     }
 }
+
 
 
 
