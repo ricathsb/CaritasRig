@@ -274,6 +274,7 @@ fun UserProfile(viewModel: HomeViewModel) {
     ) {
         // Search Bar
         TextField(
+            shape = RoundedCornerShape(25.dp),
             value = viewModel.searchText.collectAsState().value,
             onValueChange = { viewModel.updateSearchText(it) },
             label = { Text(stringResource(id = R.string.search)) },

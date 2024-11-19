@@ -43,7 +43,7 @@ class LoginViewModel : ViewModel() {
     }
 
     fun updateOffsetY(newOffset: Float) {
-        _offsetY.value = newOffset
+        _offsetY.value = newOffset.coerceIn(0f, 1000f)
     }
 
     fun toggleArrowDirection() {
