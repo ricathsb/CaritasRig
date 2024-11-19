@@ -15,6 +15,7 @@
         android:screenOrientation="portrait"
 
         tools:targetApi="31">
+        
 
         <activity
             android:name=".activity.CheckActivity"
