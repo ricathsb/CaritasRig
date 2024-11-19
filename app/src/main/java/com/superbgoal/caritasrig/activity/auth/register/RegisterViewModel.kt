@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.format.DateTimeFormatter
@@ -63,15 +62,6 @@ class RegisterViewModel : ViewModel() {
 
     fun updateShowDatePicker(showDatePicker: Boolean) {
         _showDatePicker.value = showDatePicker
-    }
-
-    fun signOut(context: Context) {
-        FirebaseAuth.getInstance().signOut()
-        val intent = Intent(context, LoginActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        context.startActivity(intent)
-        (context as Activity).finish()
     }
 
 }

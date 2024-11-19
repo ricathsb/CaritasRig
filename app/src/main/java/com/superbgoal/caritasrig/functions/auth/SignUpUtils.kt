@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.activity.auth.register.RegisterActivity
 import kotlinx.coroutines.tasks.await
 
 suspend fun signUpUser(
@@ -14,7 +14,8 @@ suspend fun signUpUser(
     email: String,
     password: String,
     confirmPassword: String,
-    context: Context
+    context: Context,
+    navController: NavController
 ) {
     val auth = FirebaseAuth.getInstance()
 
@@ -37,15 +38,8 @@ suspend fun signUpUser(
                 }
             }
 
-            val intent = Intent(context, RegisterActivity::class.java).apply {
-                putExtra("userId", userId)
-                putExtra("email", email)
-                putExtra("imageUri", imageUri)
-            }
-            context.startActivity(intent)
-            if (context is Activity) {
-                context.finish()
-            }
+            navController.navigate("register")
+
         } else {
             Log.e("SignUpActivity", "Failed to create account: User ID not found")
             Toast.makeText(context, "Failed to create account: User ID not found", Toast.LENGTH_SHORT).show()

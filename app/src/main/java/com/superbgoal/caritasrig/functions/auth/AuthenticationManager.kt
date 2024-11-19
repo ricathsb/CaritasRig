@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.navigation.NavController
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
@@ -15,9 +16,6 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.register.RegisterActivity
-import com.superbgoal.caritasrig.activity.homepage.AfterLoginActivity
-import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -27,7 +25,7 @@ import java.util.UUID
 class AuthenticationManager(private val context: Context) {
     private val auth = FirebaseAuth.getInstance()
 
-    fun checkUserInDatabase(userId: String) {
+    fun checkUserInDatabase(userId: String, navController: NavController, callback: ((String) -> Unit)? = null) {
         val databaseUrl = "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app"
         val database = FirebaseDatabase.getInstance(databaseUrl).reference
         val currentUser = auth.currentUser
@@ -44,31 +42,45 @@ class AuthenticationManager(private val context: Context) {
                         // User exists in the database and email is verified, redirect to HomeActivity
                         if (currentUser.isEmailVerified) {
                             Log.d("checkUserInDatabase", "User exists and email is verified, redirecting to HomeActivity")
-                            Intent(context, AfterLoginActivity::class.java).also {
-                                it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                context.startActivity(it)
+                            if (callback != null) {
+                                callback("home")  // Call the callback with "home" if provided
+                            } else {
+                                // If no callback is provided, handle the redirection
+                               navController.navigate("home")
                             }
                         }
                     } else {
                         // User does not exist in the database, redirect to RegisterActivity
                         Log.d("checkUserInDatabase", "User does not exist in database, redirecting to RegisterActivity")
-                        Intent(context, RegisterActivity::class.java).also {
-                            it.putExtra("userId", userId)
-                            it.putExtra("imageUrl", imageUrl)
-                            it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            Log.d("checkUserInDatabase", "imageUrl: $imageUrl")
-                            context.startActivity(it)
+                        if (callback != null) {
+                            callback("register")  // Call the callback with "register" if provided
+                        } else {
+                            navController.navigate("register")
                         }
                     }
 
                 }.addOnFailureListener { exception ->
                     Log.e("checkUserInDatabase", "Error checking user in database: ${exception.message}")
+                    if (callback != null) {
+                        callback("login")  // Call the callback with "login" in case of failure
+                    } else {
+                        // Default behavior (not using callback)
+                        navController.navigate("login")
+                    }
                 }
             } else {
                 Log.e("checkUserInDatabase", "Failed to reload user: ${reloadTask.exception?.message}")
+                if (callback != null) {
+                    callback("login")  // Call the callback with "login" if reload fails
+                } else {
+                    navController.navigate("login")
+                }
             }
         }
     }
+
+
+
 
 
 
@@ -97,12 +109,12 @@ class AuthenticationManager(private val context: Context) {
     }
 
 
-    fun loginWithEmail(email: String, password: String): Flow<AuthResponse> = callbackFlow {
+    fun loginWithEmail(email: String, password: String,navController: NavController): Flow<AuthResponse> = callbackFlow {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    checkUserInDatabase(user?.uid ?: "")
+                    checkUserInDatabase(user?.uid ?: "", navController =navController)
                 } else {
                     Log.d("login", "error")
                     trySend(AuthResponse.Error(task.exception?.message ?: "Unknown Error"))
@@ -122,7 +134,7 @@ class AuthenticationManager(private val context: Context) {
         }
     }
 
-    fun signInWithGoogle(): Flow<AuthResponse> = callbackFlow  {
+    fun signInWithGoogle(navController: NavController): Flow<AuthResponse> = callbackFlow  {
         Log.d("signinwithgoogle", "signInWithGoogle:")
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
@@ -159,7 +171,7 @@ class AuthenticationManager(private val context: Context) {
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     val userId = auth.currentUser?.uid ?: ""
-                                    checkUserInDatabase(userId)
+                                    checkUserInDatabase(userId, navController = navController )
                                 } else {
                                     trySend(
                                         AuthResponse.Error(
