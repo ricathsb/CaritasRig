@@ -1,11 +1,17 @@
 package com.superbgoal.caritasrig.activity.homepage.navbar
 
 import BuildViewModel
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.BottomNavigationItem
@@ -17,9 +23,18 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -209,12 +224,14 @@ fun AppTopBar(
     title: String
 ) {
     val user by homeViewModel.user.collectAsState(initial = null)
-
+    val navbarColor = Color(0xFF473947);
     TopAppBar(
+        backgroundColor = navbarColor,
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
+
             ) {
                 // Tampilkan tombol back jika berada di specific route atau profile screen
                 if (isSpecificRoute || isProfileScreen) {
@@ -269,7 +286,6 @@ fun AppTopBar(
                 }
             }
         },
-        backgroundColor = MaterialTheme.colors.primary,
         contentColor = Color.White,
         elevation = 4.dp
     )
@@ -287,8 +303,10 @@ fun BottomNavigationBar(
         NavigationItem.Benchmark,
         NavigationItem.Favorite
     )
+    val navbarColor = Color(0xFF473947);
 
     BottomAppBar(
+        backgroundColor = navbarColor,
         cutoutShape = CircleShape,
         elevation = 8.dp
     ) {
