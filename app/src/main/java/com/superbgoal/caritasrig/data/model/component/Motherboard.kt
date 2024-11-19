@@ -10,7 +10,7 @@ data class Motherboard(
     val price: Double = 0.0,
     val socket: String = "",
     val formFactor: String = "",
-    val maxMemory: Int =0, // Maximum memory in GB
+    val maxMemory: Int = 0, // Maximum memory in GB
     val memorySlots: Int = 0, // Number of memory slots
     val color: String = "",
     @SerializedName("image_url") val imageUrl: String = ""
