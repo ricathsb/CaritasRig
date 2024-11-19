@@ -19,6 +19,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -45,8 +46,24 @@ fun MemoryScreen(navController: NavController) {
     val memories: List<Memory> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.memory // Assuming `memory.json` is stored as memory.json in `res/raw`
+            resourceId = R.raw.memory
         )
+    }
+
+    // Filter state
+    val selectedModules = remember { mutableStateOf(0) }
+    val selectedSpeed = remember { mutableStateOf(0) }
+    val selectedSockets = remember { mutableStateOf(setOf<Int>()) }
+
+    // State to control the dialog visibility
+    val showFilterDialog = remember { mutableStateOf(false) }
+
+    val filteredMemories = remember(selectedModules.value, selectedSpeed.value, selectedSockets.value) {
+        memories.filter { memory ->
+            (selectedModules.value == 0 || memory.modules >= selectedModules.value) &&
+                    (selectedSpeed.value == 0 || memory.speed >= selectedSpeed.value) &&
+                    (selectedSockets.value.isEmpty() || memory.socket in selectedSockets.value)
+        }
     }
 
     Box(
@@ -104,7 +121,7 @@ fun MemoryScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
-                            // Action for filter button
+                            showFilterDialog.value = true // Trigger the filter dialog
                         },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
@@ -120,10 +137,83 @@ fun MemoryScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                MemoryList(memories, navController)
+                MemoryList(filteredMemories, navController)
             }
         }
     }
+
+    // Show the FilterDialog when the state is true
+    if (showFilterDialog.value) {
+        FilterDialogMemory(
+            selectedModules = selectedModules,
+            selectedSpeed = selectedSpeed,
+            selectedSockets = selectedSockets,
+            onDismiss = { showFilterDialog.value = false } // Close the dialog
+        )
+    }
+}
+
+@Composable
+fun FilterDialogMemory(
+    selectedModules: MutableState<Int>,
+    selectedSpeed: MutableState<Int>,
+    selectedSockets: MutableState<Set<Int>>,
+    onDismiss: () -> Unit
+) {
+    val availableSockets = listOf(3, 4, 5) // Example socket options DDR3, DDR4, DDR5
+
+    androidx.compose.material.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Filter Memory") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("Modules (GB): ${selectedModules.value} GB")
+                androidx.compose.material.Slider(
+                    value = selectedModules.value.toFloat(),
+                    onValueChange = { selectedModules.value = it.toInt() },
+                    valueRange = 0f..64f,
+                    steps = 63
+                )
+
+                Text("Speed (MHz): ${selectedSpeed.value} MHz")
+                androidx.compose.material.Slider(
+                    value = selectedSpeed.value.toFloat(),
+                    onValueChange = { selectedSpeed.value = it.toInt() },
+                    valueRange = 0f..8000f,
+                    steps = 79
+                )
+
+                Text("Socket:")
+                availableSockets.forEach { socket ->
+                    androidx.compose.material.Checkbox(
+                        checked = selectedSockets.value.contains(socket),
+                        onCheckedChange = {
+                            selectedSockets.value = if (it) {
+                                selectedSockets.value + socket
+                            } else {
+                                selectedSockets.value - socket
+                            }
+                        }
+                    )
+                    Text(text = "DDR$socket")
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material.TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Apply")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material.TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
