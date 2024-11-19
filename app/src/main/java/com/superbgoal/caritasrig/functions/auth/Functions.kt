@@ -129,16 +129,17 @@ fun Maintenance() {
 fun ComponentCard(
     title: String,
     details: String,
-    component: Parcelable, // Komponen yang akan dikirim melalui Intent
+    component: Parcelable? = null, // Komponen yang akan dikirim melalui Intent
     imageUrl: String? = null, // URL untuk gambar (opsional)
     context: Context,
     isLoading: Boolean, // Status loading untuk tombol
-    onAddClick: (onSuccess: () -> Unit) -> Unit, // Callback dengan aksi sukses
+    onAddClick: () -> Unit, // Callback dengan aksi sukses
     backgroundColor: Color = Color(0xFF3E2C47), // Warna latar belakang kartu
     buttonColor: Color = Color(0xFF6E5768), // Warna tombol
     navController: NavController? = null
 ) {
-    Log.d(" ComponentCard", "meme$navController")
+    Log.d("ComponentCard", "NavController: $navController")
+
     Card(
         elevation = 4.dp,
         backgroundColor = backgroundColor,
@@ -190,12 +191,8 @@ fun ComponentCard(
             } else {
                 Button(
                     onClick = {
-                        Log.d("ComponentCard", "onAddClick callback triggered")
-                        onAddClick {
-                            // Aksi setelah sukses, pindahkan ke BuildActivity
-                            Log.d("ComponentCard", "onSuccess triggered, navigating to BuildActivity")
-
-                        }
+                        Log.d("ComponentCard", "onAddClick triggered for component: $title")
+                        onAddClick() // Panggil callback ketika tombol ditekan
                     },
                     enabled = !isLoading, // Nonaktifkan tombol saat loading
                     colors = ButtonDefaults.buttonColors(buttonColor)

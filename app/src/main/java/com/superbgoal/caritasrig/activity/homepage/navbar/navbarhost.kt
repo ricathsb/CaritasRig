@@ -47,6 +47,7 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuSc
 import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.HeadphoneScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.InternalHardDriveScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.KeyboardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MemoryScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MotherboardScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MouseScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.PowerSupplyScreen
@@ -189,6 +190,7 @@ fun NavbarHost(
             composable("headphone_screen") { HeadphoneScreen(navController) }
             composable("keyboard_screen") { KeyboardScreen(navController) }
             composable("mouse_screen") { MouseScreen(navController) }
+            composable("memory_screen") { MemoryScreen(navController) }
         }
     }
 }
