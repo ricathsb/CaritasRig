@@ -16,9 +16,11 @@ import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import com.superbgoal.caritasrig.data.model.component.Casing
+import com.superbgoal.caritasrig.data.model.component.CpuCooler
 import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
 import com.superbgoal.caritasrig.data.model.component.Keyboard
+import com.superbgoal.caritasrig.data.model.component.Memory
 import com.superbgoal.caritasrig.data.model.component.Motherboard
 import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.data.model.component.PowerSupply
@@ -126,6 +128,8 @@ fun updateUserProfileData(
                 }
             }
     }
+
+
 
     if (imageUri != null && imageUri.scheme == "content") {
         Log.d("ProfileUpdate", "Uploading new image with valid URI: $imageUri")
@@ -265,6 +269,8 @@ fun fetchBuildsWithAuth(
                         keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java),
                         powerSupply =componentsSnapshot.child("powersupply").getValue(PowerSupply::class.java),
                         mouse = componentsSnapshot.child("mouse").getValue(Mouse::class.java),
+                        cpuCooler = componentsSnapshot.child("cpucooler").getValue(CpuCooler::class.java),
+                        memory = componentsSnapshot.child("memory").getValue(Memory::class.java)
                     )
 
                     // Buat objek Build

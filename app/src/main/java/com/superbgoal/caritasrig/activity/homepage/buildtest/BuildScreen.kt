@@ -1,18 +1,11 @@
-@file:Suppress("NAME_SHADOWING")
-
-package com.superbgoal.caritasrig.activity.homepage.build
+package com.superbgoal.caritasrig.activity.homepage.buildtest
 
 import BuildViewModel
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -68,60 +61,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.component.CasingActivity
-import com.superbgoal.caritasrig.activity.homepage.component.CpuActivity
-import com.superbgoal.caritasrig.activity.homepage.component.CpuCoolerActivity
-import com.superbgoal.caritasrig.activity.homepage.component.HeadphoneActivity
-import com.superbgoal.caritasrig.activity.homepage.component.InternalHardDriveActivity
-import com.superbgoal.caritasrig.activity.homepage.component.KeyboardActivity
-import com.superbgoal.caritasrig.activity.homepage.component.MemoryActivity
-import com.superbgoal.caritasrig.activity.homepage.component.MotherboardActivity
-import com.superbgoal.caritasrig.activity.homepage.component.MouseActivity
-import com.superbgoal.caritasrig.activity.homepage.component.PowerSupplyActivity
-import com.superbgoal.caritasrig.activity.homepage.component.VideoCardActivity
-import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
 import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
-
-class BuildActivity : ComponentActivity() {
-    private val buildViewModel: BuildViewModel by viewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Check if the intent comes from HomeActivity
-        if (intent?.getBooleanExtra("fromHomeActivity", false) == true) {
-            processIntent(intent)  // Process the intent only if it's from HomeActivity
-        } else {
-            Log.w("BuildActivity", "Not from HomeActivity, skipping processIntent.")
-        }
-
-        buildViewModel.buildTitle.value?.let { title ->
-            buildViewModel.fetchBuildByTitle(title) // Fetch build data based on title
-        } ?: Log.w("BuildActivity", "Build title is null, cannot fetch data.")
-
-        setContent {
-            BuildScreen(buildViewModel)
-            Log.d("BuildActivity", "onCreate called")
-        }
-    }
-
-    private fun processIntent(intent: Intent?) {
-        val title = intent?.getStringExtra("build")
-        buildViewModel.saveBuildTitle(title ?: "")  // Save the build title
-    }
-}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
+fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),navController: NavController? = null) {
     getDatabaseReference()
     val context = LocalContext.current
+    LaunchedEffect(title) {
+        buildViewModel.saveBuildTitle(title)
+        buildViewModel.fetchBuildByTitle(title)
+    }
 
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
@@ -182,7 +137,7 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                         navigationIcon = {
                             IconButton(
                                 onClick = {
-                                    context.startActivity(Intent(context, HomeActivity::class.java))
+
                                 },
                                 modifier = Modifier
                                     .padding(start = 30.dp, top = 60.dp)
@@ -223,19 +178,20 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
             ) { paddingValues ->
 
                 // Activity mapping for navigation
-                val activityMap = mapOf(
-                    "CPU" to CpuActivity::class.java,
-                    "Case" to CasingActivity::class.java,
-                    "GPU" to VideoCardActivity::class.java,
-                    "Motherboard" to MotherboardActivity::class.java,
-                    "RAM" to MemoryActivity::class.java,
-                    "InternalHardDrive" to InternalHardDriveActivity::class.java,
-                    "PowerSupply" to PowerSupplyActivity::class.java,
-                    "CPU Cooler" to CpuCoolerActivity::class.java,
-                    "Headphone" to HeadphoneActivity::class.java,
-                    "Keyboard" to KeyboardActivity::class.java,
-                    "Mouse" to MouseActivity::class.java
+                val routeMap = mapOf(
+                    "CPU" to "cpu_screen",
+                    "Case" to "casing_screen",
+                    "GPU" to "gpu_screen",
+                    "Motherboard" to "motherboard_screen",
+                    "RAM" to "memory_screen",
+                    "InternalHardDrive" to "internal_hard_drive_screen",
+                    "PowerSupply" to "power_supply_screen",
+                    "CPU Cooler" to "cpu_cooler_screen",
+                    "Headphone" to "headphone_screen",
+                    "Keyboard" to "keyboard_screen",
+                    "Mouse" to "mouse_screen"
                 )
+
 
                 LazyColumn(
                     state = lazyListState, // Gunakan LazyListState di sini
@@ -266,7 +222,7 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                                 }
 
                                 "RAM" -> buildData?.components?.memory?.let {
-                                    "Memory: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
+                                    "Memory: ${it.name}\nSize: ${it.modules} GB\nSpeed: ${it.speed} MHz"
                                 }
 
                                 "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
@@ -317,7 +273,12 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                                     }
                                 } ?: "0.0",
                                 onClick = {
-                                    context.startActivity(Intent(context, activityMap[title]))
+                                    val route = routeMap[title]
+                                    if (route != null) {
+                                        navController?.navigate(route)
+                                    } else {
+                                        Log.e("NavigationError", "No route found for title: $title")
+                                    }
                                 },
                                 onRemove = {
                                     buildViewModel.removeComponent(title)
@@ -388,7 +349,6 @@ fun BuildScreen(buildViewModel: BuildViewModel = viewModel()) {
                         if(buildViewModel.buildTitle.value?.isNotEmpty() == true){
                             showDialog = false
                         } else {
-                            context.startActivity(Intent(context, HomeActivity::class.java))
                         }
                     }
                 ) {
@@ -583,15 +543,3 @@ fun PriceEditDialog(
         }
     )
 }
-
-
-
-
-
-
-
-
-
-
-
-

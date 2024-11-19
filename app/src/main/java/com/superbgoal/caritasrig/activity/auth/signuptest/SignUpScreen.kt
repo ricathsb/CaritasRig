@@ -1,9 +1,6 @@
-package com.superbgoal.caritasrig.activity.auth.signup
+package com.superbgoal.caritasrig.activity.auth.signuptest
 
 import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,11 +13,9 @@ import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -39,33 +34,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.login.LoginActivity
+import com.superbgoal.caritasrig.activity.auth.signup.SignUpViewModel
 import com.superbgoal.caritasrig.functions.auth.LoadingButton
 import com.superbgoal.caritasrig.functions.auth.signUpUser
-import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 
-
-class SignUpActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            CaritasRigTheme {
-                Scaffold {
-                    SignUpScreen(modifier = Modifier.padding(it))
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(
-    modifier: Modifier = Modifier,
-    viewModel: SignUpViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-) {
+fun SignUpScreen(viewModel: SignUpViewModel = SignUpViewModel(),navController:NavController) {
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val confirmPassword by viewModel.confirmPassword.collectAsState()
@@ -79,7 +55,7 @@ fun SignUpScreen(
 
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .background(backgroundColor)
             .fillMaxSize()
             .padding(20.dp),
@@ -105,7 +81,7 @@ fun SignUpScreen(
                 unfocusedContainerColor = textFieldColor,
             ),
 
-        )
+            )
 
         TextField(
             singleLine = true,
@@ -137,7 +113,7 @@ fun SignUpScreen(
                 }
             },
 
-        )
+            )
         TextField(
             singleLine = true,
             leadingIcon = {
@@ -175,18 +151,16 @@ fun SignUpScreen(
                 containerColor = buttonColor
             ),
             textColor = Color.White,
-            coroutineScope = coroutineScope, // Pass the coroutine scope
+            coroutineScope = coroutineScope,
             onClick = {
-                signUpUser(email, password, confirmPassword, context)
+                signUpUser(email, password, confirmPassword ,context,navController)
             },
             modifier = Modifier.fillMaxWidth(),
 
-        )
+            )
         TextButton(
             onClick = {
-                context.startActivity(Intent(context, LoginActivity::class.java))
-                (context as SignUpActivity)
-                    .finish()
+                navController.navigate("login")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -194,5 +168,3 @@ fun SignUpScreen(
         }
     }
 }
-
-

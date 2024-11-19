@@ -1,9 +1,7 @@
-package com.superbgoal.caritasrig.activity.auth.login
+package com.superbgoal.caritasrig.activity.auth.logintest
+
 import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -33,7 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -50,46 +47,26 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.signup.SignUpActivity
-import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
+import com.superbgoal.caritasrig.activity.auth.login.LoginViewModel
 import com.superbgoal.caritasrig.functions.auth.AuthResponse
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
-import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-import androidx.compose.ui.res.stringResource
-
-class LoginActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-
-        intent.getStringExtra("email") ?: ""
-        setContent {
-            CaritasRigTheme {
-                Scaffold { paddingValues ->
-                    SwipeableLoginScreen(
-                        modifier = Modifier.padding(paddingValues)
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
-fun SwipeableLoginScreen(
-    modifier: Modifier = Modifier
-) {
+fun LoginScreen(navController : NavController) {
     val loginViewModel: LoginViewModel = viewModel()
     val offsetY by loginViewModel.offsetY.collectAsState()
     val animatedOffsetY by animateFloatAsState(
@@ -99,7 +76,7 @@ fun SwipeableLoginScreen(
     val backgroundColor = Color(0xFF473947)
 
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
     ) {
@@ -125,6 +102,7 @@ fun SwipeableLoginScreen(
             LoginScreenContent(
                 onOffsetChange = { newOffsetY -> loginViewModel.updateOffsetY(newOffsetY) },
                 viewModel = loginViewModel
+                ,navController = navController
             )
         }
     }
@@ -133,7 +111,7 @@ fun SwipeableLoginScreen(
 @Composable
 fun LoginScreenContent(
     onOffsetChange: (Float) -> Unit,
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,navController : NavController
 ) {
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
@@ -234,12 +212,11 @@ fun LoginScreenContent(
                             Toast.makeText(context, context.getString(R.string.password_length_error), Toast.LENGTH_SHORT).show()
                             viewModel.setLoading(false)
                         } else {
-                            authenticationManager.loginWithEmail(email, password).collect { authResponse ->
+                            authenticationManager.loginWithEmail(email, password, navController = navController).collect { authResponse ->
                                 viewModel.setLoading(false)
                                 when (authResponse) {
                                     is AuthResponse.Success -> {
-                                        Toast.makeText(context, context.getString(R.string.login_success), Toast.LENGTH_SHORT).show()
-                                        context.startActivity(Intent(context, HomeActivity::class.java))
+                                        authenticationManager.checkUserInDatabase(userId = FirebaseAuth.getInstance().currentUser?.uid ?: "",navController)
                                     }
                                     is AuthResponse.Error -> {
                                         Toast.makeText(context, authResponse.message, Toast.LENGTH_SHORT).show()
@@ -265,7 +242,7 @@ fun LoginScreenContent(
                     text = stringResource(id = R.string.signup),
                     color = Color.Cyan,
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(context, SignUpActivity::class.java))
+                        navController.navigate("signup")
                     }.padding(top = 8.dp)
                 )
 
@@ -280,7 +257,8 @@ fun LoginScreenContent(
                             authenticationManager.resetPassword(email).onEach { authResponse ->
                                 viewModel.setLoading(false)
                                 when (authResponse) {
-                                    is AuthResponse.Success -> Toast.makeText(context, context.getString(R.string.reset_password_success), Toast.LENGTH_SHORT).show()
+                                    is AuthResponse.Success -> Toast.makeText(context, context.getString(
+                                        R.string.reset_password_success), Toast.LENGTH_SHORT).show()
                                     is AuthResponse.Error -> Toast.makeText(context, "Failed to send reset link: ${authResponse.message}", Toast.LENGTH_SHORT).show()
                                 }
                             }.launchIn(coroutineScope)
@@ -301,7 +279,7 @@ fun LoginScreenContent(
             OutlinedButton(
                 onClick = {
                     viewModel.setLoading(true)
-                    authenticationManager.signInWithGoogle().onEach {
+                    authenticationManager.signInWithGoogle(navController = navController).onEach {
                         viewModel.setLoading(false)
                     }.launchIn(coroutineScope)
                 },
@@ -340,4 +318,3 @@ fun LoginScreenContent(
         }
     }
 }
-

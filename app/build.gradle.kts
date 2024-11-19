@@ -5,6 +5,7 @@ plugins {
     id("kotlin-parcelize")
 
 
+
 }
 
 android {
@@ -81,6 +82,7 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -97,9 +99,13 @@ dependencies {
     implementation (libs.androidx.lifecycle.livedata.ktx)
     // ViewModel for Compose
     implementation (libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.hilt.navigation.fragment)
     implementation (libs.androidx.lifecycle.viewmodel.ktx.v251)
 
 // Kotlin Coroutine support for ViewModel
     implementation (libs.kotlinx.coroutines.android)
+
+
+    implementation(libs.androidx.navigation.compose)
 
 }

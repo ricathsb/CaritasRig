@@ -1,9 +1,7 @@
 // Function.kt
 package com.superbgoal.caritasrig.functions.auth
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Parcelable
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -44,12 +42,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.build.BuildActivity
 import com.superbgoal.caritasrig.data.getDatabaseReference
-import com.superbgoal.caritasrig.data.model.component.Processor
-import com.superbgoal.caritasrig.data.model.component.VideoCard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -133,14 +129,17 @@ fun Maintenance() {
 fun ComponentCard(
     title: String,
     details: String,
-    component: Parcelable, // Komponen yang akan dikirim melalui Intent
+    component: Parcelable? = null, // Komponen yang akan dikirim melalui Intent
     imageUrl: String? = null, // URL untuk gambar (opsional)
     context: Context,
     isLoading: Boolean, // Status loading untuk tombol
-    onAddClick: (onSuccess: () -> Unit) -> Unit, // Callback dengan aksi sukses
+    onAddClick: () -> Unit, // Callback dengan aksi sukses
     backgroundColor: Color = Color(0xFF3E2C47), // Warna latar belakang kartu
-    buttonColor: Color = Color(0xFF6E5768) // Warna tombol
+    buttonColor: Color = Color(0xFF6E5768), // Warna tombol
+    navController: NavController? = null
 ) {
+    Log.d("ComponentCard", "NavController: $navController")
+
     Card(
         elevation = 4.dp,
         backgroundColor = backgroundColor,
@@ -192,16 +191,8 @@ fun ComponentCard(
             } else {
                 Button(
                     onClick = {
-                        Log.d("ComponentCard", "onAddClick callback triggered")
-                        onAddClick {
-                            // Aksi setelah sukses, pindahkan ke BuildActivity
-                            Log.d("ComponentCard", "onSuccess triggered, navigating to BuildActivity")
-                            val intent = Intent(context, BuildActivity::class.java).apply {
-                                putExtra("component_title", title)
-                                putExtra("component_data", component)
-                            }
-                            context.startActivity(intent)
-                        }
+                        Log.d("ComponentCard", "onAddClick triggered for component: $title")
+                        onAddClick() // Panggil callback ketika tombol ditekan
                     },
                     enabled = !isLoading, // Nonaktifkan tombol saat loading
                     colors = ButtonDefaults.buttonColors(buttonColor)

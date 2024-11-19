@@ -1,15 +1,11 @@
-package com.superbgoal.caritasrig.activity.auth.register
+package com.superbgoal.caritasrig.activity.homepage.screentest
 
-import android.content.Intent
+import android.app.Activity
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,7 +23,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -35,7 +33,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -45,7 +42,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -65,7 +61,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
@@ -77,60 +72,44 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.home.HomeActivity
+import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
+import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
 import com.superbgoal.caritasrig.data.model.User
-import com.superbgoal.caritasrig.data.saveUserData
-import com.superbgoal.caritasrig.data.uploadImageToFirebase
-import com.superbgoal.caritasrig.ui.theme.CaritasRigTheme
+import com.superbgoal.caritasrig.data.updateUserProfileData
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class RegisterActivity : ComponentActivity() {
-    private val registerViewModel: RegisterViewModel by viewModels()
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            CaritasRigTheme {
-                Scaffold {
-                    RegisterScreen(
-                        modifier = Modifier.padding(it),
-                        viewModel = registerViewModel // Pass the ViewModel to the screen
-                    )
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) {
+fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: HomeViewModel){
     val firstname by viewModel.firstname.collectAsState()
     val lastname by viewModel.lastname.collectAsState()
     val username by viewModel.username.collectAsState()
     val dateOfBirth by viewModel.dateOfBirth.collectAsState()
     val imageUri by viewModel.imageUri.collectAsState()
+    val imageUrl by viewModel.imageUrl.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val showDatePicker by viewModel.showDatePicker.collectAsState()
-    val buttonColor = Color(0xFF211321)
-    val context = LocalContext.current
-    val userId = (context as? RegisterActivity)?.intent?.getStringExtra("userId")
-    val email = (context as? RegisterActivity)?.intent?.getStringExtra("email") ?: ""
-    val imageUrl = imageUri?.toString() ?: (context as? RegisterActivity)?.intent?.getStringExtra("imageUrl")
+
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
     val textColor = Color(0xFF1e1e1e)
-    val currentUser = FirebaseAuth.getInstance().currentUser
+    val context = LocalContext.current
 
-    val imageCropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
+    val activity = context as? Activity
+    FirebaseAuth.getInstance().currentUser?.uid
+
+
+    val imageCropLauncher = rememberLauncherForActivityResult(
+        CropImageContract()
+    ) { result ->
         if (result.isSuccessful) {
-            viewModel.updateImageUri(result.uriContent) // Update imageUri in the ViewModel
+            viewModel.updateImageUri(result.uriContent)
         } else {
             val exception = result.error
-            Log.d("imageCropLauncher", exception.toString())
+            Log.d("imageCropLauncher", "Error: ${exception?.message ?: "Unknown error"}")
         }
     }
 
@@ -145,25 +124,31 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             })
             imageCropLauncher.launch(cropOptions)
         } else {
-            Log.d("ImagePicker", "User cancelled image selection")
+            Log.d("imagePickerLauncher", "User did not select an image")
         }
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .background(backgroundColor)
             .fillMaxSize()
-            .padding(20.dp),
+            .padding(20.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(
-            text = stringResource(id = R.string.register),
-            style = MaterialTheme.typography.titleLarge
-        )
-
         var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
 
+//        val imagePickerLauncher = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.GetContent(),
+//            onResult = { uri: Uri? ->
+//                if (uri != null) {
+//                    imageUri = uri
+//                } else {
+//                    Log.d("ImagePicker", "User cancelled image selection")
+//                }
+//            }
+//        )
 
         Box(
             modifier = Modifier
@@ -173,13 +158,13 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
                             Log.d("Modifier", "Long clicked! yeay")
                         },
                         onTap = {
-                           imagePickerLauncher.launch("image/*")
+                            imagePickerLauncher.launch("image/*")
                         }
                     )
                 },
             contentAlignment = Alignment.Center
         ) {
-            RegisterProfileIcon(imageUri, imageUrl)
+            ProfileIcon(imageUri, imageUrl)
 
             // Icon add/remove overlay
             Box(
@@ -209,7 +194,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             ) {
                 Icon(
                     imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
-                    contentDescription = if (imageUri != null) "Remove Profile Photo" else "Add Profile Photo",
+                    contentDescription = if (imageUri != null) stringResource(id = R.string.remove_photo_profile) else stringResource(id = R.string.add_photo_profile),
                     tint = Color.Black,
                     modifier = Modifier.size(24.dp)
                 )
@@ -248,54 +233,48 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextField(
-                modifier = modifier.weight(1f),
                 value = firstname,
-                shape = MaterialTheme.shapes.medium,
                 onValueChange = { viewModel.updateFirstname(it) },
                 label = { Text(stringResource(id = R.string.first_name), color = textColor) },
+                placeholder = { Text(text = stringResource(id = R.string.enter_first_name), color = Color.Gray) },
                 colors = TextFieldDefaults.colors().copy(
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color.White,
                     focusedContainerColor = textFieldColor,
                     unfocusedContainerColor = textFieldColor,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent
                 ),
-                textStyle = LocalTextStyle.current.copy(color = Color.White)
+                modifier = Modifier.weight(1f)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             TextField(
-                modifier = modifier.weight(1f),
                 value = lastname,
-                shape = MaterialTheme.shapes.medium,
                 onValueChange = { viewModel.updateLastname(it) },
                 label = { Text(stringResource(id = R.string.last_name), color = textColor) },
+                placeholder = { Text(text = stringResource(id = R.string.enter_last_name), color = Color.Gray) },
                 colors = TextFieldDefaults.colors().copy(
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color.White,
                     focusedContainerColor = textFieldColor,
                     unfocusedContainerColor = textFieldColor,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent
                 ),
-                textStyle = LocalTextStyle.current.copy(color = Color.White)
+                modifier = Modifier.weight(1f)
             )
         }
 
         TextField(
             value = username,
-            shape = MaterialTheme.shapes.medium,
             onValueChange = { viewModel.updateUsername(it) },
             label = { Text(stringResource(id = R.string.username), color = textColor) },
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(text = stringResource(id = R.string.enter_username), color = Color.Gray) },
             colors = TextFieldDefaults.colors().copy(
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.White,
                 focusedContainerColor = textFieldColor,
                 unfocusedContainerColor = textFieldColor,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent
             ),
-            textStyle = LocalTextStyle.current.copy(color = Color.White)
+            modifier = Modifier.fillMaxWidth()
         )
 
         val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
@@ -354,70 +333,44 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
 
         Button(
             onClick = {
-                // Pengecekan apakah ada field yang kosong
-                when {
-                    firstname.isEmpty() -> {
-                        Toast.makeText(context, context.getString(R.string.first_name_required), Toast.LENGTH_SHORT).show()
-                    }
-                    lastname.isEmpty() -> {
-                        Toast.makeText(context, context.getString(R.string.last_name_required), Toast.LENGTH_SHORT).show()
-                    }
-                    username.isEmpty() -> {
-                        Toast.makeText(context, context.getString(R.string.username_required), Toast.LENGTH_SHORT).show()
-                    }
-                    dateOfBirth.isEmpty() -> {
-                        Toast.makeText(context, context.getString(R.string.date_of_birth_required), Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                        viewModel.setLoading(true)
-                        if (userId != null) {
-                            imageUri?.let { uri ->
-                                uploadImageToFirebase(uri) { firebaseImageUrl ->
-                                    saveUserData(
-                                        user = User(userId, firstname, lastname, username, dateOfBirth, firebaseImageUrl),
-                                        context = context
-                                    ) { isVerified ->
-                                        viewModel.setLoading(false)
-                                        if (isVerified) {
-                                            Toast.makeText(context, context.getString(R.string.data_saved), Toast.LENGTH_SHORT).show()
-                                            context.startActivity(Intent(context, HomeActivity::class.java))
-                                            (context).finish()
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                context.getString(R.string.verify_email, currentUser?.email),
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
-                                }
-                            } ?: run {
-                                saveUserData(
-                                    user = User(userId, firstname, lastname, username, dateOfBirth, imageUrl),
-                                    context = context
-                                ) { isVerified ->
-                                    viewModel.setLoading(false)
-                                    if (isVerified) {
-                                        Toast.makeText(context, context.getString(R.string.data_saved), Toast.LENGTH_SHORT).show()
-                                        context.startActivity(Intent(context, HomeActivity::class.java))
-                                        (context).finish()
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.verify_email, currentUser?.email),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            }
+                if (firstname.isEmpty()) {
+                    Toast.makeText(context, context.getString(R.string.first_name_required), Toast.LENGTH_SHORT).show()
+                } else if (lastname.isEmpty()) {
+                    Toast.makeText(context, context.getString(R.string.last_name_required), Toast.LENGTH_SHORT).show()
+                } else if (username.isEmpty()) {
+                    Toast.makeText(context, context.getString(R.string.username_required), Toast.LENGTH_SHORT).show()
+                } else if (dateOfBirth.isEmpty()) {
+                    Toast.makeText(context, context.getString(R.string.date_of_birth_required), Toast.LENGTH_SHORT).show()
+                } else {
+                    viewModel.setLoading(true)
+                    // Membuat objek User untuk disimpan
+                    val user = User(
+                        userId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
+                        firstName = firstname,
+                        lastName = lastname,
+                        username = username,
+                        dateOfBirth = dateOfBirth,
+                        profileImageUrl = imageUrl // Kirim imageUrl jika tidak ada gambar baru
+                    )
+
+                    // Memanggil fungsi updateUserProfileData untuk mengunggah gambar dan menyimpan data
+                    updateUserProfileData(
+                        user = user,
+                        imageUri = imageUri,
+                        imageUrl = imageUrl,
+                        context = context
+                    ) { success ->
+                        viewModel.setLoading(false)
+                        if (success) {
+                            Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
+                            homeViewModel.loadUserData(userId = user.userId)
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.profile_updated_failed), Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             },
             enabled = !isLoading,
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = buttonColor,
-            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -425,24 +378,14 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: RegisterViewModel) 
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text(text = stringResource(id = R.string.register), fontWeight = FontWeight.Bold, color = Color.White)
+                Text(stringResource(id = R.string.save_changes))
             }
         }
-
-        TextButton(
-            onClick = {
-                viewModel.signOut(context = context)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(id = R.string.already_have_account), color = Color.White)
-        }
-
     }
 }
 
 @Composable
-fun RegisterProfileIcon(imageUri: Uri?, imageUrl: String?) {
+fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
     when {
         imageUri != null -> {
             // Jika imageUri ada, tampilkan gambar dari Uri
