@@ -222,7 +222,7 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                                 }
 
                                 "RAM" -> buildData?.components?.memory?.let {
-                                    "Memory: ${it.name}\nSize: ${it.pricePerGb} GB\nSpeed: ${it.speed} MHz"
+                                    "Memory: ${it.name}\nSize: ${it.modules} GB\nSpeed: ${it.speed} MHz"
                                 }
 
                                 "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
