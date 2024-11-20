@@ -22,6 +22,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Favorite
@@ -39,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -130,34 +132,15 @@ fun NavbarHost(
 
         bottomBar = {
             BottomNavigationBar(
-                selectedItem = selectedItem, // Pastikan ini adalah state yang dikelola
-                onItemSelected = { index ->
-                    // Update selectedItem di sini
-                    selectedItem = index // Misalnya, jika Anda menggunakan state untuk menyimpan nilai ini
-                    when (index) {
-                        0 -> navController.navigate("home") {
-                            popUpTo("home") { inclusive = true }
-                            launchSingleTop = true
-                        }
-                        1 -> navController.navigate("trending") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        2 -> navController.navigate("build") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        3 -> navController.navigate("benchmark") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        4 -> navController.navigate("favorite") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
+                navController = navController,
+                onItemSelected = { route ->
+                    navController.navigate(route) {
+                        popUpTo("home") { inclusive = false } // Atur `popUpTo` sesuai kebutuhan
+                        launchSingleTop = true
                     }
                 }
             )
+
         }
     ) { innerPadding ->
         NavHost(
@@ -289,8 +272,8 @@ fun AppTopBar(
 
 @Composable
 fun BottomNavigationBar(
-    selectedItem: Int,
-    onItemSelected: (Int) -> Unit
+    navController: NavController,
+    onItemSelected: (String) -> Unit
 ) {
     val items = listOf(
         NavigationItem.Home,
@@ -299,6 +282,7 @@ fun BottomNavigationBar(
         NavigationItem.Benchmark,
         NavigationItem.Favorite
     )
+    val currentRoute = currentRoute(navController)
     val navbarColor = Color(0xFF473947)
 
     BottomAppBar(
@@ -307,24 +291,29 @@ fun BottomNavigationBar(
         modifier = Modifier.height(60.dp),
         elevation = 8.dp
     ) {
-        items.forEachIndexed { index, item ->
-            val isSelected = selectedItem == index
+        items.forEach { item ->
+            val isSelected = currentRoute == item.route
 
             BottomNavigationItem(
                 icon = {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (isSelected) Color.White else Color.Gray, // Mengubah warna berdasarkan status dipilih
-                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp) // Mengubah ukuran berdasarkan status dipilih
+                        tint = if (isSelected) Color.White else Color.Gray,
+                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
                 },
                 selected = isSelected,
-                onClick = { onItemSelected(index) },
+                onClick = {
+                    if (currentRoute != item.route) {
+                        onItemSelected(item.route)
+                    }
+                },
                 label = {
                     Text(
                         text = item.title,
-                        color = if (isSelected) Color.White else Color.Gray // Mengubah warna teks berdasarkan status dipilih
+                        fontSize = 12.sp,
+                        color = if (isSelected) Color.White else Color.Gray
                     )
                 },
                 selectedContentColor = Color.White,
@@ -333,15 +322,22 @@ fun BottomNavigationBar(
         }
     }
 }
-
-
-sealed class NavigationItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    object Home : NavigationItem("Home", Icons.Default.Home) // Pastikan ikon ini valid
-    object Trending : NavigationItem("Trending", Icons.Filled.TrendingUp) // Ubah ke Icons.Filled agar lebih stabil
-    object Build : NavigationItem("My Build", Icons.Default.DesktopWindows)
-    object Benchmark : NavigationItem("Benchmark", Icons.Default.BarChart)
-    object Favorite : NavigationItem("Favorite", Icons.Default.Favorite)
+@Composable
+fun currentRoute(navController: NavController): String? {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    return navBackStackEntry?.destination?.route
 }
+
+
+
+sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
+    object Home : NavigationItem("home", Icons.Default.Home, "Home")
+    object Trending : NavigationItem("trending", Icons.Default.TrendingUp, "Trending")
+    object Build : NavigationItem("build", Icons.Default.DesktopWindows, "Build")
+    object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
+    object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")
+}
+
 
 
 @Composable
