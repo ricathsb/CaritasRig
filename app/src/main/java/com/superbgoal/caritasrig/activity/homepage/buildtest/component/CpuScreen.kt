@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -43,28 +43,28 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.VideoCard
+import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun VideoCardScreen(navController: NavController) {
-    // Load video cards from JSON resource
+fun CpuScreen(navController: NavController) {
+    // Load processors data
     val context = LocalContext.current
-    val videoCards: List<VideoCard> = remember {
+    val processors: List<Processor> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.videocard // Ensure this JSON file exists
+            resourceId = R.raw.processor
         )
     }
 
     var showFilterDialog by remember { mutableStateOf(false) }
-    var filteredVideoCards by remember { mutableStateOf(videoCards) }
+    var filteredProcessors by remember { mutableStateOf(processors) }
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Background image
+        // Set background image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
@@ -72,7 +72,7 @@ fun VideoCardScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and VideoCardList
+        // Main content with TopAppBar and ProcessorList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -94,7 +94,7 @@ fun VideoCardScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Video Card",
+                            text = "CPU",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -102,7 +102,9 @@ fun VideoCardScreen(navController: NavController) {
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.navigateUp() },
+                        onClick = {
+                            navController.navigateUp()
+                        },
                         modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                     ) {
                         Icon(
@@ -124,25 +126,24 @@ fun VideoCardScreen(navController: NavController) {
                 }
             )
 
-            // VideoCardList content
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                VideoCardList(filteredVideoCards,navController)
+                ProcessorList(processors = filteredProcessors,navController)
             }
         }
 
-        // Filter dialog
         if (showFilterDialog) {
             FilterDialog(
                 onDismiss = { showFilterDialog = false },
-                onApply = { selectedBrands, selectedMemorySizes, selectedCoreClocks ->
+                onApply = { coreCount, coreClock, boostClock, brands ->
                     showFilterDialog = false
-                    filteredVideoCards = videoCards.filter { videoCard ->
-                        (selectedBrands.isEmpty() || selectedBrands.any { videoCard.name.contains(it, ignoreCase = true) }) &&
-                                (selectedMemorySizes.isEmpty() || videoCard.memory in selectedMemorySizes) &&
-                                (selectedCoreClocks.isEmpty() || videoCard.coreClock.toInt() in selectedCoreClocks)
+                    filteredProcessors = processors.filter { processor ->
+                        processor.core_count in coreCount &&
+                                processor.core_clock in coreClock &&
+                                processor.boost_clock in boostClock &&
+                                brands.any { processor.name.contains(it, ignoreCase = true) }
                     }
                 }
             )
@@ -150,47 +151,48 @@ fun VideoCardScreen(navController: NavController) {
     }
 }
 
-
 @Composable
-fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
+fun ProcessorList(processors: List<Processor>,navController: NavController) {
     val context = LocalContext.current
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(videoCards) { videoCard ->
+        items(processors) { processor ->
             val isLoading = remember { mutableStateOf(false) }
-
             ComponentCard(
-                title = videoCard.name,
-                details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
+                title = processor.name,
+                details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
                 context = context,
-                component = videoCard,
+                component = processor,
                 isLoading = isLoading.value,
+                navController = navController,
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
                     val buildTitle = BuildManager.getBuildTitle()
-
                     buildTitle?.let { title ->
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "gpu",
-                            componentData = videoCard,
+                            componentType = "cpu",
+                            componentData = processor,
                             onSuccess = {
+                                isLoading.value = false
+                                navController.navigateUp()
+                                Log.e("test", "ketriger")
                             },
                             onFailure = { errorMessage ->
                                 isLoading.value = false
-                                Log.e("VideoCardActivity", "Failed to store Video Card: $errorMessage")
+
                             },
                             onLoading = { isLoading.value = it }
                         )
                     } ?: run {
                         isLoading.value = false
-                        Log.e("VideoCardActivity", "Build title is null; unable to store Video Card.")
+                        Log.e("BuildActivity", "Build title is null; unable to store CPU.")
                     }
                 }
             )
@@ -198,80 +200,100 @@ fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
     }
 }
 
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun FilterDialog(
     onDismiss: () -> Unit,
-    onApply: (
-        selectedBrands: List<String>,
-        selectedMemorySizes: List<Double>,
-        selectedCoreClocks: IntRange
-    ) -> Unit
+    onApply: (coreCount: IntRange, coreClock: ClosedFloatingPointRange<Double>, boostClock: ClosedFloatingPointRange<Double>, selectedBrands: List<String>) -> Unit
 ) {
-    val availableBrands = listOf("AMD", "NVIDIA", "Intel")
-    val selectedBrands = remember { mutableStateOf(availableBrands.toMutableList()) }
-
-    val availableMemorySizes = listOf(4.0, 6.0, 8.0, 12.0, 16.0)
-    val selectedMemorySizes = remember { mutableStateOf(availableMemorySizes.toMutableList()) }
-
-    val coreClockRange = remember { mutableStateOf(500..3000) }
+    // States for filter criteria
+    val coreCountRange = remember { mutableStateOf(0f..16f) }
+    val coreClockRange = remember { mutableStateOf(1.0f..5.0f) }
+    val boostClockRange = remember { mutableStateOf(1.0f..5.0f) }
+    val selectedBrands = remember { mutableStateOf(listOf("AMD", "Intel")) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Filter Video Cards") },
+        title = {
+            Text(text = "Filter CPUs")
+        },
         text = {
             Column {
-                Text("Brand:")
-                availableBrands.forEach { brand ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = brand in selectedBrands.value,
-                            onCheckedChange = { isChecked ->
-                                val updatedList = selectedBrands.value.toMutableList()
-                                if (isChecked) updatedList.add(brand) else updatedList.remove(brand)
-                                selectedBrands.value = updatedList
-                            }
-                        )
-                        Text(text = brand)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Memory Size (GB):")
-                availableMemorySizes.forEach { size ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = size in selectedMemorySizes.value,
-                            onCheckedChange = { isChecked ->
-                                val updatedList = selectedMemorySizes.value.toMutableList()
-                                if (isChecked) updatedList.add(size) else updatedList.remove(size)
-                                selectedMemorySizes.value = updatedList
-                            }
-                        )
-                        Text(text = "$size GB")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(text = "Core Clock: ${coreClockRange.value.start} MHz - ${coreClockRange.value.endInclusive} MHz")
+                // Core count slider
+                Text(text = "Core Count: ${coreCountRange.value.start.toInt()} - ${coreCountRange.value.endInclusive.toInt()}")
                 RangeSlider(
-                    value = coreClockRange.value.start.toFloat()..coreClockRange.value.endInclusive.toFloat(),
+                    value = coreCountRange.value,
                     onValueChange = { range ->
-                        coreClockRange.value = range.start.toInt()..range.endInclusive.toInt()
+                        coreCountRange.value = range
                     },
-                    valueRange = 500f..3000f,
-                    steps = 10
+                    valueRange = 0f..16f
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Core clock slider
+                Text(text = "Core Clock: ${
+                    String.format("%.2f", coreClockRange.value.start)
+                } GHz - ${
+                    String.format("%.2f", coreClockRange.value.endInclusive)
+                } GHz")
+                RangeSlider(
+                    value = coreClockRange.value,
+                    onValueChange = { range ->
+                        coreClockRange.value = range
+                    },
+                    valueRange = 1.0f..5.0f
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Boost clock slider
+                Text(text = "Boost Clock: ${
+                    String.format("%.2f", boostClockRange.value.start)
+                } GHz - ${
+                    String.format("%.2f", boostClockRange.value.endInclusive)
+                } GHz")
+                RangeSlider(
+                    value = boostClockRange.value,
+                    onValueChange = { range ->
+                        boostClockRange.value = range
+                    },
+                    valueRange = 1.0f..5.0f
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Brand selection checkboxes
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = "AMD" in selectedBrands.value,
+                        onCheckedChange = {
+                            if (it) selectedBrands.value = selectedBrands.value + "AMD"
+                            else selectedBrands.value = selectedBrands.value - "AMD"
+                        }
+                    )
+                    Text(text = "AMD")
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = "Intel" in selectedBrands.value,
+                        onCheckedChange = {
+                            if (it) selectedBrands.value = selectedBrands.value + "Intel"
+                            else selectedBrands.value = selectedBrands.value - "Intel"
+                        }
+                    )
+                    Text(text = "Intel")
+                }
             }
         },
         confirmButton = {
             TextButton(onClick = {
                 onApply(
-                    selectedBrands.value,
-                    selectedMemorySizes.value,
-                    coreClockRange.value
+                    coreCountRange.value.start.toInt()..coreCountRange.value.endInclusive.toInt(),
+                    coreClockRange.value.start.toDouble()..coreClockRange.value.endInclusive.toDouble(),
+                    boostClockRange.value.start.toDouble()..boostClockRange.value.endInclusive.toDouble(),
+                    selectedBrands.value
                 )
             }) {
                 Text("Apply")

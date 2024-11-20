@@ -27,7 +27,7 @@
         </provider>
 
         <activity
-            android:name=".activity.CheckActivity"
+            android:name=".activity.MainActivity"
             android:noHistory="true"
             android:exported="true">
             <intent-filter>
@@ -35,21 +35,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".activity.homepage.home.HomeActivity" />
-        <!-- Theme is optional and only needed if default theme has no action bar. -->
         <activity
             android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"
             />
-        <activity android:name=".activity.homepage.screentest.ProfileSettingsActivity"/>
-        <activity
-            android:name="com.yalantis.ucrop.UCropActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
-        <activity android:name=".activity.homepage.profileicon.AboutUsActivity" />
-        <activity android:name=".activity.homepage.profileicon.SettingsActivity"/>
-        <activity android:name=".activity.homepage.profileicon.profilesettings.ProfileSettingsActivity"/>
+        <activity android:name=".activity.homepage.settings.profilesettings.ProfileSettingsActivity"/>
+
     </application>
 
 </manifest>

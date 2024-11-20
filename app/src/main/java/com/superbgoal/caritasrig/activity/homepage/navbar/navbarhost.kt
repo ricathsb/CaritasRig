@@ -1,6 +1,5 @@
 package com.superbgoal.caritasrig.activity.homepage.navbar
 
-import BuildViewModel
 import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -58,36 +56,33 @@ import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildListScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CasingScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuCoolerScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.HeadphoneScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.InternalHardDriveScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.KeyboardScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MemoryScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MotherboardScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MouseScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.PowerSupplyScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.VideoCardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.CasingScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.CpuCoolerScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.CpuScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.HeadphoneScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.InternalHardDriveScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.KeyboardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MemoryScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MotherboardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MouseScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.PowerSupplyScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCardScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
-import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsScreen
-import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
-import com.superbgoal.caritasrig.activity.homepage.profileicon.ImageCropperScreen
-import com.superbgoal.caritasrig.activity.homepage.screentest.ProfileSettingsScreen
-import com.superbgoal.caritasrig.activity.homepage.screentest.SettingsScreen
+import com.superbgoal.caritasrig.activity.homepage.settings.AboutUsScreen
+import com.superbgoal.caritasrig.activity.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
 
 @Composable
 fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
-    profileViewModel: ProfileSettingsViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
-    appController : NavController,
+    appController: NavController,
 
-) {
+    ) {
     val navController = rememberNavController()
-    var selectedItem by remember { mutableStateOf(0) } // Default ke Home (index 0)
+    var selectedItem by remember { mutableIntStateOf(0) } // Default ke Home (index 0)
 
     Scaffold(
         topBar = {
@@ -186,7 +181,7 @@ fun NavbarHost(
                 Text(text = "Trending")
             }
             composable("build") {
-                BuildListScreen(navController)
+                BuildListScreen(navController,buildViewModel)
             }
             composable("benchmark") {
                 Text(text = "Benchmark")
@@ -195,11 +190,8 @@ fun NavbarHost(
                 Text(text = "Favorite")
             }
             composable(
-                route = "build_details/{title}",
-                arguments = listOf(navArgument("title") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val title = backStackEntry.arguments?.getString("title") ?: ""
-                BuildScreen(title = title, buildViewModel, navController)
+                route = "build_details",
+            ) { BuildScreen(buildViewModel, navController)
             }
             composable("cpu_screen") { CpuScreen(navController) }
             composable("casing_screen") { CasingScreen(navController) }
@@ -212,20 +204,9 @@ fun NavbarHost(
             composable("keyboard_screen") { KeyboardScreen(navController) }
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
-
-            composable(
-                route = "image_cropper?imageUri={imageUri}",
-                arguments = listOf(navArgument("imageUri") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val imageUri = backStackEntry.arguments?.getString("imageUri")?.toUri()
-                ImageCropperScreen(navController, profileViewModel, imageUri)
-            }
         }
     }
 }
-
-
-
 
 @Composable
 fun AppTopBar(
@@ -417,9 +398,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
             style = MaterialTheme.typography.body2,
             color = MaterialTheme.colors.secondary
         )
-
         Spacer(modifier = Modifier.height(32.dp))
-
     }
 }
 

@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,8 +32,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.Build
 
 
 @Composable
-fun BuildListScreen(navController: NavController? = null) {
-    // State untuk menyimpan daftar build
+fun BuildListScreen(navController: NavController? = null,viewModel: BuildViewModel) {
     val buildsState = produceState<List<Build>>(initialValue = emptyList()) {
         fetchBuildsWithAuth(
             onSuccess = { value = it },
@@ -55,13 +60,34 @@ fun BuildListScreen(navController: NavController? = null) {
         } else {
             // Aksi saat build diklik
             val onBuildClick: (Build) -> Unit = { build ->
-                navController?.navigate("build_details/${build.title}")
-                println("Clicked on build: ${build.title}")
+                navController?.navigate("build_details")
+                viewModel.saveBuildTitle(build.title)
             }
             // Panggil fungsi BuildList untuk menampilkan daftar build
             BuildList(
                 builds = builds,
                 onBuildClick = onBuildClick
+            )
+        }
+
+        FloatingActionButton(
+            onClick = {
+                println("FAB clicked!")
+                // Navigasi ke layar dengan title "new"
+                navController?.navigate("build_details")
+                viewModel.setNewBuildState(isNew = true)
+            },
+            shape = RoundedCornerShape(8.dp), // Membuat tombol berbentuk kotak
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp) // Padding dari tepi layar
+                .size(48.dp) // Ukuran kecil
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add Build",
+                tint = Color.White
             )
         }
     }

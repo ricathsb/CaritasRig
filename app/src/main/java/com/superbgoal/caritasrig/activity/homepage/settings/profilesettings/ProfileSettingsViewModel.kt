@@ -1,9 +1,8 @@
-package com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings
+package com.superbgoal.caritasrig.activity.homepage.settings.profilesettings
 
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth

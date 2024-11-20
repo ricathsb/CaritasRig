@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.auth.registertest
+package com.superbgoal.caritasrig.activity.auth.register
 
 import android.net.Uri
 import android.util.Log
@@ -69,7 +69,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.register.RegisterViewModel
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.saveUserData
 import com.superbgoal.caritasrig.data.uploadImageToFirebase
