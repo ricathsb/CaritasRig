@@ -1,6 +1,5 @@
-package com.superbgoal.caritasrig.activity.auth.logintest
+package com.superbgoal.caritasrig.activity.auth.login
 
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -57,7 +56,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.login.LoginViewModel
 import com.superbgoal.caritasrig.functions.auth.AuthResponse
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
 import kotlinx.coroutines.flow.launchIn

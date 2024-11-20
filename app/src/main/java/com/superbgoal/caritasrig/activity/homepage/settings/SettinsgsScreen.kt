@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.screentest
+package com.superbgoal.caritasrig.activity.homepage.settings
 
 import android.content.Context
 import android.content.Intent
@@ -26,10 +26,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.settings.profilesettings.ProfileSettingsActivity
 import java.util.Locale
 
 @Composable

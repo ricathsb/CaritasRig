@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -34,18 +34,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.Mouse
+import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun MouseScreen(navController: NavController) {
-    // Load mouse data
+fun InternalHardDriveScreen(navController: NavController) {
+    // Load internal hard drive data
     val context = LocalContext.current
-    val mice: List<Mouse> = remember {
+    val internalHardDrives: List<InternalHardDrive> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.mouse // Ensure this JSON file exists in resources
+            resourceId = R.raw.internalharddrive
         )
     }
 
@@ -60,7 +60,7 @@ fun MouseScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and Mouse List
+        // Main content with TopAppBar and InternalHardDriveList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -82,7 +82,7 @@ fun MouseScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Mice",
+                            text = "Internal Hard Drive",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -104,7 +104,7 @@ fun MouseScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
-                            // Action for filter button
+                            // Action for filter button (if needed)
                         },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
@@ -120,7 +120,7 @@ fun MouseScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                MouseList(mice, navController)
+                InternalHardDriveList(internalHardDrives, navController)
             }
         }
     }
@@ -128,58 +128,60 @@ fun MouseScreen(navController: NavController) {
 
 
 @Composable
-fun MouseList(mice: List<Mouse>, navController: NavController) {
+fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>, navController: NavController) {
+    // Get context from LocalContext
     val context = LocalContext.current
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(mice) { mouseItem ->
-            // Track loading state for each mouse
+        items(internalHardDrives) { hardDrive ->
+            // Track loading state for each hard drive
             val isLoading = remember { mutableStateOf(false) }
 
-            // Menggunakan ComponentCard untuk setiap mouse
+            // Use ComponentCard for each hard drive
             ComponentCard(
-                title = mouseItem.name,
-                details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
-                context = context,
-                component = mouseItem,
+                title = hardDrive.name,
+                details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
+                context = context, // Passing context from LocalContext
+                component = hardDrive,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {
-                    // Mulai proses loading ketika tombol Add ditekan
+                    // Start loading when the add button is clicked
                     isLoading.value = true
-                    Log.d("MouseActivity", "Selected Mouse: ${mouseItem.name}")
 
-                    // Mendapatkan userId dan buildTitle
+                    // Get userId and buildTitle
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
                     val buildTitle = BuildManager.getBuildTitle()
 
-                    // Simpan mouse jika buildTitle tersedia
+                    // Save hard drive if buildTitle is available
                     buildTitle?.let { title ->
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "mouse", // Tipe komponen
-                            componentData = mouseItem, // Data mouse
+                            componentType = "internalharddrive", // Specify component type
+                            componentData = hardDrive, // Pass hard drive data
                             onSuccess = {
-                                // Berhenti loading ketika sukses
+                                // Stop loading on success
                                 isLoading.value = false
-                                Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
+                                Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
+                                navController.navigateUp()
+                                // Navigate to BuildActivity after success
 
                             },
                             onFailure = { errorMessage ->
-                                // Berhenti loading ketika gagal
+                                // Stop loading on failure
                                 isLoading.value = false
-                                Log.e("MouseActivity", "Failed to store Mouse under build title: $errorMessage")
+                                Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: $errorMessage")
                             },
                             onLoading = { isLoading.value = it } // Update loading state
                         )
                     } ?: run {
-                        // Berhenti loading jika buildTitle null
+                        // Stop loading if buildTitle is null
                         isLoading.value = false
-                        Log.e("MouseActivity", "Build title is null; unable to store Mouse.")
+                        Log.e("HardDriveActivity", "Build title is null; unable to store Hard Drive.")
                     }
                 }
             )

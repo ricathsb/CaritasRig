@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -16,11 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Checkbox
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RangeSlider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -43,28 +41,28 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun CpuScreen(navController: NavController) {
-    // Load processors data
+fun PowerSupplyScreen(navController: NavController) {
+    // Load power supplies from JSON resource
     val context = LocalContext.current
-    val processors: List<Processor> = remember {
+    val powerSupplies: List<PowerSupply> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.processor
+            resourceId = R.raw.powersupply // Ensure this JSON file exists
         )
     }
 
     var showFilterDialog by remember { mutableStateOf(false) }
-    var filteredProcessors by remember { mutableStateOf(processors) }
+    var filteredPowerSupplies by remember { mutableStateOf(powerSupplies) }
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Set background image
+        // Background image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
@@ -72,7 +70,7 @@ fun CpuScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and ProcessorList
+        // Main content with TopAppBar and PowerSupplyList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -94,7 +92,7 @@ fun CpuScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "CPU",
+                            text = "Power Supply",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -102,9 +100,7 @@ fun CpuScreen(navController: NavController) {
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        },
+                        onClick = { navController.navigateUp() },
                         modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                     ) {
                         Icon(
@@ -126,24 +122,25 @@ fun CpuScreen(navController: NavController) {
                 }
             )
 
+            // PowerSupplyList content
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                ProcessorList(processors = filteredProcessors,navController)
+                PowerSupplyList(filteredPowerSupplies,navController)
             }
         }
 
+        // Filter dialog
         if (showFilterDialog) {
-            FilterDialog(
+            FilterDialogPS(
                 onDismiss = { showFilterDialog = false },
-                onApply = { coreCount, coreClock, boostClock, brands ->
+                onApply = { selectedTypes, selectedWattages, selectedModularities ->
                     showFilterDialog = false
-                    filteredProcessors = processors.filter { processor ->
-                        processor.core_count in coreCount &&
-                                processor.core_clock in coreClock &&
-                                processor.boost_clock in boostClock &&
-                                brands.any { processor.name.contains(it, ignoreCase = true) }
+                    filteredPowerSupplies = powerSupplies.filter { powerSupply ->
+                        (selectedTypes.isEmpty() || selectedTypes.contains(powerSupply.type)) &&
+                                (selectedWattages.isEmpty() || powerSupply.wattage in selectedWattages) &&
+                                (selectedModularities.isEmpty() || selectedModularities.contains(powerSupply.modular))
                     }
                 }
             )
@@ -151,48 +148,48 @@ fun CpuScreen(navController: NavController) {
     }
 }
 
+
 @Composable
-fun ProcessorList(processors: List<Processor>,navController: NavController) {
+fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavController) {
     val context = LocalContext.current
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(processors) { processor ->
+        items(powerSupplies) { powerSupply ->
             val isLoading = remember { mutableStateOf(false) }
+
             ComponentCard(
-                title = processor.name,
-                details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
+                title = powerSupply.name,
+                details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
                 context = context,
-                component = processor,
+                component = powerSupply,
                 isLoading = isLoading.value,
-                navController = navController,
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
                     val buildTitle = BuildManager.getBuildTitle()
+
                     buildTitle?.let { title ->
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "cpu",
-                            componentData = processor,
+                            componentType = "powersupply",
+                            componentData = powerSupply,
                             onSuccess = {
-                                isLoading.value = false
-                                navController.navigateUp()
-                                Log.e("test", "ketriger")
+
                             },
                             onFailure = { errorMessage ->
                                 isLoading.value = false
-
+                                Log.e("PowerSupplyActivity", "Failed to store Power Supply: $errorMessage")
                             },
                             onLoading = { isLoading.value = it }
                         )
                     } ?: run {
                         isLoading.value = false
-                        Log.e("BuildActivity", "Build title is null; unable to store CPU.")
+                        Log.e("PowerSupplyActivity", "Build title is null; unable to store Power Supply.")
                     }
                 }
             )
@@ -200,100 +197,81 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
     }
 }
 
-
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun FilterDialog(
+fun FilterDialogPS(
     onDismiss: () -> Unit,
-    onApply: (coreCount: IntRange, coreClock: ClosedFloatingPointRange<Double>, boostClock: ClosedFloatingPointRange<Double>, selectedBrands: List<String>) -> Unit
+    onApply: (selectedTypes: List<String>, selectedWattages: List<Int>, selectedModularities: List<String>) -> Unit
 ) {
-    // States for filter criteria
-    val coreCountRange = remember { mutableStateOf(0f..16f) }
-    val coreClockRange = remember { mutableStateOf(1.0f..5.0f) }
-    val boostClockRange = remember { mutableStateOf(1.0f..5.0f) }
-    val selectedBrands = remember { mutableStateOf(listOf("AMD", "Intel")) }
+    val availableTypes = listOf("ATX", "SFX", "Mini ITX")
+    val selectedTypes = remember { mutableStateOf(availableTypes.toMutableList()) }
+
+    val availableWattages = listOf(400, 500, 600, 750, 850, 1000, 1200)
+    val selectedWattages = remember { mutableStateOf(availableWattages.toMutableList()) }
+
+    val availableModularities = listOf("Full", "Semi", "Non")
+    val selectedModularities = remember { mutableStateOf(availableModularities.toMutableList()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(text = "Filter CPUs")
-        },
+        title = { Text("Filter Power Supplies") },
         text = {
             Column {
-                // Core count slider
-                Text(text = "Core Count: ${coreCountRange.value.start.toInt()} - ${coreCountRange.value.endInclusive.toInt()}")
-                RangeSlider(
-                    value = coreCountRange.value,
-                    onValueChange = { range ->
-                        coreCountRange.value = range
-                    },
-                    valueRange = 0f..16f
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Core clock slider
-                Text(text = "Core Clock: ${
-                    String.format("%.2f", coreClockRange.value.start)
-                } GHz - ${
-                    String.format("%.2f", coreClockRange.value.endInclusive)
-                } GHz")
-                RangeSlider(
-                    value = coreClockRange.value,
-                    onValueChange = { range ->
-                        coreClockRange.value = range
-                    },
-                    valueRange = 1.0f..5.0f
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Boost clock slider
-                Text(text = "Boost Clock: ${
-                    String.format("%.2f", boostClockRange.value.start)
-                } GHz - ${
-                    String.format("%.2f", boostClockRange.value.endInclusive)
-                } GHz")
-                RangeSlider(
-                    value = boostClockRange.value,
-                    onValueChange = { range ->
-                        boostClockRange.value = range
-                    },
-                    valueRange = 1.0f..5.0f
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Brand selection checkboxes
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = "AMD" in selectedBrands.value,
-                        onCheckedChange = {
-                            if (it) selectedBrands.value = selectedBrands.value + "AMD"
-                            else selectedBrands.value = selectedBrands.value - "AMD"
-                        }
-                    )
-                    Text(text = "AMD")
+                Text("Type:")
+                availableTypes.forEach { type ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = type in selectedTypes.value,
+                            onCheckedChange = { isChecked ->
+                                val updatedList = selectedTypes.value.toMutableList()
+                                if (isChecked) updatedList.add(type) else updatedList.remove(type)
+                                selectedTypes.value = updatedList
+                            }
+                        )
+                        Text(text = type)
+                    }
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = "Intel" in selectedBrands.value,
-                        onCheckedChange = {
-                            if (it) selectedBrands.value = selectedBrands.value + "Intel"
-                            else selectedBrands.value = selectedBrands.value - "Intel"
-                        }
-                    )
-                    Text(text = "Intel")
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Wattage (W):")
+                availableWattages.forEach { wattage ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = wattage in selectedWattages.value,
+                            onCheckedChange = { isChecked ->
+                                val updatedList = selectedWattages.value.toMutableList()
+                                if (isChecked) updatedList.add(wattage) else updatedList.remove(wattage)
+                                selectedWattages.value = updatedList
+                            }
+                        )
+                        Text(text = "$wattage W")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Modularity:")
+                availableModularities.forEach { modularity ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = modularity in selectedModularities.value,
+                            onCheckedChange = { isChecked ->
+                                val updatedList = selectedModularities.value.toMutableList()
+                                if (isChecked) updatedList.add(modularity) else updatedList.remove(modularity)
+                                selectedModularities.value = updatedList
+                            }
+                        )
+                        Text(text = modularity)
+                    }
                 }
             }
         },
         confirmButton = {
             TextButton(onClick = {
                 onApply(
-                    coreCountRange.value.start.toInt()..coreCountRange.value.endInclusive.toInt(),
-                    coreClockRange.value.start.toDouble()..coreClockRange.value.endInclusive.toDouble(),
-                    boostClockRange.value.start.toDouble()..boostClockRange.value.endInclusive.toDouble(),
-                    selectedBrands.value
+                    selectedTypes.value,
+                    selectedWattages.value,
+                    selectedModularities.value
                 )
             }) {
                 Text("Apply")

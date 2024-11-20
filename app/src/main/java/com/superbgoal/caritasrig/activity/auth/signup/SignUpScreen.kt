@@ -1,6 +1,5 @@
-package com.superbgoal.caritasrig.activity.auth.signuptest
+package com.superbgoal.caritasrig.activity.auth.signup
 
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,7 +35,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.auth.signup.SignUpViewModel
 import com.superbgoal.caritasrig.functions.auth.LoadingButton
 import com.superbgoal.caritasrig.functions.auth.signUpUser
 

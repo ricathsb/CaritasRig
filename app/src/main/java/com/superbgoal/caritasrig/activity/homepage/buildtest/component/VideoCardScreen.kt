@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -16,9 +16,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Checkbox
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RangeSlider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -41,23 +43,23 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.PowerSupply
+import com.superbgoal.caritasrig.data.model.component.VideoCard
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun PowerSupplyScreen(navController: NavController) {
-    // Load power supplies from JSON resource
+fun VideoCardScreen(navController: NavController) {
+    // Load video cards from JSON resource
     val context = LocalContext.current
-    val powerSupplies: List<PowerSupply> = remember {
+    val videoCards: List<VideoCard> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.powersupply // Ensure this JSON file exists
+            resourceId = R.raw.videocard // Ensure this JSON file exists
         )
     }
 
     var showFilterDialog by remember { mutableStateOf(false) }
-    var filteredPowerSupplies by remember { mutableStateOf(powerSupplies) }
+    var filteredVideoCards by remember { mutableStateOf(videoCards) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -70,7 +72,7 @@ fun PowerSupplyScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and PowerSupplyList
+        // Main content with TopAppBar and VideoCardList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -92,7 +94,7 @@ fun PowerSupplyScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Power Supply",
+                            text = "Video Card",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -122,25 +124,25 @@ fun PowerSupplyScreen(navController: NavController) {
                 }
             )
 
-            // PowerSupplyList content
+            // VideoCardList content
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                PowerSupplyList(filteredPowerSupplies,navController)
+                VideoCardList(filteredVideoCards,navController)
             }
         }
 
         // Filter dialog
         if (showFilterDialog) {
-            FilterDialogPS(
+            FilterDialog(
                 onDismiss = { showFilterDialog = false },
-                onApply = { selectedTypes, selectedWattages, selectedModularities ->
+                onApply = { selectedBrands, selectedMemorySizes, selectedCoreClocks ->
                     showFilterDialog = false
-                    filteredPowerSupplies = powerSupplies.filter { powerSupply ->
-                        (selectedTypes.isEmpty() || selectedTypes.contains(powerSupply.type)) &&
-                                (selectedWattages.isEmpty() || powerSupply.wattage in selectedWattages) &&
-                                (selectedModularities.isEmpty() || selectedModularities.contains(powerSupply.modular))
+                    filteredVideoCards = videoCards.filter { videoCard ->
+                        (selectedBrands.isEmpty() || selectedBrands.any { videoCard.name.contains(it, ignoreCase = true) }) &&
+                                (selectedMemorySizes.isEmpty() || videoCard.memory in selectedMemorySizes) &&
+                                (selectedCoreClocks.isEmpty() || videoCard.coreClock.toInt() in selectedCoreClocks)
                     }
                 }
             )
@@ -150,21 +152,21 @@ fun PowerSupplyScreen(navController: NavController) {
 
 
 @Composable
-fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavController) {
+fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
     val context = LocalContext.current
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(powerSupplies) { powerSupply ->
+        items(videoCards) { videoCard ->
             val isLoading = remember { mutableStateOf(false) }
 
             ComponentCard(
-                title = powerSupply.name,
-                details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
+                title = videoCard.name,
+                details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
                 context = context,
-                component = powerSupply,
+                component = videoCard,
                 isLoading = isLoading.value,
                 onAddClick = {
                     isLoading.value = true
@@ -176,20 +178,19 @@ fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavControll
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "powersupply",
-                            componentData = powerSupply,
+                            componentType = "gpu",
+                            componentData = videoCard,
                             onSuccess = {
-
                             },
                             onFailure = { errorMessage ->
                                 isLoading.value = false
-                                Log.e("PowerSupplyActivity", "Failed to store Power Supply: $errorMessage")
+                                Log.e("VideoCardActivity", "Failed to store Video Card: $errorMessage")
                             },
                             onLoading = { isLoading.value = it }
                         )
                     } ?: run {
                         isLoading.value = false
-                        Log.e("PowerSupplyActivity", "Build title is null; unable to store Power Supply.")
+                        Log.e("VideoCardActivity", "Build title is null; unable to store Video Card.")
                     }
                 }
             )
@@ -197,81 +198,80 @@ fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavControll
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun FilterDialogPS(
+fun FilterDialog(
     onDismiss: () -> Unit,
-    onApply: (selectedTypes: List<String>, selectedWattages: List<Int>, selectedModularities: List<String>) -> Unit
+    onApply: (
+        selectedBrands: List<String>,
+        selectedMemorySizes: List<Double>,
+        selectedCoreClocks: IntRange
+    ) -> Unit
 ) {
-    val availableTypes = listOf("ATX", "SFX", "Mini ITX")
-    val selectedTypes = remember { mutableStateOf(availableTypes.toMutableList()) }
+    val availableBrands = listOf("AMD", "NVIDIA", "Intel")
+    val selectedBrands = remember { mutableStateOf(availableBrands.toMutableList()) }
 
-    val availableWattages = listOf(400, 500, 600, 750, 850, 1000, 1200)
-    val selectedWattages = remember { mutableStateOf(availableWattages.toMutableList()) }
+    val availableMemorySizes = listOf(4.0, 6.0, 8.0, 12.0, 16.0)
+    val selectedMemorySizes = remember { mutableStateOf(availableMemorySizes.toMutableList()) }
 
-    val availableModularities = listOf("Full", "Semi", "Non")
-    val selectedModularities = remember { mutableStateOf(availableModularities.toMutableList()) }
+    val coreClockRange = remember { mutableStateOf(500..3000) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Filter Power Supplies") },
+        title = { Text(text = "Filter Video Cards") },
         text = {
             Column {
-                Text("Type:")
-                availableTypes.forEach { type ->
+                Text("Brand:")
+                availableBrands.forEach { brand ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = type in selectedTypes.value,
+                            checked = brand in selectedBrands.value,
                             onCheckedChange = { isChecked ->
-                                val updatedList = selectedTypes.value.toMutableList()
-                                if (isChecked) updatedList.add(type) else updatedList.remove(type)
-                                selectedTypes.value = updatedList
+                                val updatedList = selectedBrands.value.toMutableList()
+                                if (isChecked) updatedList.add(brand) else updatedList.remove(brand)
+                                selectedBrands.value = updatedList
                             }
                         )
-                        Text(text = type)
+                        Text(text = brand)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Wattage (W):")
-                availableWattages.forEach { wattage ->
+                Text("Memory Size (GB):")
+                availableMemorySizes.forEach { size ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = wattage in selectedWattages.value,
+                            checked = size in selectedMemorySizes.value,
                             onCheckedChange = { isChecked ->
-                                val updatedList = selectedWattages.value.toMutableList()
-                                if (isChecked) updatedList.add(wattage) else updatedList.remove(wattage)
-                                selectedWattages.value = updatedList
+                                val updatedList = selectedMemorySizes.value.toMutableList()
+                                if (isChecked) updatedList.add(size) else updatedList.remove(size)
+                                selectedMemorySizes.value = updatedList
                             }
                         )
-                        Text(text = "$wattage W")
+                        Text(text = "$size GB")
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Modularity:")
-                availableModularities.forEach { modularity ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = modularity in selectedModularities.value,
-                            onCheckedChange = { isChecked ->
-                                val updatedList = selectedModularities.value.toMutableList()
-                                if (isChecked) updatedList.add(modularity) else updatedList.remove(modularity)
-                                selectedModularities.value = updatedList
-                            }
-                        )
-                        Text(text = modularity)
-                    }
-                }
+                Text(text = "Core Clock: ${coreClockRange.value.start} MHz - ${coreClockRange.value.endInclusive} MHz")
+                RangeSlider(
+                    value = coreClockRange.value.start.toFloat()..coreClockRange.value.endInclusive.toFloat(),
+                    onValueChange = { range ->
+                        coreClockRange.value = range.start.toInt()..range.endInclusive.toInt()
+                    },
+                    valueRange = 500f..3000f,
+                    steps = 10
+                )
             }
         },
         confirmButton = {
             TextButton(onClick = {
                 onApply(
-                    selectedTypes.value,
-                    selectedWattages.value,
-                    selectedModularities.value
+                    selectedBrands.value,
+                    selectedMemorySizes.value,
+                    coreClockRange.value
                 )
             }) {
                 Text("Apply")

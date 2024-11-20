@@ -1,6 +1,5 @@
 package com.superbgoal.caritasrig.activity.homepage.buildtest
 
-import BuildViewModel
 import android.app.Activity
 import android.content.Context
 import android.os.Handler
@@ -66,22 +65,32 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),navController: NavController? = null) {
-    getDatabaseReference()
-    val context = LocalContext.current
+fun BuildScreen(
+    title: String,
+    buildViewModel: BuildViewModel = viewModel(),
+    navController: NavController? = null
+) {
+    var showDialog by remember { mutableStateOf(false) }
     LaunchedEffect(title) {
-        buildViewModel.saveBuildTitle(title)
-        buildViewModel.fetchBuildByTitle(title)
+        if (title.isNotBlank()) {
+            buildViewModel.saveBuildTitle(title)
+            buildViewModel.fetchBuildByTitle(title)
+        } else {
+            BuildManager.resetBuildTitle()
+            buildViewModel.resetBuildTitle()
+            buildViewModel.clearSharedPreferences()
+            showDialog = true
+        }
     }
-
+    val context = LocalContext.current
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
     val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
-    var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
     val loading by buildViewModel.loading.observeAsState(false)
     val sharedPreferences = context.getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
@@ -349,6 +358,8 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                         if(buildViewModel.buildTitle.value?.isNotEmpty() == true){
                             showDialog = false
                         } else {
+                            showDialog = false
+                            navController?.navigateUp()
                         }
                     }
                 ) {
