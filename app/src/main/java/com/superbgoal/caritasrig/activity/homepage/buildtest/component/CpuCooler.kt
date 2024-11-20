@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -34,18 +34,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.Casing
+import com.superbgoal.caritasrig.data.model.component.CpuCooler
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun CasingScreen(navController: NavController) {
-    // Load casing data
+fun CpuCoolerScreen(navController: NavController) {
+    // Load CPU coolers from JSON resource
     val context = LocalContext.current
-    val casings: List<Casing> = remember {
+    val cpuCoolers: List<CpuCooler> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.casing
+            resourceId = R.raw.cpucooler // Pastikan file JSON ini ada
         )
     }
 
@@ -60,7 +60,7 @@ fun CasingScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and CasingList
+        // Main content with TopAppBar and CPU Cooler List
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -82,7 +82,7 @@ fun CasingScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Casing",
+                            text = "CPU Coolers",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -116,11 +116,12 @@ fun CasingScreen(navController: NavController) {
                 }
             )
 
+            // CPU Cooler List content
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                CasingList(casings,navController)
+                CpuCoolerList(cpuCoolers,navController)
             }
         }
     }
@@ -128,66 +129,59 @@ fun CasingScreen(navController: NavController) {
 
 
 @Composable
-fun CasingList(casings: List<Casing>,navController: NavController) {
-    // Get context from LocalContext
+fun CpuCoolerList(cpuCoolers: List<CpuCooler>,navController: NavController) {
     val context = LocalContext.current
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(casings) { casing ->
-            // Track loading state for each casing
+        items(cpuCoolers) { coolerItem ->
+            // Track loading state for each CPU Cooler
             val isLoading = remember { mutableStateOf(false) }
 
-            // Use ComponentCard for each casing
+            // Use ComponentCard for each CPU Cooler
             ComponentCard(
-                title = casing.name,
-                details = "${casing.type} | ${casing.color} | PSU: ${casing.psu ?: "Not included"} | Volume: ${casing.externalVolume} L | 3.5\" Bays: ${casing.internal35Bays}",
+                title = coolerItem.name,
+                details = "Price: $${coolerItem.price} | Size: ${coolerItem.size}mm | Color: ${coolerItem.color} | " +
+                        "RPM: ${coolerItem.rpm} | Noise Level: ${coolerItem.noise_level} dB",
                 context = context, // Passing context from LocalContext
-                component = casing,
+                component = coolerItem,
                 isLoading = isLoading.value, // Pass loading state to card
-                navController = navController,
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true
+                    Log.d("CpuCoolerActivity", "Selected CPU Cooler: ${coolerItem.name}")
+
+                    // Get the current user and build title
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
-
-                    // Use the BuildManager singleton to get the current build title
                     val buildTitle = BuildManager.getBuildTitle()
 
+                    // Save CPU Cooler if buildTitle is available
                     buildTitle?.let { title ->
-                        // Save the component to the database
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "case",
-                            componentData = casing,
+                            componentType = "cpucooler", // Specify component type
+                            componentData = coolerItem, // Pass CPU Cooler data
                             onSuccess = {
                                 // Stop loading on success
                                 isLoading.value = false
-                                Log.d("CasingActivity", "Casing ${casing.name} saved successfully under build title: $title")
                                 navController.navigateUp()
-
-                                // After success, navigate to BuildActivity
-//                                    val intent = Intent(context, BuildActivity::class.java).apply {
-//                                        putExtra("component_title", casing.name)
-//                                        putExtra("component_data", casing) // Component sent as Parcelable
-//                                    }
-//                                    context.startActivity(intent)
+                                Log.d("CpuCoolerActivity", "CPU Cooler ${coolerItem.name} saved successfully under build title: $title")
                             },
                             onFailure = { errorMessage ->
                                 // Stop loading on failure
                                 isLoading.value = false
-                                Log.e("CasingActivity", "Failed to store casing under build title: $errorMessage")
+                                Log.e("CpuCoolerActivity", "Failed to store CPU Cooler under build title: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it } // Update the loading state
+                            onLoading = { isLoading.value = it } // Update loading state
                         )
                     } ?: run {
-                        // Stop loading if buildTitle is null
+                        // Stop loading if buildTitle is nulla
                         isLoading.value = false
-                        Log.e("CasingActivity", "Build title is null; unable to store casing.")
+                        Log.e("CpuCoolerActivity", "Build title is null; unable to store CPU Cooler.")
                     }
                 }
             )

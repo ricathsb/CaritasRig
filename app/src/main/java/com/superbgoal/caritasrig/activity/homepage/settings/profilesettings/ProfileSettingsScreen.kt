@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.screentest
+package com.superbgoal.caritasrig.activity.homepage.settings.profilesettings
 
 import android.content.Intent
 import android.net.Uri
@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +29,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
@@ -62,13 +60,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.transformations
@@ -76,12 +71,10 @@ import coil3.transform.CircleCropTransformation
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
-import com.canhub.cropper.CropImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.CheckActivity
+import com.superbgoal.caritasrig.activity.MainActivity
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
-import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.updateUserProfileData
 import java.time.Instant
@@ -380,7 +373,7 @@ fun ProfileSettingsScreen(
                         if (success) {
                             Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                             homeViewModel.loadUserData(userId = user.userId)
-                            val intent = Intent(context, CheckActivity::class.java)
+                            val intent = Intent(context, MainActivity::class.java)
                             intent.flags =
                                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             context.startActivity(intent)  // Gunakan context.startActivity
@@ -403,7 +396,7 @@ fun ProfileSettingsScreen(
         }
         TextButton(
             onClick = {
-                val intent = Intent(context, CheckActivity::class.java)
+                val intent = Intent(context, MainActivity::class.java)
                 intent.flags =
                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 context.startActivity(intent)

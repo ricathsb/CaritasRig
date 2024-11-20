@@ -1,3 +1,5 @@
+package com.superbgoal.caritasrig.activity.homepage.buildtest
+
 import android.app.Application
 import android.content.Context
 import android.util.Log
@@ -65,12 +67,15 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
         // Set buildTitle to BuildManager
         BuildManager.setBuildTitle(savedBuildTitle)
-        Log.d("BuildViewModel", "Build Title Loaded and Set: $savedBuildTitle")
+        Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build Title Loaded and Set: $savedBuildTitle")
 
         fetchBuildByTitle(savedBuildTitle)
     }
 
-
+    fun resetBuildTitle() {
+        _buildTitle.value = ""
+        println("Build title has been reset.")
+    }
 
     fun resetBuildData() {
 
@@ -83,7 +88,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         // Optionally, clear component details
         _componentDetail.value = null
 
-        Log.d("BuildViewModel", "Build title and components have been reset.")
+        Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build title and components have been reset.")
     }
 
 
@@ -91,7 +96,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         _buildTitle.value = title
         sharedPreferences.edit().putString("buildTitle", title).apply()
         BuildManager.setBuildTitle(title)
-        Log.d("BuildViewModel", "Build Title Saved and Set: $title")
+        Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build Title Saved and Set: $title")
     }
 
     // Memastikan `LiveData` diperbarui saat data build atau komponen diubah.
@@ -100,7 +105,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
             // Tangani jika build null (gunakan data kosong atau default)
             _buildData.value = null
             _selectedComponents.value = defaultCategories // Tampilkan kategori kosong
-            Log.w("BuildViewModel", "Build is null, setting default components.")
+            Log.w("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build is null, setting default components.")
             return
         }
 
@@ -135,7 +140,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
             components[entry.key] ?: entry.value
         }
 
-        Log.d("BuildViewModel", "Build data and components updated.")
+        Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build data and components updated.")
     }
 
     private fun updateComponentDetail(build: Build) {
@@ -176,10 +181,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
             _componentDetail.value = detail
-            Log.d("BuildViewModel", "Component Detail Updated: $detail")
+            Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Component Detail Updated: $detail")
         } ?: run {
             _componentDetail.value = null
-            Log.d("BuildViewModel", "Components are null or empty.")
+            Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Components are null or empty.")
         }
     }
 
@@ -192,22 +197,33 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 val build = builds.find { it.title == title }
                 if (build != null) {
                     setBuildData(build)
-                    Log.d("BuildViewModel", "Build Data Fetched by Title: $build")
+                    Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build Data Fetched by Title: $build")
                 } else {
                     // Jika tidak ada build, tetap tampilkan kategori default
                     _selectedComponents.value = defaultCategories
-                    Log.w("BuildViewModel", "No Build Found with Title: $title")
+                    Log.w("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "No Build Found with Title: $title")
                 }
                 _loading.value = false // Stop loading
             },
             onFailure = { errorMessage ->
-                Log.e("BuildViewModel", "Error fetching build by title: $errorMessage")
+                Log.e("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Error fetching build by title: $errorMessage")
                 _loading.value = false // Stop loading
 
                 _selectedComponents.value = defaultCategories
             }
         )
     }
+
+    fun clearSharedPreferences() {
+        val isCleared = sharedPreferences.edit().clear().commit()
+        if (isCleared) {
+            println("SharedPreferences cleared successfully.")
+        } else {
+            println("Failed to clear SharedPreferences.")
+        }
+    }
+
+
 
 
     fun removeComponent(category: String) {
@@ -244,18 +260,18 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 buildId = currentBuildData.buildId,
                 componentCategory = category.lowercase(),
                 onSuccess = {
-                    Log.d("BuildViewModel", "$category removed successfully from server.")
+                    Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "$category removed successfully from server.")
                 },
                 onFailure = { errorMessage ->
                     // Jika gagal, restore nilai sebelumnya
                     _selectedComponents.value = _selectedComponents.value?.toMutableMap()?.apply {
                         this[category] = "Failed to remove, restored"
                     }
-                    Log.e("BuildViewModel", "Failed to remove $category: $errorMessage")
+                    Log.e("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Failed to remove $category: $errorMessage")
                 }
             )
         } else {
-            Log.w("BuildViewModel", "Current build data is null, cannot remove component.")
+            Log.w("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Current build data is null, cannot remove component.")
         }
     }
 
@@ -269,7 +285,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         val currentBuildData = _buildData.value
 
         if (userId == null || currentBuildData == null) {
-            Log.e("BuildViewModel", "User not authenticated or build data is null.")
+            Log.e("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "User not authenticated or build data is null.")
             _loading.value = false
             return
         }
@@ -279,7 +295,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
         getDatabaseReference().child(componentPath).updateChildren(updatedData)
             .addOnSuccessListener {
-                Log.d("BuildViewModel", "Successfully updated $category in Firebase.")
+                Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Successfully updated $category in Firebase.")
 
                 // Update data lokal setelah sukses
                 val components = currentBuildData.components ?: return@addOnSuccessListener
@@ -313,7 +329,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 _loading.value = false // Selesai loading
             }
             .addOnFailureListener { error ->
-                Log.e("BuildViewModel", "Failed to update $category in Firebase: ${error.message}")
+                Log.e("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Failed to update $category in Firebase: ${error.message}")
                 _selectedComponents.value = _selectedComponents.value?.toMutableMap()?.apply {
                     this[category] = "Failed to update $category"
                 }

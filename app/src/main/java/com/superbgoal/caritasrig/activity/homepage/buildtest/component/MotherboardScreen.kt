@@ -1,5 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
-import kotlin.math.roundToInt
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +24,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember

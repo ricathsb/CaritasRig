@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,6 +68,28 @@ fun BuildListScreen(navController: NavController? = null) {
             BuildList(
                 builds = builds,
                 onBuildClick = onBuildClick
+            )
+        }
+
+        // Tambahkan tombol kotak kecil di kanan bawah
+        FloatingActionButton(
+            onClick = {
+                println("FAB clicked!")
+                // Navigasi ke layar dengan build title kosong
+                navController?.navigate("build_details/")
+                println("Navigating to build_details with an empty title")
+            },
+            shape = RoundedCornerShape(8.dp), // Membuat tombol berbentuk kotak
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp) // Padding dari tepi layar
+                .size(48.dp) // Ukuran kecil
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add Build",
+                tint = Color.White
             )
         }
     }
