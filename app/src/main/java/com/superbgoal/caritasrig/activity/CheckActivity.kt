@@ -63,6 +63,7 @@ class CheckActivity : ComponentActivity() {
         val context = LocalContext.current
         val authenticationManager = remember { AuthenticationManager(context) }
 
+
         // Check user authentication state
         LaunchedEffect(auth.currentUser) {
             val user = auth.currentUser
@@ -83,6 +84,7 @@ class CheckActivity : ComponentActivity() {
                 navController = navController,
                 startDestination = startDestination.value!!
             ) {
+                Log.d("CaritasRigApp", "Start Destination: ${startDestination.value}")
                 composable("login") {
                     LoginScreen(navController)
                 }

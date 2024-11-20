@@ -1,8 +1,7 @@
 package com.superbgoal.caritasrig.activity.homepage.navbar
 
 import BuildViewModel
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -26,7 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -35,6 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -71,6 +73,7 @@ import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsScreen
 import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
+import com.superbgoal.caritasrig.activity.homepage.profileicon.ImageCropperScreen
 import com.superbgoal.caritasrig.activity.homepage.screentest.ProfileSettingsScreen
 import com.superbgoal.caritasrig.activity.homepage.screentest.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -80,9 +83,11 @@ fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
     profileViewModel: ProfileSettingsViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
-    appController : NavController
+    appController : NavController,
+
 ) {
     val navController = rememberNavController()
+    var selectedItem by remember { mutableStateOf(0) } // Default ke Home (index 0)
 
     Scaffold(
         topBar = {
@@ -104,6 +109,7 @@ fun NavbarHost(
                 "favorite" -> "Favorite Component"
                 else -> "CaritasRig"
             }
+            Log.d("NavbarHost", "Current Route: $currentRoute")
 
             AppTopBar(
                 navigateToProfile = { user ->
@@ -126,10 +132,13 @@ fun NavbarHost(
                 }
             )
         },
+
         bottomBar = {
             BottomNavigationBar(
-                selectedItem = 0,
+                selectedItem = selectedItem, // Pastikan ini adalah state yang dikelola
                 onItemSelected = { index ->
+                    // Update selectedItem di sini
+                    selectedItem = index // Misalnya, jika Anda menggunakan state untuk menyimpan nilai ini
                     when (index) {
                         0 -> navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
@@ -173,9 +182,6 @@ fun NavbarHost(
             composable("about_us") {
                 AboutUsScreen()
             }
-            composable("settings_profile") {
-                ProfileSettingsScreen(profileViewModel, homeViewModel)
-            }
             composable("trending") {
                 Text(text = "Trending")
             }
@@ -206,6 +212,14 @@ fun NavbarHost(
             composable("keyboard_screen") { KeyboardScreen(navController) }
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
+
+            composable(
+                route = "image_cropper?imageUri={imageUri}",
+                arguments = listOf(navArgument("imageUri") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val imageUri = backStackEntry.arguments?.getString("imageUri")?.toUri()
+                ImageCropperScreen(navController, profileViewModel, imageUri)
+            }
         }
     }
 }
@@ -280,13 +294,14 @@ fun AppTopBar(
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = "Default Profile Icon",
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(30.dp)
                         )
                     }
                 }
             }
         },
         contentColor = Color.White,
+        modifier = Modifier.height(60.dp),
         elevation = 4.dp
     )
 }
@@ -303,59 +318,37 @@ fun BottomNavigationBar(
         NavigationItem.Benchmark,
         NavigationItem.Favorite
     )
-    val navbarColor = Color(0xFF473947);
+    val navbarColor = Color(0xFF473947)
 
     BottomAppBar(
         backgroundColor = navbarColor,
         cutoutShape = CircleShape,
+        modifier = Modifier.height(60.dp),
         elevation = 8.dp
     ) {
         items.forEachIndexed { index, item ->
-            val isMiddle = index == 2
             val isSelected = selectedItem == index
 
-            if (isMiddle) {
-                FloatingActionButton(
-                    onClick = { onItemSelected(index) },
-                    backgroundColor = MaterialTheme.colors.primary,
-                    contentColor = Color.White
-                ) {
+            BottomNavigationItem(
+                icon = {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.title
+                        contentDescription = item.title,
+                        tint = if (isSelected) Color.White else Color.Gray, // Mengubah warna berdasarkan status dipilih
+                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp) // Mengubah ukuran berdasarkan status dipilih
                     )
-                }
-            } else {
-                // Menambahkan animasi untuk transisi warna ikon
-                val animatedIconTint = animateColorAsState(
-                    targetValue = if (isSelected) MaterialTheme.colors.primary else Color.Gray
-                )
-                val animatedSize = animateDpAsState(
-                    targetValue = if (isSelected) 30.dp else 24.dp
-                )
-
-                BottomNavigationItem(
-                    icon = {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.title,
-                            tint = animatedIconTint.value, // Animasi warna
-                            modifier = Modifier.size(animatedSize.value) // Animasi ukuran
-                        )
-                    },
-                    selected = isSelected,
-                    onClick = { onItemSelected(index) },
-                    label = {
-                        Text(
-                            text = item.title,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) MaterialTheme.colors.primary else Color.Gray
-                        )
-                    },
-                    selectedContentColor = MaterialTheme.colors.primary,
-                    unselectedContentColor = Color.Gray
-                )
-            }
+                },
+                selected = isSelected,
+                onClick = { onItemSelected(index) },
+                label = {
+                    Text(
+                        text = item.title,
+                        color = if (isSelected) Color.White else Color.Gray // Mengubah warna teks berdasarkan status dipilih
+                    )
+                },
+                selectedContentColor = Color.White,
+                unselectedContentColor = Color.Gray,
+            )
         }
     }
 }
@@ -364,7 +357,7 @@ fun BottomNavigationBar(
 sealed class NavigationItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     object Home : NavigationItem("Home", Icons.Default.Home) // Pastikan ikon ini valid
     object Trending : NavigationItem("Trending", Icons.Filled.TrendingUp) // Ubah ke Icons.Filled agar lebih stabil
-    object Build : NavigationItem("Build", Icons.Default.Build)
+    object Build : NavigationItem("My Build", Icons.Default.DesktopWindows)
     object Benchmark : NavigationItem("Benchmark", Icons.Default.BarChart)
     object Favorite : NavigationItem("Favorite", Icons.Default.Favorite)
 }

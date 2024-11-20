@@ -50,7 +50,8 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 showDialog = true
             }
             SettingOption(stringResource(id = R.string.profile_settings)) {
-                navController?.navigate("settings_profile")
+                Intent(context, ProfileSettingsActivity::class.java)
+                startActivity(context, Intent(context, ProfileSettingsActivity::class.java), null)
             }
             SettingOption("AboutUs") {
                 navController?.navigate("about_us")
@@ -63,6 +64,10 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 appController.navigate("login") {
                     popUpTo(0) { inclusive = true }
                 }
+            }
+
+            SettingOption("AboutUs") {
+                navController?.navigate("test")
             }
 
         }

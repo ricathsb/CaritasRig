@@ -19,7 +19,7 @@ class LoginViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
-    private val _offsetY = MutableStateFlow(1000f)
+    private val _offsetY = MutableStateFlow(1500f)
     val offsetY: StateFlow<Float> get() = _offsetY
 
     private val _isArrowUp = MutableStateFlow(true)
@@ -43,7 +43,7 @@ class LoginViewModel : ViewModel() {
     }
 
     fun updateOffsetY(newOffset: Float) {
-        _offsetY.value = newOffset
+        _offsetY.value = newOffset.coerceIn(0f, 1000f)
     }
 
     fun toggleArrowDirection() {
