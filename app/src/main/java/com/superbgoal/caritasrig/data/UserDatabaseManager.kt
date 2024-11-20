@@ -38,6 +38,7 @@ fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
             val isEmailVerified = currentUser.isEmailVerified
             Log.d("loginStatus", "data disimpan $isEmailVerified")
 
+
             if (isEmailVerified) {
                 val userMap = mapOf(
                     "firstName" to user.firstName,
