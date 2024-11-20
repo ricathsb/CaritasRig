@@ -1,11 +1,8 @@
 package com.superbgoal.caritasrig.activity.auth.registertest
 
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -68,9 +65,6 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import coil3.transform.CircleCropTransformation
-import com.canhub.cropper.CropImageContract
-import com.canhub.cropper.CropImageContractOptions
-import com.canhub.cropper.CropImageOptions
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -100,31 +94,7 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
     val backgroundColor = Color(0xFF473947)
     val textFieldColor = Color(0xFF796179)
     val textColor = Color(0xFF1e1e1e)
-    val currentUser = FirebaseAuth.getInstance().currentUser
-
-    val imageCropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
-        if (result.isSuccessful) {
-            viewModel.updateImageUri(result.uriContent) // Update imageUri in the ViewModel
-        } else {
-            val exception = result.error
-            Log.d("imageCropLauncher", exception.toString())
-        }
-    }
-
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            val cropOptions = CropImageContractOptions(uri, CropImageOptions().apply {
-                aspectRatioX = 1
-                aspectRatioY = 1
-                fixAspectRatio = true
-            })
-            imageCropLauncher.launch(cropOptions)
-        } else {
-            Log.d("ImagePicker", "User cancelled image selection")
-        }
-    }
+    val  currentUser = FirebaseAuth.getInstance().currentUser
 
     Column(
         modifier = Modifier
@@ -139,7 +109,7 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
             style = MaterialTheme.typography.titleLarge
         )
 
-        var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
+        var isViewingProfileImage by remember { mutableStateOf(false) }
 
 
         Box(
@@ -150,7 +120,7 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
                             Log.d("Modifier", "Long clicked! yeay")
                         },
                         onTap = {
-                            imagePickerLauncher.launch("image/*")
+
                         }
                     )
                 },
@@ -172,15 +142,6 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
                         color = Color.Black,
                         shape = CircleShape
                     )
-                    .clickable {
-                        if (imageUri != null) {
-                            // Hanya klik pada ikon remove yang menghapus gambar
-                            viewModel.updateImageUri(null)
-                        } else {
-                            // Jika belum ada gambar, buka picker untuk memilih gambar
-                            imagePickerLauncher.launch("image/*")
-                        }
-                    }
                     .zIndex(1f),
                 contentAlignment = Alignment.Center
             ) {
@@ -362,7 +323,7 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
                                         } else {
                                             Toast.makeText(
                                                 context,
-                                                context.getString(R.string.verify_email, currentUser?.email),
+                                                context.getString(R.string.verify_email, currentUser.email),
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
@@ -378,10 +339,10 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
                                         Toast.makeText(context, context.getString(R.string.data_saved), Toast.LENGTH_SHORT).show()
                                         navController.navigate("home")
                                     } else {
-//                                        Toast.makeText(
-//                                            context.getString(R.string.verify_email, currentUser?.email),
-//                                            Toast.LENGTH_SHORT
-//                                        ).show()
+                                        Toast.makeText(context,
+                                            context.getString(R.string.verify_email, currentUser.email),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                             }
@@ -421,7 +382,7 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
 fun RegisterProfileIcon(imageUri: Uri?, imageUrl: String?) {
     when {
         imageUri != null -> {
-            // Jika imageUri ada, tampilkan gambar dari Uri
+            Log.d("RegisterProfileIcon", "Image URI: $imageUri")
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(imageUri)

@@ -1,6 +1,7 @@
 package com.superbgoal.caritasrig.activity.homepage.navbar
 
 import BuildViewModel
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -71,6 +73,7 @@ import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsScreen
 import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
+import com.superbgoal.caritasrig.activity.homepage.profileicon.ImageCropperScreen
 import com.superbgoal.caritasrig.activity.homepage.screentest.ProfileSettingsScreen
 import com.superbgoal.caritasrig.activity.homepage.screentest.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -106,6 +109,7 @@ fun NavbarHost(
                 "favorite" -> "Favorite Component"
                 else -> "CaritasRig"
             }
+            Log.d("NavbarHost", "Current Route: $currentRoute")
 
             AppTopBar(
                 navigateToProfile = { user ->
@@ -178,9 +182,6 @@ fun NavbarHost(
             composable("about_us") {
                 AboutUsScreen()
             }
-            composable("settings_profile") {
-                ProfileSettingsScreen(profileViewModel, homeViewModel)
-            }
             composable("trending") {
                 Text(text = "Trending")
             }
@@ -211,6 +212,14 @@ fun NavbarHost(
             composable("keyboard_screen") { KeyboardScreen(navController) }
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
+
+            composable(
+                route = "image_cropper?imageUri={imageUri}",
+                arguments = listOf(navArgument("imageUri") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val imageUri = backStackEntry.arguments?.getString("imageUri")?.toUri()
+                ImageCropperScreen(navController, profileViewModel, imageUri)
+            }
         }
     }
 }
