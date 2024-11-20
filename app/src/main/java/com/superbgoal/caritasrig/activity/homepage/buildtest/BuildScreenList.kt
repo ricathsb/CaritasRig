@@ -33,7 +33,6 @@ import com.superbgoal.caritasrig.data.model.buildmanager.Build
 
 @Composable
 fun BuildListScreen(navController: NavController? = null) {
-    // State untuk menyimpan daftar build
     val buildsState = produceState<List<Build>>(initialValue = emptyList()) {
         fetchBuildsWithAuth(
             onSuccess = { value = it },
@@ -71,7 +70,6 @@ fun BuildListScreen(navController: NavController? = null) {
             )
         }
 
-        // Tambahkan tombol kotak kecil di kanan bawah
         FloatingActionButton(
             onClick = {
                 println("FAB clicked!")

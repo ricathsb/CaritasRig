@@ -31,6 +31,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,25 +69,21 @@ import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BuildScreen(
     title: String,
     buildViewModel: BuildViewModel = viewModel(),
     navController: NavController? = null
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-    LaunchedEffect(title) {
-        if (title.isNotBlank()) {
-            buildViewModel.saveBuildTitle(title)
-            buildViewModel.fetchBuildByTitle(title)
-        } else {
-            BuildManager.resetBuildTitle()
-            buildViewModel.resetBuildTitle()
-            buildViewModel.clearSharedPreferences()
-            showDialog = true
-        }
+    Log.d("BuildScreen", "Recomposing BuildScreen with title: $title")
+
+    LaunchedEffect (title){
+        buildViewModel.saveBuildTitle(title)
+        buildViewModel.fetchBuildByTitle(title)
     }
+
+    var showDialog by remember { mutableStateOf(false) }
+    var initialized by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
@@ -101,7 +98,7 @@ fun BuildScreen(
         initialFirstVisibleItemScrollOffset = sharedPreferences.getInt("lastScrollOffset", 0)
     )
 
-// Menyimpan posisi scroll di SharedPreferences
+    // Menyimpan posisi scroll di SharedPreferences
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
             .collect { (index, offset) ->
@@ -113,104 +110,63 @@ fun BuildScreen(
             }
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background image
+        Image(
+            painter = painterResource(id = R.drawable.bg_build),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
 
-    if (loading) {
-        // Full-screen loading indicator
-        Box(
+        // Content area
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(60.dp)
-            )
-        }
-    } else {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Background image
-            Image(
-                painter = painterResource(id = R.drawable.bg_build),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
+            // Title
+            Text(
+                text = buildTitle.ifEmpty { "" },
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // TopAppBar with title and actions
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text(text = buildTitle.ifEmpty { "Build Name" }) },
-                        modifier = Modifier.height(145.dp),
-                        navigationIcon = {
-                            IconButton(
-                                onClick = {
-
-                                },
-                                modifier = Modifier
-                                    .padding(start = 30.dp, top = 60.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_home),
-                                    contentDescription = "Home",
-                                    modifier = Modifier.size(80.dp),
-                                    tint = Color.White
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(
-                                onClick = {
-                                    showDialog = true
-                                    dialogText = buildTitle // Load current title for editing
-                                },
-                                modifier = Modifier
-                                    .padding(end = 30.dp, top = 60.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_save),
-                                    contentDescription = "Edit Build Title",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(80.dp)
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                            navigationIconContentColor = Color.White,
-                            actionIconContentColor = Color.White
-                        )
+            if (loading) {
+                // Full-screen loading indicator
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(60.dp)
                     )
-                },
-                containerColor = Color.Transparent
-            ) { paddingValues ->
-
-                // Activity mapping for navigation
-                val routeMap = mapOf(
-                    "CPU" to "cpu_screen",
-                    "Case" to "casing_screen",
-                    "GPU" to "gpu_screen",
-                    "Motherboard" to "motherboard_screen",
-                    "RAM" to "memory_screen",
-                    "InternalHardDrive" to "internal_hard_drive_screen",
-                    "PowerSupply" to "power_supply_screen",
-                    "CPU Cooler" to "cpu_cooler_screen",
-                    "Headphone" to "headphone_screen",
-                    "Keyboard" to "keyboard_screen",
-                    "Mouse" to "mouse_screen"
-                )
-
-
+                }
+            } else {
                 LazyColumn(
-                    state = lazyListState, // Gunakan LazyListState di sini
+                    state = lazyListState,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 8.dp)
                 ) {
-                    // Iterate through selected components
+                    // Activity mapping for navigation
+                    val routeMap = mapOf(
+                        "CPU" to "cpu_screen",
+                        "Case" to "casing_screen",
+                        "GPU" to "gpu_screen",
+                        "Motherboard" to "motherboard_screen",
+                        "RAM" to "memory_screen",
+                        "InternalHardDrive" to "internal_hard_drive_screen",
+                        "PowerSupply" to "power_supply_screen",
+                        "CPU Cooler" to "cpu_cooler_screen",
+                        "Headphone" to "headphone_screen",
+                        "Keyboard" to "keyboard_screen",
+                        "Mouse" to "mouse_screen"
+                    )
+
                     selectedComponents.forEach { (title, activityClass) ->
                         item {
                             val componentDetail = when (title) {
@@ -255,29 +211,19 @@ fun BuildScreen(
                                 }
 
                                 "Mouse" -> buildData?.components?.mouse?.let {
-                                    "Mouse: ${it.name}\nType: ${it.maxDpi}"
+                                    "Mouse: ${it.name}\nDPI: ${it.maxDpi}"
                                 }
 
                                 else -> null
                             }
 
-                            // Render ComponentCard
                             ComponentCard(
                                 title = title,
                                 componentDetail = componentDetail,
                                 currentPrice = buildData?.components?.let {
                                     when (title) {
                                         "CPU" -> it.processor?.price?.toString()
-                                        "Case" -> it.casing?.price?.toString()
-                                        "GPU" -> it.videoCard?.price?.toString()
-                                        "Motherboard" -> it.motherboard?.price?.toString()
-                                        "RAM" -> it.memory?.price?.toString()
-                                        "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
-                                        "PowerSupply" -> it.powerSupply?.price?.toString()
-                                        "CPU Cooler" -> it.cpuCooler?.price?.toString()
-                                        "Headphone" -> it.headphone?.price?.toString()
-                                        "Keyboard" -> it.keyboard?.price?.toString()
-                                        "Mouse" -> it.mouse?.price?.toString()
+                                        // Tambahkan logika untuk komponen lainnya
                                         else -> "0.0"
                                     }
                                 } ?: "0.0",
@@ -306,16 +252,30 @@ fun BuildScreen(
                 }
             }
         }
+
+        // Floating Action Button for reset
+        FloatingActionButton(
+            onClick = {
+                showDialog = true
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Reset",
+                tint = Color.White
+            )
+        }
     }
 
-
-    // Show dialog only if showDialog is true
+    // Dialog tetap ditampilkan jika diperlukan
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { /* Do nothing to prevent dismissing the dialog */ },
-            title = {
-                Text(text = "Enter Build Title")
-            },
+            title = { Text(text = "Enter Build Title") },
             text = {
                 Column {
                     Text(text = "Please enter a title for your build:")
@@ -355,7 +315,7 @@ fun BuildScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        if(buildViewModel.buildTitle.value?.isNotEmpty() == true){
+                        if (buildViewModel.buildTitle.value?.isNotEmpty() == true) {
                             showDialog = false
                         } else {
                             showDialog = false
@@ -367,7 +327,6 @@ fun BuildScreen(
                 }
             }
         )
-
     }
 }
 
