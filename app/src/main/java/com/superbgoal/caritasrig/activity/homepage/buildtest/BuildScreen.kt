@@ -30,18 +30,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -65,25 +61,24 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.getDatabaseReference
-import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
 @Composable
 fun BuildScreen(
-    title: String,
     buildViewModel: BuildViewModel = viewModel(),
     navController: NavController? = null
 ) {
-    Log.d("BuildScreen", "Recomposing BuildScreen with title: $title")
-
-    LaunchedEffect (title){
-        buildViewModel.saveBuildTitle(title)
-        buildViewModel.fetchBuildByTitle(title)
-    }
-
     var showDialog by remember { mutableStateOf(false) }
-    var initialized by remember { mutableStateOf(false) }
+    val isNewBuild by buildViewModel.isNewBuild.collectAsState()
+        if (isNewBuild) {
+            buildViewModel.resetBuildTitle()
+            showDialog = true
+            buildViewModel.setNewBuildState(false)
+        }
+
+
+
+
     val context = LocalContext.current
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
@@ -97,6 +92,13 @@ fun BuildScreen(
         initialFirstVisibleItemIndex = sharedPreferences.getInt("lastScrollIndex", 0),
         initialFirstVisibleItemScrollOffset = sharedPreferences.getInt("lastScrollOffset", 0)
     )
+
+    LaunchedEffect (Unit) {
+        Log.d("BuildScreen", "Fetching build by title: $buildTitle")
+        buildViewModel.fetchBuildByTitle(buildTitle)
+    }
+
+
 
     // Menyimpan posisi scroll di SharedPreferences
     LaunchedEffect(lazyListState) {

@@ -181,7 +181,7 @@ fun NavbarHost(
                 Text(text = "Trending")
             }
             composable("build") {
-                BuildListScreen(navController)
+                BuildListScreen(navController,buildViewModel)
             }
             composable("benchmark") {
                 Text(text = "Benchmark")
@@ -190,11 +190,8 @@ fun NavbarHost(
                 Text(text = "Favorite")
             }
             composable(
-                route = "build_details/{title}",
-                arguments = listOf(navArgument("title") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val title = backStackEntry.arguments?.getString("title") ?: ""
-                BuildScreen(title = title, buildViewModel, navController)
+                route = "build_details",
+            ) { BuildScreen(buildViewModel, navController)
             }
             composable("cpu_screen") { CpuScreen(navController) }
             composable("casing_screen") { CasingScreen(navController) }

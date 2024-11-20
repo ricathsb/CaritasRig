@@ -32,7 +32,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.Build
 
 
 @Composable
-fun BuildListScreen(navController: NavController? = null) {
+fun BuildListScreen(navController: NavController? = null,viewModel: BuildViewModel) {
     val buildsState = produceState<List<Build>>(initialValue = emptyList()) {
         fetchBuildsWithAuth(
             onSuccess = { value = it },
@@ -60,8 +60,8 @@ fun BuildListScreen(navController: NavController? = null) {
         } else {
             // Aksi saat build diklik
             val onBuildClick: (Build) -> Unit = { build ->
-                navController?.navigate("build_details/${build.title}")
-                println("Clicked on build: ${build.title}")
+                navController?.navigate("build_details")
+                viewModel.saveBuildTitle(build.title)
             }
             // Panggil fungsi BuildList untuk menampilkan daftar build
             BuildList(
@@ -73,9 +73,9 @@ fun BuildListScreen(navController: NavController? = null) {
         FloatingActionButton(
             onClick = {
                 println("FAB clicked!")
-                // Navigasi ke layar dengan build title kosong
-                navController?.navigate("build_details/")
-                println("Navigating to build_details with an empty title")
+                // Navigasi ke layar dengan title "new"
+                navController?.navigate("build_details")
+                viewModel.setNewBuildState(isNew = true)
             },
             shape = RoundedCornerShape(8.dp), // Membuat tombol berbentuk kotak
             containerColor = MaterialTheme.colorScheme.primary,

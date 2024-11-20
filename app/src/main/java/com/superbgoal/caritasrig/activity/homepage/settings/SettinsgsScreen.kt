@@ -60,9 +60,13 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 FirebaseAuth.getInstance().signOut()
 
                 // Navigate to the login screen and clear the back stack
+                val sharedPreferences = context.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+                sharedPreferences.edit().clear().apply()
+
                 appController.navigate("login") {
                     popUpTo(0) { inclusive = true }
                 }
+
             }
 
             SettingOption("AboutUs") {

@@ -3,6 +3,8 @@ package com.superbgoal.caritasrig.activity.homepage.buildtest
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,6 +26,8 @@ import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import com.superbgoal.caritasrig.data.removeBuildComponent
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -32,6 +36,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     val selectedComponents: LiveData<Map<String, String>> = _selectedComponents
 
     private val sharedPreferences = application.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+
+    private val _isNewBuild = MutableStateFlow(false)
+    val isNewBuild: StateFlow<Boolean> get() = _isNewBuild
 
     private val _buildTitle = MutableLiveData<String>()
     val buildTitle: LiveData<String> get() = _buildTitle
@@ -59,17 +66,8 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     )
 
 
-
-    init {
-        // Load buildTitle from SharedPreferences
-        val savedBuildTitle = sharedPreferences.getString("buildTitle", "") ?: ""
-        _buildTitle.value = savedBuildTitle
-
-        // Set buildTitle to BuildManager
-        BuildManager.setBuildTitle(savedBuildTitle)
-        Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build Title Loaded and Set: $savedBuildTitle")
-
-        fetchBuildByTitle(savedBuildTitle)
+    fun setNewBuildState(isNew: Boolean) {
+        _isNewBuild.value = isNew
     }
 
     fun resetBuildTitle() {
@@ -96,7 +94,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         _buildTitle.value = title
         sharedPreferences.edit().putString("buildTitle", title).apply()
         BuildManager.setBuildTitle(title)
-        Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build Title Saved and Set: $title")
+        Log.d("viewmodel", "Build Title Saved and Set: $title")
     }
 
     // Memastikan `LiveData` diperbarui saat data build atau komponen diubah.
