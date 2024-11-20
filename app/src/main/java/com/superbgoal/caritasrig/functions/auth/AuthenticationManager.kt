@@ -46,7 +46,9 @@ class AuthenticationManager(private val context: Context) {
                                 callback("home")  // Call the callback with "home" if provided
                             } else {
                                 // If no callback is provided, handle the redirection
-                               navController.navigate("home")
+                                navController.navigate("home") {
+                                    popUpTo(0) { inclusive = true } // Hapus semua stack sebelumnya
+                                }
                             }
                         }
                     } else {
@@ -55,7 +57,9 @@ class AuthenticationManager(private val context: Context) {
                         if (callback != null) {
                             callback("register")  // Call the callback with "register" if provided
                         } else {
-                            navController.navigate("register")
+                            navController.navigate("register") {
+                                popUpTo(0) { inclusive = true } // Hapus semua stack sebelumnya
+                            }
                         }
                     }
 
