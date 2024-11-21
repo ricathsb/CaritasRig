@@ -59,7 +59,7 @@ dependencies {
     implementation(libs.google.firebase.auth)
     implementation(libs.gson)
     implementation(libs.play.services.auth)
-    implementation(libs.android.image.cropper)
+    implementation(libs.vanniktech.android.image.cropper)
     implementation(libs.play.services.auth.api.phone)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)

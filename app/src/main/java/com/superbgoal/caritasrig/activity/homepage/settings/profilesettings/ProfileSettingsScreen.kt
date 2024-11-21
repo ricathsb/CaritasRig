@@ -1,11 +1,15 @@
-package com.superbgoal.caritasrig.activity.homepage.screentest
+package com.superbgoal.caritasrig.activity.homepage.settings.profilesettings
 
-import android.app.Activity
+import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +19,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,7 +29,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
@@ -58,7 +60,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -72,8 +73,8 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.MainActivity
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
-import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.updateUserProfileData
 import java.time.Instant
@@ -82,8 +83,29 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
+class ProfileSettingsActivity : ComponentActivity() {
+    private val viewModel: ProfileSettingsViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ProfileSettingsScreen(
+                viewModel = viewModel,
+                homeViewModel = homeViewModel,
+                onNavigateUp = { finish() }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: HomeViewModel){
+fun ProfileSettingsScreen(
+    viewModel: ProfileSettingsViewModel,
+    homeViewModel: HomeViewModel,
+    onNavigateUp: () -> Unit
+) {
     val firstname by viewModel.firstname.collectAsState()
     val lastname by viewModel.lastname.collectAsState()
     val username by viewModel.username.collectAsState()
@@ -98,25 +120,20 @@ fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: Hom
     val textColor = Color(0xFF1e1e1e)
     val context = LocalContext.current
 
-    val activity = context as? Activity
-    FirebaseAuth.getInstance().currentUser?.uid
-
-
-    val imageCropLauncher = rememberLauncherForActivityResult(
-        CropImageContract()
-    ) { result ->
+    // ActivityResultLauncher untuk image crop
+    val imageCropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
             viewModel.updateImageUri(result.uriContent)
         } else {
             val exception = result.error
-            Log.d("imageCropLauncher", "Error: ${exception?.message ?: "Unknown error"}")
+            Log.d("imageCropLauncher", exception.toString())
         }
     }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        if (uri != null) {
+        if (uri != null && uri.scheme != null) {
             val cropOptions = CropImageContractOptions(uri, CropImageOptions().apply {
                 aspectRatioX = 1
                 aspectRatioY = 1
@@ -124,9 +141,10 @@ fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: Hom
             })
             imageCropLauncher.launch(cropOptions)
         } else {
-            Log.d("imagePickerLauncher", "User did not select an image")
+            Log.e("ImagePicker", "Invalid URI or user canceled image selection")
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -138,17 +156,6 @@ fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: Hom
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         var isViewingProfileImage by remember { mutableStateOf(false) } // Untuk mengontrol tampilan view foto profil
-
-//        val imagePickerLauncher = rememberLauncherForActivityResult(
-//            contract = ActivityResultContracts.GetContent(),
-//            onResult = { uri: Uri? ->
-//                if (uri != null) {
-//                    imageUri = uri
-//                } else {
-//                    Log.d("ImagePicker", "User cancelled image selection")
-//                }
-//            }
-//        )
 
         Box(
             modifier = Modifier
@@ -169,61 +176,63 @@ fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: Hom
             // Icon add/remove overlay
             Box(
                 modifier = Modifier
-                    .offset(x = 50.dp, y = 50.dp)
-                    .size(32.dp)
-                    .background(
-                        color = Color.White,
-                        shape = CircleShape
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color.Black,
-                        shape = CircleShape
-                    )
-                    .clickable {
-                        if (imageUri != null) {
-                            // Hanya klik pada ikon remove yang menghapus gambar
-                            viewModel.updateImageUri(null)
-                        } else {
-                            // Jika belum ada gambar, buka picker untuk memilih gambar
-                            imagePickerLauncher.launch("image/*")
-                        }
-                    }
-                    .zIndex(1f),
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = {
+                                Log.d("Modifier", "Long clicked! yeay")
+                            },
+                            onTap = {
+                                try {
+                                    imagePickerLauncher.launch("image/*")
+                                } catch (e: Exception) {
+                                    Log.e("ImagePickerTap", "Unhandled exception during image picker launch: ${e.message}", e)
+                                }
+                            }
+                        )
+                    },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
-                    contentDescription = if (imageUri != null) stringResource(id = R.string.remove_photo_profile) else stringResource(id = R.string.add_photo_profile),
-                    tint = Color.Black,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+                // ProfileIcon rendering (tidak perlu try-catch jika hanya rendering UI)
+                ProfileIcon(imageUri, imageUrl)
 
-// Dialog untuk menampilkan foto profil jika isViewingProfileImage = true
-        if (isViewingProfileImage && imageUri != null) {
-            AlertDialog(
-                onDismissRequest = { isViewingProfileImage = false }, // Tutup dialog saat diketuk di luar
-                buttons = {},
-                text = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Transparent)
-                            .padding(0.dp) // Hilangkan padding
-                    ) {
-                        AsyncImage(
-                            model = imageUri,
-                            contentDescription = "Profile Image",
-                            contentScale = ContentScale.Crop, // Mengisi seluruh area dengan crop
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f) // Mengatur rasio tampilan gambar
+                // Icon add/remove overlay
+                Box(
+                    modifier = Modifier
+                        .offset(x = 50.dp, y = 50.dp)
+                        .size(32.dp)
+                        .background(
+                            color = Color.White,
+                            shape = CircleShape
                         )
-                    }
+                        .border(
+                            width = 1.dp,
+                            color = Color.Black,
+                            shape = CircleShape
+                        )
+                        .clickable {
+                            try {
+                                if (imageUri != null) {
+                                    // Hapus gambar
+                                    viewModel.updateImageUri(null)
+                                } else {
+                                    // Pilih gambar baru
+                                    imagePickerLauncher.launch("image/*")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("AddRemoveIcon", "Unhandled exception during add/remove image: ${e.message}", e)
+                            }
+                        }
+                        .zIndex(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
+                        contentDescription = if (imageUri != null) stringResource(id = R.string.remove_photo_profile) else stringResource(id = R.string.add_photo_profile),
+                        tint = Color.Black,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
-            )
+            }
         }
 
         Row(
@@ -364,6 +373,10 @@ fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: Hom
                         if (success) {
                             Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                             homeViewModel.loadUserData(userId = user.userId)
+                            val intent = Intent(context, MainActivity::class.java)
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            context.startActivity(intent)  // Gunakan context.startActivity
                         } else {
                             Toast.makeText(context, context.getString(R.string.profile_updated_failed), Toast.LENGTH_SHORT).show()
                         }
@@ -381,6 +394,17 @@ fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: Hom
                 Text(stringResource(id = R.string.save_changes))
             }
         }
+        TextButton(
+            onClick = {
+                val intent = Intent(context, MainActivity::class.java)
+                intent.flags =
+                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                context.startActivity(intent)
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text(text = "Back To Home")
+        }
     }
 }
 
@@ -388,7 +412,7 @@ fun ProfileSettingsScreen(viewModel: ProfileSettingsViewModel,homeViewModel: Hom
 fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
     when {
         imageUri != null -> {
-            // Jika imageUri ada, tampilkan gambar dari Uri
+            Log.d("RegisterProfileIcon", "Image URI: $imageUri")
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(imageUri)

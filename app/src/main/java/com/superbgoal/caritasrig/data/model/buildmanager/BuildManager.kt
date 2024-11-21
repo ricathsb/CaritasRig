@@ -9,6 +9,10 @@ object BuildManager {
         currentBuildTitle = title
     }
 
+    fun resetBuildTitle() {
+        currentBuildTitle = null
+    }
+
     // Function to get the current build title
     fun getBuildTitle(): String? {
         return currentBuildTitle

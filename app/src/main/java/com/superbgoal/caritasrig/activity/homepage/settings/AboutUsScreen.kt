@@ -1,18 +1,12 @@
-package com.superbgoal.caritasrig.activity.homepage.profileicon
+package com.superbgoal.caritasrig.activity.homepage.settings
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,83 +18,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.superbgoal.caritasrig.R
-
-class AboutUsActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                AboutUsContent(onBackPressed = { finish() })
-            }
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AboutUsContent(onBackPressed: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "About Us") },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                ProfileCard(
-                    imageRes = R.drawable.profile1,
-                    name = "Hotbaen Eliezer",
-                    instagram = "@exaudi._",
-                    github = "exaudi26",
-                    email = "eliezerstmrg@gmail.com"
-                )
-            }
-            item {
-                ProfileCard(
-                    imageRes = R.drawable.profile2,
-                    name = "Ferry Sirait",
-                    instagram = "@ferry_srt",
-                    github = "ferrysrt",
-                    email = "ferrypb123pb123@gmail.com"
-                )
-            }
-            item {
-                ProfileCard(
-                    imageRes = R.drawable.profile3,
-                    name = "Richard Hasibuan",
-                    instagram = "@ricathsb",
-                    github = "ricathsb",
-                    email = "ricat1907111@gmail.com"
-                )
-            }
-            item {
-                ProfileCard(
-                    imageRes = R.drawable.profile4,
-                    name = "Samuel Sitanggang",
-                    instagram = "@samuel_bryan_ps",
-                    github = "SamuelSitanggang125",
-                    email = "samuelsitanggang04@gmail.com"
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun ProfileCard(

@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -19,6 +19,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,19 +35,35 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.data.model.component.Memory
 
 @Composable
-fun HeadphoneScreen(navController: NavController) {
-    // Load headphone data
+fun MemoryScreen(navController: NavController) {
+    // Load memory data
     val context = LocalContext.current
-    val headphones: List<Headphones> = remember {
+    val memories: List<Memory> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.headphones
+            resourceId = R.raw.memory
         )
+    }
+
+    // Filter state
+    val selectedModules = remember { mutableStateOf(0) }
+    val selectedSpeed = remember { mutableStateOf(0) }
+    val selectedSockets = remember { mutableStateOf(setOf<Int>()) }
+
+    // State to control the dialog visibility
+    val showFilterDialog = remember { mutableStateOf(false) }
+
+    val filteredMemories = remember(selectedModules.value, selectedSpeed.value, selectedSockets.value) {
+        memories.filter { memory ->
+            (selectedModules.value == 0 || memory.modules >= selectedModules.value) &&
+                    (selectedSpeed.value == 0 || memory.speed >= selectedSpeed.value) &&
+                    (selectedSockets.value.isEmpty() || memory.socket in selectedSockets.value)
+        }
     }
 
     Box(
@@ -60,7 +77,7 @@ fun HeadphoneScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and HeadphoneList
+        // Main content with TopAppBar and MemoryList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -82,7 +99,7 @@ fun HeadphoneScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Headphones",
+                            text = "Memory Modules",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -104,7 +121,7 @@ fun HeadphoneScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
-                            // Action for filter button
+                            showFilterDialog.value = true // Trigger the filter dialog
                         },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
@@ -120,66 +137,133 @@ fun HeadphoneScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                HeadphoneList(headphones, navController)
+                MemoryList(filteredMemories, navController)
             }
         }
     }
+
+    // Show the FilterDialog when the state is true
+    if (showFilterDialog.value) {
+        FilterDialogMemory(
+            selectedModules = selectedModules,
+            selectedSpeed = selectedSpeed,
+            selectedSockets = selectedSockets,
+            onDismiss = { showFilterDialog.value = false } // Close the dialog
+        )
+    }
 }
 
+@Composable
+fun FilterDialogMemory(
+    selectedModules: MutableState<Int>,
+    selectedSpeed: MutableState<Int>,
+    selectedSockets: MutableState<Set<Int>>,
+    onDismiss: () -> Unit
+) {
+    val availableSockets = listOf(3, 4, 5) // Example socket options DDR3, DDR4, DDR5
+
+    androidx.compose.material.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Filter Memory") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("Modules (GB): ${selectedModules.value} GB")
+                androidx.compose.material.Slider(
+                    value = selectedModules.value.toFloat(),
+                    onValueChange = { selectedModules.value = it.toInt() },
+                    valueRange = 0f..64f,
+                    steps = 63
+                )
+
+                Text("Speed (MHz): ${selectedSpeed.value} MHz")
+                androidx.compose.material.Slider(
+                    value = selectedSpeed.value.toFloat(),
+                    onValueChange = { selectedSpeed.value = it.toInt() },
+                    valueRange = 0f..8000f,
+                    steps = 79
+                )
+
+                Text("Socket:")
+                availableSockets.forEach { socket ->
+                    androidx.compose.material.Checkbox(
+                        checked = selectedSockets.value.contains(socket),
+                        onCheckedChange = {
+                            selectedSockets.value = if (it) {
+                                selectedSockets.value + socket
+                            } else {
+                                selectedSockets.value - socket
+                            }
+                        }
+                    )
+                    Text(text = "DDR$socket")
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material.TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Apply")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material.TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
+}
 
 @Composable
-fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {
-    // Get context from LocalContext
-    val context = LocalContext.current
-
+fun MemoryList(memories: List<Memory>, navController: NavController) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(headphones) { headphone ->
-            // Track loading state for each headphone
+        items(memories) { memoryItem ->
             val isLoading = remember { mutableStateOf(false) }
 
             ComponentCard(
-                title = headphone.name,
-                details = "Type: ${headphone.type} | Color: ${headphone.color} | Frequency Response: ${headphone.frequencyResponse} Hz",
-                context = context, // Passing context from LocalContext
-                component = headphone,
-                isLoading = isLoading.value, // Pass loading state to card
+                title = memoryItem.name,
+                details = buildString {
+                    append("Price: $${memoryItem.price}\n")
+                    append("Speed: ${memoryItem.speed} MHz\n")
+                    append("Modules: ${memoryItem.modules} GB\n")
+                    append("Socket: DDR${memoryItem.socket}\n")
+                },
+                context = LocalContext.current,
+                component = memoryItem,
+                isLoading = isLoading.value,
                 onAddClick = {
-                    // Start loading when the add button is clicked
                     isLoading.value = true
+                    Log.d("MemoryActivity", "Selected Memory: ${memoryItem.name}")
+
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
-
-                    // Use the BuildManager singleton to get the current build title
                     val buildTitle = BuildManager.getBuildTitle()
 
                     buildTitle?.let { title ->
-                        // Save the component to the database
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "headphone", // Specify the component type
-                            componentData = headphone, // Pass headphone data
+                            componentType = "memory",
+                            componentData = memoryItem,
                             onSuccess = {
-                                // Stop loading on success
                                 isLoading.value = false
-                                Log.d("HeadphoneActivity", "Headphone ${headphone.name} saved successfully under build title: $title")
+                                Log.d("MemoryActivity", "Memory ${memoryItem.name} saved successfully under build title: $title")
                                 navController.navigateUp()
-                                // After success, navigate to BuildActivity
                             },
                             onFailure = { errorMessage ->
-                                // Stop loading on failure
                                 isLoading.value = false
-                                Log.e("HeadphoneActivity", "Failed to store headphone under build title: $errorMessage")
+                                Log.e("MemoryActivity", "Failed to store Memory: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it } // Update the loading state
+                            onLoading = { isLoading.value = it }
                         )
                     } ?: run {
-                        // Stop loading if buildTitle is null
                         isLoading.value = false
-                        Log.e("HeadphoneActivity", "Build title is null; unable to store headphone.")
+                        Log.e("MemoryActivity", "Build title is null; unable to store Memory.")
                     }
                 }
             )

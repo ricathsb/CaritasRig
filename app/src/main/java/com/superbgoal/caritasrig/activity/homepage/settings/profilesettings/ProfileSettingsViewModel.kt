@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings
+package com.superbgoal.caritasrig.activity.homepage.settings.profilesettings
 
 import android.content.Context
 import android.net.Uri
@@ -86,8 +86,22 @@ class ProfileSettingsViewModel : ViewModel() {
     }
 
     fun updateImageUri(newUri: Uri?) {
-        _imageUri.value = newUri
+        viewModelScope.launch {
+            try {
+                if (newUri != null) {
+                    _imageUri.value = newUri
+                } else {
+                    _imageUri.value = null
+                    _imageUrl.value = ""
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileSettingsViewModel", "Invalid URI: ${e.message}")
+                _imageUri.value = null
+                _imageUrl.value = ""
+            }
+        }
     }
+
 
     fun setLoading(isLoading: Boolean) {
         _isLoading.value = isLoading

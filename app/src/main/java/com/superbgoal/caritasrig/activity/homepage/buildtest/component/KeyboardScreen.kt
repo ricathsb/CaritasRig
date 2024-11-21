@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -34,18 +34,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.CpuCooler
+import com.superbgoal.caritasrig.data.model.component.Keyboard
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun CpuCoolerScreen(navController: NavController) {
-    // Load CPU coolers from JSON resource
+fun KeyboardScreen(navController: NavController) {
+    // Load keyboard data
     val context = LocalContext.current
-    val cpuCoolers: List<CpuCooler> = remember {
+    val keyboards: List<Keyboard> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.cpucooler // Pastikan file JSON ini ada
+            resourceId = R.raw.keyboard
         )
     }
 
@@ -60,7 +60,7 @@ fun CpuCoolerScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and CPU Cooler List
+        // Main content with TopAppBar and KeyboardList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -82,7 +82,7 @@ fun CpuCoolerScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "CPU Coolers",
+                            text = "Keyboards",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -104,7 +104,7 @@ fun CpuCoolerScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
-                            // Action for filter button (if needed)
+                            // Action for filter button
                         },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
@@ -116,12 +116,11 @@ fun CpuCoolerScreen(navController: NavController) {
                 }
             )
 
-            // CPU Cooler List content
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                CpuCoolerList(cpuCoolers,navController)
+                KeyboardList(keyboards, navController)
             }
         }
     }
@@ -129,59 +128,60 @@ fun CpuCoolerScreen(navController: NavController) {
 
 
 @Composable
-fun CpuCoolerList(cpuCoolers: List<CpuCooler>,navController: NavController) {
+fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
+    // Get context from LocalContext
     val context = LocalContext.current
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(cpuCoolers) { coolerItem ->
-            // Track loading state for each CPU Cooler
+        items(keyboards) { keyboardItem ->
+            // Track loading state for each keyboard
             val isLoading = remember { mutableStateOf(false) }
 
-            // Use ComponentCard for each CPU Cooler
+            // Use ComponentCard for each keyboard
             ComponentCard(
-                title = coolerItem.name,
-                details = "Price: $${coolerItem.price} | Size: ${coolerItem.size}mm | Color: ${coolerItem.color} | " +
-                        "RPM: ${coolerItem.rpm} | Noise Level: ${coolerItem.noise_level} dB",
+                title = keyboardItem.name,
+                details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
                 context = context, // Passing context from LocalContext
-                component = coolerItem,
+                component = keyboardItem,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true
-                    Log.d("CpuCoolerActivity", "Selected CPU Cooler: ${coolerItem.name}")
+                    Log.d("KeyboardActivity", "Selected Keyboard: ${keyboardItem.name}")
 
                     // Get the current user and build title
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
                     val buildTitle = BuildManager.getBuildTitle()
 
-                    // Save CPU Cooler if buildTitle is available
+                    // Save keyboard if buildTitle is available
                     buildTitle?.let { title ->
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "cpucooler", // Specify component type
-                            componentData = coolerItem, // Pass CPU Cooler data
+                            componentType = "keyboard", // Specify component type
+                            componentData = keyboardItem, // Pass keyboard data
                             onSuccess = {
                                 // Stop loading on success
                                 isLoading.value = false
-                                navController.navigateUp()
-                                Log.d("CpuCoolerActivity", "CPU Cooler ${coolerItem.name} saved successfully under build title: $title")
+                                Log.d("KeyboardActivity", "Keyboard ${keyboardItem.name} saved successfully under build title: $title")
+
+                                // Navigate to BuildActivity after success
                             },
                             onFailure = { errorMessage ->
                                 // Stop loading on failure
                                 isLoading.value = false
-                                Log.e("CpuCoolerActivity", "Failed to store CPU Cooler under build title: $errorMessage")
+                                Log.e("KeyboardActivity", "Failed to store Keyboard under build title: $errorMessage")
                             },
                             onLoading = { isLoading.value = it } // Update loading state
                         )
                     } ?: run {
-                        // Stop loading if buildTitle is nulla
+                        // Stop loading if buildTitle is null
                         isLoading.value = false
-                        Log.e("CpuCoolerActivity", "Build title is null; unable to store CPU Cooler.")
+                        Log.e("KeyboardActivity", "Build title is null; unable to store Keyboard.")
                     }
                 }
             )

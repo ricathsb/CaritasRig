@@ -38,6 +38,7 @@ fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
             val isEmailVerified = currentUser.isEmailVerified
             Log.d("loginStatus", "data disimpan $isEmailVerified")
 
+
             if (isEmailVerified) {
                 val userMap = mapOf(
                     "firstName" to user.firstName,
@@ -337,6 +338,24 @@ fun updateBuildComponent(
             onFailure("Failed to update component: ${error.message}")
         }
 }
+
+fun deleteBuild(userId: String, buildId: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    getDatabaseReference()
+        .child("users")
+        .child(userId)
+        .child("builds")
+        .child(buildId)
+        .removeValue() // Langsung menghapus data berdasarkan buildId
+        .addOnSuccessListener {
+            onSuccess() // Callback sukses
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to delete build: ${error.message}") // Callback gagal dengan pesan error
+        }
+}
+
+
+
 
 
 

@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -34,18 +34,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun InternalHardDriveScreen(navController: NavController) {
-    // Load internal hard drive data
+fun HeadphoneScreen(navController: NavController) {
+    // Load headphone data
     val context = LocalContext.current
-    val internalHardDrives: List<InternalHardDrive> = remember {
+    val headphones: List<Headphones> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.internalharddrive
+            resourceId = R.raw.headphones
         )
     }
 
@@ -60,7 +60,7 @@ fun InternalHardDriveScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and InternalHardDriveList
+        // Main content with TopAppBar and HeadphoneList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -82,7 +82,7 @@ fun InternalHardDriveScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Internal Hard Drive",
+                            text = "Headphones",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -104,7 +104,7 @@ fun InternalHardDriveScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
-                            // Action for filter button (if needed)
+                            // Action for filter button
                         },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
@@ -120,7 +120,7 @@ fun InternalHardDriveScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                InternalHardDriveList(internalHardDrives, navController)
+                HeadphoneList(headphones, navController)
             }
         }
     }
@@ -128,7 +128,7 @@ fun InternalHardDriveScreen(navController: NavController) {
 
 
 @Composable
-fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>, navController: NavController) {
+fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {
     // Get context from LocalContext
     val context = LocalContext.current
 
@@ -136,52 +136,50 @@ fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>, navContro
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(internalHardDrives) { hardDrive ->
-            // Track loading state for each hard drive
+        items(headphones) { headphone ->
+            // Track loading state for each headphone
             val isLoading = remember { mutableStateOf(false) }
 
-            // Use ComponentCard for each hard drive
             ComponentCard(
-                title = hardDrive.name,
-                details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
+                title = headphone.name,
+                details = "Type: ${headphone.type} | Color: ${headphone.color} | Frequency Response: ${headphone.frequencyResponse} Hz",
                 context = context, // Passing context from LocalContext
-                component = hardDrive,
+                component = headphone,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true
-
-                    // Get userId and buildTitle
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
+
+                    // Use the BuildManager singleton to get the current build title
                     val buildTitle = BuildManager.getBuildTitle()
 
-                    // Save hard drive if buildTitle is available
                     buildTitle?.let { title ->
+                        // Save the component to the database
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "internalharddrive", // Specify component type
-                            componentData = hardDrive, // Pass hard drive data
+                            componentType = "headphone", // Specify the component type
+                            componentData = headphone, // Pass headphone data
                             onSuccess = {
                                 // Stop loading on success
                                 isLoading.value = false
-                                Log.d("HardDriveActivity", "Hard Drive ${hardDrive.name} saved successfully under build title: $title")
+                                Log.d("HeadphoneActivity", "Headphone ${headphone.name} saved successfully under build title: $title")
                                 navController.navigateUp()
-                                // Navigate to BuildActivity after success
-
+                                // After success, navigate to BuildActivity
                             },
                             onFailure = { errorMessage ->
                                 // Stop loading on failure
                                 isLoading.value = false
-                                Log.e("HardDriveActivity", "Failed to store Hard Drive under build title: $errorMessage")
+                                Log.e("HeadphoneActivity", "Failed to store headphone under build title: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it } // Update loading state
+                            onLoading = { isLoading.value = it } // Update the loading state
                         )
                     } ?: run {
                         // Stop loading if buildTitle is null
                         isLoading.value = false
-                        Log.e("HardDriveActivity", "Build title is null; unable to store Hard Drive.")
+                        Log.e("HeadphoneActivity", "Build title is null; unable to store headphone.")
                     }
                 }
             )

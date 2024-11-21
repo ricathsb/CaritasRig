@@ -1,6 +1,5 @@
 package com.superbgoal.caritasrig.activity.homepage.buildtest
 
-import BuildViewModel
 import android.app.Activity
 import android.content.Context
 import android.os.Handler
@@ -31,17 +30,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -65,23 +61,28 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),navController: NavController? = null) {
-    getDatabaseReference()
-    val context = LocalContext.current
-    LaunchedEffect(title) {
-        buildViewModel.saveBuildTitle(title)
-        buildViewModel.fetchBuildByTitle(title)
-    }
+fun BuildScreen(
+    buildViewModel: BuildViewModel = viewModel(),
+    navController: NavController? = null
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    val isNewBuild by buildViewModel.isNewBuild.collectAsState()
+        if (isNewBuild) {
+            buildViewModel.resetBuildTitle()
+            showDialog = true
+            buildViewModel.setNewBuildState(false)
+        }
 
+
+
+
+    val context = LocalContext.current
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
     val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
-    var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
     val loading by buildViewModel.loading.observeAsState(false)
     val sharedPreferences = context.getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
@@ -92,7 +93,14 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
         initialFirstVisibleItemScrollOffset = sharedPreferences.getInt("lastScrollOffset", 0)
     )
 
-// Menyimpan posisi scroll di SharedPreferences
+    LaunchedEffect (Unit) {
+        Log.d("BuildScreen", "Fetching build by title: $buildTitle")
+        buildViewModel.fetchBuildByTitle(buildTitle)
+    }
+
+
+
+    // Menyimpan posisi scroll di SharedPreferences
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
             .collect { (index, offset) ->
@@ -104,104 +112,63 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
             }
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background image
+        Image(
+            painter = painterResource(id = R.drawable.bg_build),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
 
-    if (loading) {
-        // Full-screen loading indicator
-        Box(
+        // Content area
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(60.dp)
-            )
-        }
-    } else {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Background image
-            Image(
-                painter = painterResource(id = R.drawable.bg_build),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
+            // Title
+            Text(
+                text = buildTitle.ifEmpty { "" },
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // TopAppBar with title and actions
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text(text = buildTitle.ifEmpty { "Build Name" }) },
-                        modifier = Modifier.height(145.dp),
-                        navigationIcon = {
-                            IconButton(
-                                onClick = {
-
-                                },
-                                modifier = Modifier
-                                    .padding(start = 30.dp, top = 60.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_home),
-                                    contentDescription = "Home",
-                                    modifier = Modifier.size(80.dp),
-                                    tint = Color.White
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(
-                                onClick = {
-                                    showDialog = true
-                                    dialogText = buildTitle // Load current title for editing
-                                },
-                                modifier = Modifier
-                                    .padding(end = 30.dp, top = 60.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_save),
-                                    contentDescription = "Edit Build Title",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(80.dp)
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                            navigationIconContentColor = Color.White,
-                            actionIconContentColor = Color.White
-                        )
+            if (loading) {
+                // Full-screen loading indicator
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(60.dp)
                     )
-                },
-                containerColor = Color.Transparent
-            ) { paddingValues ->
-
-                // Activity mapping for navigation
-                val routeMap = mapOf(
-                    "CPU" to "cpu_screen",
-                    "Case" to "casing_screen",
-                    "GPU" to "gpu_screen",
-                    "Motherboard" to "motherboard_screen",
-                    "RAM" to "memory_screen",
-                    "InternalHardDrive" to "internal_hard_drive_screen",
-                    "PowerSupply" to "power_supply_screen",
-                    "CPU Cooler" to "cpu_cooler_screen",
-                    "Headphone" to "headphone_screen",
-                    "Keyboard" to "keyboard_screen",
-                    "Mouse" to "mouse_screen"
-                )
-
-
+                }
+            } else {
                 LazyColumn(
-                    state = lazyListState, // Gunakan LazyListState di sini
+                    state = lazyListState,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 8.dp)
                 ) {
-                    // Iterate through selected components
+                    // Activity mapping for navigation
+                    val routeMap = mapOf(
+                        "CPU" to "cpu_screen",
+                        "Case" to "casing_screen",
+                        "GPU" to "gpu_screen",
+                        "Motherboard" to "motherboard_screen",
+                        "RAM" to "memory_screen",
+                        "InternalHardDrive" to "internal_hard_drive_screen",
+                        "PowerSupply" to "power_supply_screen",
+                        "CPU Cooler" to "cpu_cooler_screen",
+                        "Headphone" to "headphone_screen",
+                        "Keyboard" to "keyboard_screen",
+                        "Mouse" to "mouse_screen"
+                    )
+
                     selectedComponents.forEach { (title, activityClass) ->
                         item {
                             val componentDetail = when (title) {
@@ -246,13 +213,12 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                                 }
 
                                 "Mouse" -> buildData?.components?.mouse?.let {
-                                    "Mouse: ${it.name}\nType: ${it.maxDpi}"
+                                    "Mouse: ${it.name}\nDPI: ${it.maxDpi}"
                                 }
 
                                 else -> null
                             }
 
-                            // Render ComponentCard
                             ComponentCard(
                                 title = title,
                                 componentDetail = componentDetail,
@@ -297,16 +263,30 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                 }
             }
         }
+
+        // Floating Action Button for reset
+        FloatingActionButton(
+            onClick = {
+                showDialog = true
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Reset",
+                tint = Color.White
+            )
+        }
     }
 
-
-    // Show dialog only if showDialog is true
+    // Dialog tetap ditampilkan jika diperlukan
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { /* Do nothing to prevent dismissing the dialog */ },
-            title = {
-                Text(text = "Enter Build Title")
-            },
+            title = { Text(text = "Enter Build Title") },
             text = {
                 Column {
                     Text(text = "Please enter a title for your build:")
@@ -346,9 +326,11 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
             dismissButton = {
                 TextButton(
                     onClick = {
-                        if(buildViewModel.buildTitle.value?.isNotEmpty() == true){
+                        if (buildViewModel.buildTitle.value?.isNotEmpty() == true) {
                             showDialog = false
                         } else {
+                            showDialog = false
+                            navController?.navigateUp()
                         }
                     }
                 ) {
@@ -356,7 +338,6 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                 }
             }
         )
-
     }
 }
 

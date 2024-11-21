@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.screentest
+package com.superbgoal.caritasrig.activity.homepage.settings
 
 import android.content.Context
 import android.content.Intent
@@ -26,10 +26,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.settings.profilesettings.ProfileSettingsActivity
 import java.util.Locale
 
 @Composable
@@ -50,7 +49,8 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 showDialog = true
             }
             SettingOption(stringResource(id = R.string.profile_settings)) {
-                navController?.navigate("settings_profile")
+                Intent(context, ProfileSettingsActivity::class.java)
+                startActivity(context, Intent(context, ProfileSettingsActivity::class.java), null)
             }
             SettingOption("AboutUs") {
                 navController?.navigate("about_us")
@@ -60,9 +60,17 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 FirebaseAuth.getInstance().signOut()
 
                 // Navigate to the login screen and clear the back stack
+                val sharedPreferences = context.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+                sharedPreferences.edit().clear().apply()
+
                 appController.navigate("login") {
                     popUpTo(0) { inclusive = true }
                 }
+
+            }
+
+            SettingOption("AboutUs") {
+                navController?.navigate("test")
             }
 
         }

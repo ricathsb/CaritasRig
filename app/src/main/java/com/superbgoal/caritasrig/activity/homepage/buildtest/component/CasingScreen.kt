@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -34,18 +34,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.Keyboard
+import com.superbgoal.caritasrig.data.model.component.Casing
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
 
 @Composable
-fun KeyboardScreen(navController: NavController) {
-    // Load keyboard data
+fun CasingScreen(navController: NavController) {
+    // Load casing data
     val context = LocalContext.current
-    val keyboards: List<Keyboard> = remember {
+    val casings: List<Casing> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.keyboard
+            resourceId = R.raw.casing
         )
     }
 
@@ -60,7 +60,7 @@ fun KeyboardScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and KeyboardList
+        // Main content with TopAppBar and CasingList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -82,7 +82,7 @@ fun KeyboardScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Keyboards",
+                            text = "Casing",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -104,7 +104,7 @@ fun KeyboardScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
-                            // Action for filter button
+                            // Action for filter button (if needed)
                         },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
@@ -120,7 +120,7 @@ fun KeyboardScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                KeyboardList(keyboards, navController)
+                CasingList(casings,navController)
             }
         }
     }
@@ -128,7 +128,7 @@ fun KeyboardScreen(navController: NavController) {
 
 
 @Composable
-fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
+fun CasingList(casings: List<Casing>,navController: NavController) {
     // Get context from LocalContext
     val context = LocalContext.current
 
@@ -136,52 +136,58 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(keyboards) { keyboardItem ->
-            // Track loading state for each keyboard
+        items(casings) { casing ->
+            // Track loading state for each casing
             val isLoading = remember { mutableStateOf(false) }
 
-            // Use ComponentCard for each keyboard
+            // Use ComponentCard for each casing
             ComponentCard(
-                title = keyboardItem.name,
-                details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
+                title = casing.name,
+                details = "${casing.type} | ${casing.color} | PSU: ${casing.psu ?: "Not included"} | Volume: ${casing.externalVolume} L | 3.5\" Bays: ${casing.internal35Bays}",
                 context = context, // Passing context from LocalContext
-                component = keyboardItem,
+                component = casing,
                 isLoading = isLoading.value, // Pass loading state to card
+                navController = navController,
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true
-                    Log.d("KeyboardActivity", "Selected Keyboard: ${keyboardItem.name}")
-
-                    // Get the current user and build title
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
+
+                    // Use the BuildManager singleton to get the current build title
                     val buildTitle = BuildManager.getBuildTitle()
 
-                    // Save keyboard if buildTitle is available
                     buildTitle?.let { title ->
+                        // Save the component to the database
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "keyboard", // Specify component type
-                            componentData = keyboardItem, // Pass keyboard data
+                            componentType = "case",
+                            componentData = casing,
                             onSuccess = {
                                 // Stop loading on success
                                 isLoading.value = false
-                                Log.d("KeyboardActivity", "Keyboard ${keyboardItem.name} saved successfully under build title: $title")
+                                Log.d("CasingActivity", "Casing ${casing.name} saved successfully under build title: $title")
+                                navController.navigateUp()
 
-                                // Navigate to BuildActivity after success
+                                // After success, navigate to BuildActivity
+//                                    val intent = Intent(context, BuildActivity::class.java).apply {
+//                                        putExtra("component_title", casing.name)
+//                                        putExtra("component_data", casing) // Component sent as Parcelable
+//                                    }
+//                                    context.startActivity(intent)
                             },
                             onFailure = { errorMessage ->
                                 // Stop loading on failure
                                 isLoading.value = false
-                                Log.e("KeyboardActivity", "Failed to store Keyboard under build title: $errorMessage")
+                                Log.e("CasingActivity", "Failed to store casing under build title: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it } // Update loading state
+                            onLoading = { isLoading.value = it } // Update the loading state
                         )
                     } ?: run {
                         // Stop loading if buildTitle is null
                         isLoading.value = false
-                        Log.e("KeyboardActivity", "Build title is null; unable to store Keyboard.")
+                        Log.e("CasingActivity", "Build title is null; unable to store casing.")
                     }
                 }
             )

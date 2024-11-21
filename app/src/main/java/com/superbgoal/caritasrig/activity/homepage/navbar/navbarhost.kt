@@ -1,6 +1,6 @@
 package com.superbgoal.caritasrig.activity.homepage.navbar
 
-import BuildViewModel
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +22,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Favorite
@@ -32,13 +33,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,35 +58,33 @@ import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildListScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CasingScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuCoolerScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.CpuScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.HeadphoneScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.InternalHardDriveScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.KeyboardScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MemoryScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MotherboardScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.MouseScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.PowerSupplyScreen
-import com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest.VideoCardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.CasingScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.CpuCoolerScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.CpuScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.HeadphoneScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.InternalHardDriveScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.KeyboardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MemoryScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MotherboardScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MouseScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.PowerSupplyScreen
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCardScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
-import com.superbgoal.caritasrig.activity.homepage.profileicon.AboutUsScreen
-import com.superbgoal.caritasrig.activity.homepage.profileicon.profilesettings.ProfileSettingsViewModel
-import com.superbgoal.caritasrig.activity.homepage.screentest.ProfileSettingsScreen
-import com.superbgoal.caritasrig.activity.homepage.screentest.SettingsScreen
+import com.superbgoal.caritasrig.activity.homepage.settings.AboutUsScreen
+import com.superbgoal.caritasrig.activity.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
 
 @Composable
 fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
-    profileViewModel: ProfileSettingsViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
-    appController : NavController,
+    appController: NavController,
 
-) {
+    ) {
     val navController = rememberNavController()
-    var selectedItem by remember { mutableStateOf(0) } // Default ke Home (index 0)
+    var selectedItem by remember { mutableIntStateOf(0) } // Default ke Home (index 0)
 
     Scaffold(
         topBar = {
@@ -106,6 +106,7 @@ fun NavbarHost(
                 "favorite" -> "Favorite Component"
                 else -> "CaritasRig"
             }
+            Log.d("NavbarHost", "Current Route: $currentRoute")
 
             AppTopBar(
                 navigateToProfile = { user ->
@@ -131,34 +132,15 @@ fun NavbarHost(
 
         bottomBar = {
             BottomNavigationBar(
-                selectedItem = selectedItem, // Pastikan ini adalah state yang dikelola
-                onItemSelected = { index ->
-                    // Update selectedItem di sini
-                    selectedItem = index // Misalnya, jika Anda menggunakan state untuk menyimpan nilai ini
-                    when (index) {
-                        0 -> navController.navigate("home") {
-                            popUpTo("home") { inclusive = true }
-                            launchSingleTop = true
-                        }
-                        1 -> navController.navigate("trending") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        2 -> navController.navigate("build") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        3 -> navController.navigate("benchmark") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        4 -> navController.navigate("favorite") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
+                navController = navController,
+                onItemSelected = { route ->
+                    navController.navigate(route) {
+                        popUpTo("home") { inclusive = false } // Atur `popUpTo` sesuai kebutuhan
+                        launchSingleTop = true
                     }
                 }
             )
+
         }
     ) { innerPadding ->
         NavHost(
@@ -178,14 +160,11 @@ fun NavbarHost(
             composable("about_us") {
                 AboutUsScreen()
             }
-            composable("settings_profile") {
-                ProfileSettingsScreen(profileViewModel, homeViewModel)
-            }
             composable("trending") {
                 Text(text = "Trending")
             }
             composable("build") {
-                BuildListScreen(navController)
+                BuildListScreen(navController,buildViewModel)
             }
             composable("benchmark") {
                 Text(text = "Benchmark")
@@ -194,11 +173,8 @@ fun NavbarHost(
                 Text(text = "Favorite")
             }
             composable(
-                route = "build_details/{title}",
-                arguments = listOf(navArgument("title") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val title = backStackEntry.arguments?.getString("title") ?: ""
-                BuildScreen(title = title, buildViewModel, navController)
+                route = "build_details",
+            ) { BuildScreen(buildViewModel, navController)
             }
             composable("cpu_screen") { CpuScreen(navController) }
             composable("casing_screen") { CasingScreen(navController) }
@@ -214,9 +190,6 @@ fun NavbarHost(
         }
     }
 }
-
-
-
 
 @Composable
 fun AppTopBar(
@@ -299,8 +272,8 @@ fun AppTopBar(
 
 @Composable
 fun BottomNavigationBar(
-    selectedItem: Int,
-    onItemSelected: (Int) -> Unit
+    navController: NavController,
+    onItemSelected: (String) -> Unit
 ) {
     val items = listOf(
         NavigationItem.Home,
@@ -309,6 +282,7 @@ fun BottomNavigationBar(
         NavigationItem.Benchmark,
         NavigationItem.Favorite
     )
+    val currentRoute = currentRoute(navController)
     val navbarColor = Color(0xFF473947)
 
     BottomAppBar(
@@ -317,24 +291,29 @@ fun BottomNavigationBar(
         modifier = Modifier.height(60.dp),
         elevation = 8.dp
     ) {
-        items.forEachIndexed { index, item ->
-            val isSelected = selectedItem == index
+        items.forEach { item ->
+            val isSelected = currentRoute == item.route
 
             BottomNavigationItem(
                 icon = {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (isSelected) Color.White else Color.Gray, // Mengubah warna berdasarkan status dipilih
-                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp) // Mengubah ukuran berdasarkan status dipilih
+                        tint = if (isSelected) Color.White else Color.Gray,
+                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
                 },
                 selected = isSelected,
-                onClick = { onItemSelected(index) },
+                onClick = {
+                    if (currentRoute != item.route) {
+                        onItemSelected(item.route)
+                    }
+                },
                 label = {
                     Text(
                         text = item.title,
-                        color = if (isSelected) Color.White else Color.Gray // Mengubah warna teks berdasarkan status dipilih
+                        fontSize = 12.sp,
+                        color = if (isSelected) Color.White else Color.Gray
                     )
                 },
                 selectedContentColor = Color.White,
@@ -343,15 +322,22 @@ fun BottomNavigationBar(
         }
     }
 }
-
-
-sealed class NavigationItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    object Home : NavigationItem("Home", Icons.Default.Home) // Pastikan ikon ini valid
-    object Trending : NavigationItem("Trending", Icons.Filled.TrendingUp) // Ubah ke Icons.Filled agar lebih stabil
-    object Build : NavigationItem("My Build", Icons.Default.DesktopWindows)
-    object Benchmark : NavigationItem("Benchmark", Icons.Default.BarChart)
-    object Favorite : NavigationItem("Favorite", Icons.Default.Favorite)
+@Composable
+fun currentRoute(navController: NavController): String? {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    return navBackStackEntry?.destination?.route
 }
+
+
+
+sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
+    object Home : NavigationItem("home", Icons.Default.Home, "Home")
+    object Trending : NavigationItem("trending", Icons.Default.TrendingUp, "Trending")
+    object Build : NavigationItem("build", Icons.Default.DesktopWindows, "Build")
+    object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
+    object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")
+}
+
 
 
 @Composable
@@ -408,9 +394,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
             style = MaterialTheme.typography.body2,
             color = MaterialTheme.colors.secondary
         )
-
         Spacer(modifier = Modifier.height(32.dp))
-
     }
 }
 

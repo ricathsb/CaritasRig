@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.activity.homepage.buildtest.componenttest
+package com.superbgoal.caritasrig.activity.homepage.buildtest.component
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -19,7 +19,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -35,35 +34,19 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
+import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.functions.auth.ComponentCard
 import com.superbgoal.caritasrig.functions.auth.saveComponent
-import com.superbgoal.caritasrig.data.model.component.Memory
 
 @Composable
-fun MemoryScreen(navController: NavController) {
-    // Load memory data
+fun MouseScreen(navController: NavController) {
+    // Load mouse data
     val context = LocalContext.current
-    val memories: List<Memory> = remember {
+    val mice: List<Mouse> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.memory
+            resourceId = R.raw.mouse // Ensure this JSON file exists in resources
         )
-    }
-
-    // Filter state
-    val selectedModules = remember { mutableStateOf(0) }
-    val selectedSpeed = remember { mutableStateOf(0) }
-    val selectedSockets = remember { mutableStateOf(setOf<Int>()) }
-
-    // State to control the dialog visibility
-    val showFilterDialog = remember { mutableStateOf(false) }
-
-    val filteredMemories = remember(selectedModules.value, selectedSpeed.value, selectedSockets.value) {
-        memories.filter { memory ->
-            (selectedModules.value == 0 || memory.modules >= selectedModules.value) &&
-                    (selectedSpeed.value == 0 || memory.speed >= selectedSpeed.value) &&
-                    (selectedSockets.value.isEmpty() || memory.socket in selectedSockets.value)
-        }
     }
 
     Box(
@@ -77,7 +60,7 @@ fun MemoryScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and MemoryList
+        // Main content with TopAppBar and Mouse List
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -99,7 +82,7 @@ fun MemoryScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Memory Modules",
+                            text = "Mice",
                             style = MaterialTheme.typography.subtitle1,
                             textAlign = TextAlign.Center
                         )
@@ -121,7 +104,7 @@ fun MemoryScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
-                            showFilterDialog.value = true // Trigger the filter dialog
+                            // Action for filter button
                         },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
@@ -137,133 +120,66 @@ fun MemoryScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                MemoryList(filteredMemories, navController)
+                MouseList(mice, navController)
             }
         }
     }
-
-    // Show the FilterDialog when the state is true
-    if (showFilterDialog.value) {
-        FilterDialogMemory(
-            selectedModules = selectedModules,
-            selectedSpeed = selectedSpeed,
-            selectedSockets = selectedSockets,
-            onDismiss = { showFilterDialog.value = false } // Close the dialog
-        )
-    }
 }
 
-@Composable
-fun FilterDialogMemory(
-    selectedModules: MutableState<Int>,
-    selectedSpeed: MutableState<Int>,
-    selectedSockets: MutableState<Set<Int>>,
-    onDismiss: () -> Unit
-) {
-    val availableSockets = listOf(3, 4, 5) // Example socket options DDR3, DDR4, DDR5
-
-    androidx.compose.material.AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Filter Memory") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("Modules (GB): ${selectedModules.value} GB")
-                androidx.compose.material.Slider(
-                    value = selectedModules.value.toFloat(),
-                    onValueChange = { selectedModules.value = it.toInt() },
-                    valueRange = 0f..64f,
-                    steps = 63
-                )
-
-                Text("Speed (MHz): ${selectedSpeed.value} MHz")
-                androidx.compose.material.Slider(
-                    value = selectedSpeed.value.toFloat(),
-                    onValueChange = { selectedSpeed.value = it.toInt() },
-                    valueRange = 0f..8000f,
-                    steps = 79
-                )
-
-                Text("Socket:")
-                availableSockets.forEach { socket ->
-                    androidx.compose.material.Checkbox(
-                        checked = selectedSockets.value.contains(socket),
-                        onCheckedChange = {
-                            selectedSockets.value = if (it) {
-                                selectedSockets.value + socket
-                            } else {
-                                selectedSockets.value - socket
-                            }
-                        }
-                    )
-                    Text(text = "DDR$socket")
-                }
-            }
-        },
-        confirmButton = {
-            androidx.compose.material.TextButton(
-                onClick = onDismiss
-            ) {
-                Text("Apply")
-            }
-        },
-        dismissButton = {
-            androidx.compose.material.TextButton(
-                onClick = onDismiss
-            ) {
-                Text("Cancel")
-            }
-        }
-    )
-}
 
 @Composable
-fun MemoryList(memories: List<Memory>, navController: NavController) {
+fun MouseList(mice: List<Mouse>, navController: NavController) {
+    val context = LocalContext.current
+
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(memories) { memoryItem ->
+        items(mice) { mouseItem ->
+            // Track loading state for each mouse
             val isLoading = remember { mutableStateOf(false) }
 
+            // Menggunakan ComponentCard untuk setiap mouse
             ComponentCard(
-                title = memoryItem.name,
-                details = buildString {
-                    append("Price: $${memoryItem.price}\n")
-                    append("Speed: ${memoryItem.speed} MHz\n")
-                    append("Modules: ${memoryItem.modules} GB\n")
-                    append("Socket: DDR${memoryItem.socket}\n")
-                },
-                context = LocalContext.current,
-                component = memoryItem,
-                isLoading = isLoading.value,
+                title = mouseItem.name,
+                details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
+                context = context,
+                component = mouseItem,
+                isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {
+                    // Mulai proses loading ketika tombol Add ditekan
                     isLoading.value = true
-                    Log.d("MemoryActivity", "Selected Memory: ${memoryItem.name}")
+                    Log.d("MouseActivity", "Selected Mouse: ${mouseItem.name}")
 
+                    // Mendapatkan userId dan buildTitle
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     val userId = currentUser?.uid.toString()
                     val buildTitle = BuildManager.getBuildTitle()
 
+                    // Simpan mouse jika buildTitle tersedia
                     buildTitle?.let { title ->
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "memory",
-                            componentData = memoryItem,
+                            componentType = "mouse", // Tipe komponen
+                            componentData = mouseItem, // Data mouse
                             onSuccess = {
+                                // Berhenti loading ketika sukses
                                 isLoading.value = false
-                                Log.d("MemoryActivity", "Memory ${memoryItem.name} saved successfully under build title: $title")
-                                navController.navigateUp()
+                                Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
+
                             },
                             onFailure = { errorMessage ->
+                                // Berhenti loading ketika gagal
                                 isLoading.value = false
-                                Log.e("MemoryActivity", "Failed to store Memory: $errorMessage")
+                                Log.e("MouseActivity", "Failed to store Mouse under build title: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it }
+                            onLoading = { isLoading.value = it } // Update loading state
                         )
                     } ?: run {
+                        // Berhenti loading jika buildTitle null
                         isLoading.value = false
-                        Log.e("MemoryActivity", "Build title is null; unable to store Memory.")
+                        Log.e("MouseActivity", "Build title is null; unable to store Mouse.")
                     }
                 }
             )
