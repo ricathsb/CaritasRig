@@ -76,9 +76,6 @@ fun BuildScreen(
             buildViewModel.setNewBuildState(false)
         }
 
-
-
-
     val context = LocalContext.current
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
@@ -115,7 +112,7 @@ fun BuildScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Background image
         Image(
-            painter = painterResource(id = R.drawable.bg_build),
+            painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = Modifier.fillMaxSize()
