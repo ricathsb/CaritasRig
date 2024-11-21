@@ -164,7 +164,7 @@ fun MouseList(mice: List<Mouse>, navController: NavController) {
                             componentType = "mouse", // Tipe komponen
                             componentData = mouseItem, // Data mouse
                             onSuccess = {
-                                // Berhenti loading ketika sukses
+                                navController.navigateUp()
                                 isLoading.value = false
                                 Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
 

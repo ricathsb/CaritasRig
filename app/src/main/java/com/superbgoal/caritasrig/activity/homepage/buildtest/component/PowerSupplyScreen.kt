@@ -179,6 +179,7 @@ fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavControll
                             componentType = "powersupply",
                             componentData = powerSupply,
                             onSuccess = {
+                                navController.navigateUp()
 
                             },
                             onFailure = { errorMessage ->

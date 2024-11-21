@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.activity.homepage.buildtest
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.os.Handler
@@ -63,10 +64,11 @@ import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.saveBuildTitle
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun BuildScreen(
     buildViewModel: BuildViewModel = viewModel(),
-    navController: NavController? = null
+    @SuppressLint("SuspiciousIndentation") navController: NavController? = null
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val isNewBuild by buildViewModel.isNewBuild.collectAsState()
@@ -169,7 +171,7 @@ fun BuildScreen(
                         "Mouse" to "mouse_screen"
                     )
 
-                    selectedComponents.forEach { (title, activityClass) ->
+                    selectedComponents.forEach { (title) ->
                         item {
                             val componentDetail = when (title) {
                                 "CPU" -> buildData?.components?.processor?.let {
@@ -306,6 +308,7 @@ fun BuildScreen(
                         if (dialogText.isNotEmpty()) {
                             saveBuildTitle(
                                 userId = Firebase.auth.currentUser?.uid ?: "",
+                                context = context,
                                 buildTitle = dialogText,
                                 onSuccess = {
                                     showDialog = false
@@ -478,7 +481,7 @@ fun ComponentCard(
                 showDialog = false
                 onUpdatePrice(newPrice)
                 Log.d("BuildActivity", "Price updated for $loading")
-                if (loading == false) {
+                if (!loading) {
                     Handler(Looper.getMainLooper()).postDelayed({
                         (context as? Activity)?.recreate()
                     }, 20)
