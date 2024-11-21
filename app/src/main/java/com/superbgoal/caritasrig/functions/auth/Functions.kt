@@ -62,9 +62,11 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
 
 @Composable
 fun LoadingButton(
@@ -372,6 +374,25 @@ fun EditOrDeleteBackground(
         }
     }
 }
+
+fun calculateTotalPrice(it: BuildComponents): Double {
+    val totalPrice = listOfNotNull(
+        it.processor?.price,
+        it.casing?.price,
+        it.videoCard?.price,
+        it.motherboard?.price,
+        it.memory?.price,
+        it.internalHardDrive?.price,
+        it.powerSupply?.price,
+        it.cpuCooler?.price,
+        it.headphone?.price,
+        it.keyboard?.price,
+        it.mouse?.price
+    ).sumOf { price -> price ?: 0.0 }
+
+    return ceil(totalPrice) // Membulatkan ke atas
+}
+
 
 
 

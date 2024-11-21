@@ -51,6 +51,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> get() = _loading
 
+    private val _totalBuildPrice = MutableLiveData(0.0)
+    val totalBuildPrice: LiveData<Double> get() = _totalBuildPrice
+
     private val defaultCategories = mapOf(
         "CPU" to "No CPU Selected",
         "Case" to "No Case Selected",
@@ -73,6 +76,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     fun resetBuildTitle() {
         _buildTitle.value = ""
         println("Build title has been reset.")
+    }
+
+    fun setBuildPrice(price: Double) {
+        _totalBuildPrice.value = price
     }
 
     fun resetBuildData() {

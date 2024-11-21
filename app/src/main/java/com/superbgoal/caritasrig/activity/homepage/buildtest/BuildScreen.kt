@@ -63,6 +63,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.saveBuildTitle
+import com.superbgoal.caritasrig.functions.auth.calculateTotalPrice
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -88,6 +89,9 @@ fun BuildScreen(
     var dialogText by remember { mutableStateOf(buildTitle) }
     val loading by buildViewModel.loading.observeAsState(false)
     val sharedPreferences = context.getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
+    val totalBuildPrice by buildViewModel.totalBuildPrice.observeAsState(0.0)
+
+    buildData?.components?.let { calculateTotalPrice(it) }?.let { buildViewModel.setBuildPrice(it) }
 
     // LazyListState untuk melacak posisi scroll
     val lazyListState = rememberLazyListState(
@@ -131,11 +135,25 @@ fun BuildScreen(
         ) {
             // Title
             Text(
-                text = buildTitle.ifEmpty { "" },
+                text = "Build Title: ${buildTitle.ifEmpty { "" }}",
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
+            //total price
+            Text(
+                text = "Total Price: $totalBuildPrice",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Text(
+                text = "Estimated Wattage : $totalBuildPrice",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
 
             if (loading) {
                 // Full-screen loading indicator
@@ -257,6 +275,7 @@ fun BuildScreen(
                                         updatedData = mapOf("price" to newPrice.toDouble())
                                     )
                                     Log.d("BuildActivity", "Price updated for $title: $newPrice")
+                                    buildViewModel.fetchBuildByTitle(buildTitle)
                                 },
                                 loading = loading
                             )
@@ -481,11 +500,11 @@ fun ComponentCard(
                 showDialog = false
                 onUpdatePrice(newPrice)
                 Log.d("BuildActivity", "Price updated for $loading")
-                if (!loading) {
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        (context as? Activity)?.recreate()
-                    }, 20)
-                }
+//                if (!loading) {
+//                    Handler(Looper.getMainLooper()).postDelayed({
+//                        (context as? Activity)?.recreate()
+//                    }, 20)
+//                }
             }
         )
     }
