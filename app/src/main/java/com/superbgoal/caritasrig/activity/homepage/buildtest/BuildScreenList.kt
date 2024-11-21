@@ -27,8 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.data.deleteBuild
 import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
+import com.superbgoal.caritasrig.functions.auth.SwipeToDeleteContainer
 
 
 @Composable
@@ -39,8 +42,8 @@ fun BuildListScreen(navController: NavController? = null,viewModel: BuildViewMod
             onFailure = { value = emptyList() }
         )
     }
-
-    val builds = buildsState.value
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var builds = buildsState.value
 
     Box(
         modifier = Modifier
@@ -66,7 +69,22 @@ fun BuildListScreen(navController: NavController? = null,viewModel: BuildViewMod
             // Panggil fungsi BuildList untuk menampilkan daftar build
             BuildList(
                 builds = builds,
-                onBuildClick = onBuildClick
+                onBuildClick = onBuildClick,
+                onDeleteBuild = { deletedBuild ->
+                    deleteBuild(
+                        userId = userId,
+                        buildId = deletedBuild.buildId,
+                        onSuccess = {
+                            Log.d("DeleteBuild", "Build deleted successfully")
+                        },
+                        onFailure = { error ->
+                            Log.e("DeleteBuild", error)
+                        }
+                    )
+                    builds = builds.filter { it.buildId != deletedBuild.buildId}
+                    Log.d("MyScreen", "Deleted build: ${deletedBuild.buildId}")
+                }
+
             )
         }
 
@@ -97,107 +115,114 @@ fun BuildListScreen(navController: NavController? = null,viewModel: BuildViewMod
 
 
 @Composable
-fun BuildList(builds: List<Build>, onBuildClick: (Build) -> Unit) {
+fun BuildList(
+    builds: List<Build>,
+    onBuildClick: (Build) -> Unit,
+    onDeleteBuild: (Build) -> Unit // Tambahkan callback untuk menghapus build
+) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(builds) { build ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .clickable {
-                        // Action on card click
-                        onBuildClick(build)  // Pass the clicked build to the onBuildClick function
-                    },
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    // Display build title
-                    Text(
-                        text = build.title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    // Display processor name if available
-                    build.components?.processor?.let { processor ->
+        items(builds, key = { it.buildId }) { build ->
+            SwipeToDeleteContainer(
+                item = build,
+                onDelete = { onDeleteBuild(it) }
+            ) { buildItem ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onBuildClick(buildItem)
+                        },
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Display build title
                         Text(
-                            text = "Processor: ${processor.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                            text = buildItem.title,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
-                    }
 
-                    // Display casing name if available
-                    build.components?.casing?.let { casing ->
-                        Text(
-                            text = "Casing: ${casing.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+                        // Display processor name if available
+                        buildItem.components?.processor?.let { processor ->
+                            Text(
+                                text = "Processor: ${processor.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
 
-                    // Display motherboard name if available
-                    build.components?.motherboard?.let { motherboard ->
-                        Text(
-                            text = "Motherboard: ${motherboard.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+                        // Display casing name if available
+                        buildItem.components?.casing?.let { casing ->
+                            Text(
+                                text = "Casing: ${casing.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
 
-                    // Display video card name if available
-                    build.components?.videoCard?.let { videoCard ->
-                        Text(
-                            text = "Video Card: ${videoCard.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+                        // Display motherboard name if available
+                        buildItem.components?.motherboard?.let { motherboard ->
+                            Text(
+                                text = "Motherboard: ${motherboard.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
 
-                    // Display headphone name if available
-                    build.components?.headphone?.let { headphone ->
-                        Text(
-                            text = "Headphone: ${headphone.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+                        // Display video card name if available
+                        buildItem.components?.videoCard?.let { videoCard ->
+                            Text(
+                                text = "Video Card: ${videoCard.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
 
-                    // Display internal hard drive name if available
-                    build.components?.internalHardDrive?.let { internalHardDrive ->
-                        Text(
-                            text = "Internal Hard Drive: ${internalHardDrive.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        Log.d("BuildList", "Displaying internal hard drive name: ${internalHardDrive.name}")
-                    }
+                        // Display headphone name if available
+                        buildItem.components?.headphone?.let { headphone ->
+                            Text(
+                                text = "Headphone: ${headphone.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
 
-                    // Display keyboard name if available
-                    build.components?.keyboard?.let { keyboard ->
-                        Text(
-                            text = "Keyboard: ${keyboard.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+                        // Display internal hard drive name if available
+                        buildItem.components?.internalHardDrive?.let { internalHardDrive ->
+                            Text(
+                                text = "Internal Hard Drive: ${internalHardDrive.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            Log.d("BuildList", "Displaying internal hard drive name: ${internalHardDrive.name}")
+                        }
 
-                    build.components?.powerSupply?.let { powerSupply ->
-                        Text(
-                            text = "Power Supply: ${powerSupply.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+                        // Display keyboard name if available
+                        buildItem.components?.keyboard?.let { keyboard ->
+                            Text(
+                                text = "Keyboard: ${keyboard.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
 
-                    build.components?.mouse?.let { mouse ->
-                        Text(
-                            text = "Mouse: ${mouse.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
+                        buildItem.components?.powerSupply?.let { powerSupply ->
+                            Text(
+                                text = "Power Supply: ${powerSupply.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+
+                        buildItem.components?.mouse?.let { mouse ->
+                            Text(
+                                text = "Mouse: ${mouse.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
                     }
                 }
             }

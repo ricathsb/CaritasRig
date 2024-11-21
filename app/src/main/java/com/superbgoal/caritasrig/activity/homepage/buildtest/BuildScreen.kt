@@ -225,7 +225,16 @@ fun BuildScreen(
                                 currentPrice = buildData?.components?.let {
                                     when (title) {
                                         "CPU" -> it.processor?.price?.toString()
-                                        // Tambahkan logika untuk komponen lainnya
+                                        "Case" -> it.casing?.price?.toString()
+                                        "GPU" -> it.videoCard?.price?.toString()
+                                        "Motherboard" -> it.motherboard?.price?.toString()
+                                        "RAM" -> it.memory?.price?.toString()
+                                        "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
+                                        "PowerSupply" -> it.powerSupply?.price?.toString()
+                                        "CPU Cooler" -> it.cpuCooler?.price?.toString()
+                                        "Headphone" -> it.headphone?.price?.toString()
+                                        "Keyboard" -> it.keyboard?.price?.toString()
+                                        "Mouse" -> it.mouse?.price?.toString()
                                         else -> "0.0"
                                     }
                                 } ?: "0.0",
