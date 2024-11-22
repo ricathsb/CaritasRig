@@ -22,7 +22,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Favorite
@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -73,6 +74,9 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.PowerSupp
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCardScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
+import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeScreen2
+import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeViewModel2
+import com.superbgoal.caritasrig.activity.homepage.newsApi.NewsArticleScreen
 import com.superbgoal.caritasrig.activity.homepage.settings.AboutUsScreen
 import com.superbgoal.caritasrig.activity.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -82,7 +86,6 @@ fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
     appController: NavController,
-
     ) {
     val navController = rememberNavController()
     var selectedItem by remember { mutableIntStateOf(0) }
@@ -153,7 +156,7 @@ fun NavbarHost(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
-                HomeScreen(viewModel = homeViewModel)
+                HomeScreen2(navController = navController)
             }
             composable("profile/{username}") {
                 ProfileScreen(homeViewModel = homeViewModel)
@@ -191,6 +194,7 @@ fun NavbarHost(
             composable("keyboard_screen") { KeyboardScreen(navController) }
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
+            composable("news_article_screen") { NewsArticleScreen()}
         }
     }
 }
@@ -219,7 +223,7 @@ fun AppTopBar(
                 if (isSpecificRoute || isProfileScreen) {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Default.ArrowBackIosNew,
                             contentDescription = "Back Icon",
                             modifier = Modifier.size(28.dp)
                         )
@@ -303,7 +307,7 @@ fun BottomNavigationBar(
                         imageVector = item.icon,
                         contentDescription = item.title,
                         tint = if (isSelected) Color.White else Color.Gray,
-//                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
+                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
                 },
                 selected = isSelected,
