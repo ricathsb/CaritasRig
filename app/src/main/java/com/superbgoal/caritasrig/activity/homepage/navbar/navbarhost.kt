@@ -58,6 +58,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.benchmark.BenchmarkScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildListScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel
@@ -174,7 +175,7 @@ fun NavbarHost(
                 BuildListScreen(navController,buildViewModel)
             }
             composable("benchmark") {
-                Text(text = "Benchmark")
+                BenchmarkScreen(navController)
             }
             composable("favorite") {
                 Text(text = "Favorite")
