@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,16 +37,19 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.currentCompositionErrors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -62,6 +69,7 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.data.editRamQuantity
 import com.superbgoal.caritasrig.data.saveBuildTitle
 import com.superbgoal.caritasrig.functions.auth.calculateTotalPrice
 
@@ -238,47 +246,75 @@ fun BuildScreen(
 
                                 else -> null
                             }
+                                ComponentCard(
+                                    initialQuantity = buildData?.components?.memory?.quantity,
+                                    title = title,
+                                    componentDetail = componentDetail,
+                                    totalPrice = buildData?.components?.memory?.totalPrice.toString(),
+                                    currentPrice = buildData?.components?.let {
+                                        when (title) {
+                                            "CPU" -> it.processor?.price?.toString()
+                                            "Case" -> it.casing?.price?.toString()
+                                            "GPU" -> it.videoCard?.price?.toString()
+                                            "Motherboard" -> it.motherboard?.price?.toString()
+                                            "RAM" -> it.memory?.price?.toString()
+                                            "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
+                                            "PowerSupply" -> it.powerSupply?.price?.toString()
+                                            "CPU Cooler" -> it.cpuCooler?.price?.toString()
+                                            "Headphone" -> it.headphone?.price?.toString()
+                                            "Keyboard" -> it.keyboard?.price?.toString()
+                                            "Mouse" -> it.mouse?.price?.toString()
+                                            else -> "0.0"
+                                        }
+                                    } ?: "0.0",
+                                    onClick = {
+                                        val route = routeMap[title]
+                                        if (route != null) {
+                                            navController?.navigate(route)
+                                        } else {
+                                            Log.e("NavigationError", "No route found for title: $title")
+                                        }
+                                    },
+                                    onRemove = {
+                                        buildViewModel.removeComponent(title)
+                                    },
+                                    onUpdatePrice = { newPrice ->
+                                        buildViewModel.updateBuildComponentWithViewModel(
+                                            category = title,
+                                            updatedData = mapOf("price" to newPrice.toDouble())
+                                        )
+                                        Log.d("BuildActivity", "Price updated for $title: $newPrice")
 
-                            ComponentCard(
-                                title = title,
-                                componentDetail = componentDetail,
-                                currentPrice = buildData?.components?.let {
-                                    when (title) {
-                                        "CPU" -> it.processor?.price?.toString()
-                                        "Case" -> it.casing?.price?.toString()
-                                        "GPU" -> it.videoCard?.price?.toString()
-                                        "Motherboard" -> it.motherboard?.price?.toString()
-                                        "RAM" -> it.memory?.price?.toString()
-                                        "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
-                                        "PowerSupply" -> it.powerSupply?.price?.toString()
-                                        "CPU Cooler" -> it.cpuCooler?.price?.toString()
-                                        "Headphone" -> it.headphone?.price?.toString()
-                                        "Keyboard" -> it.keyboard?.price?.toString()
-                                        "Mouse" -> it.mouse?.price?.toString()
-                                        else -> "0.0"
+                                        // Tambahkan delay sebelum memanggil fetchBuildByTitle
+                                        Handler(Looper.getMainLooper()).postDelayed({
+                                            buildViewModel.fetchBuildByTitle(buildTitle)
+                                        }, 20) // Delay 2000ms (2 detik)
                                     }
-                                } ?: "0.0",
-                                onClick = {
-                                    val route = routeMap[title]
-                                    if (route != null) {
-                                        navController?.navigate(route)
-                                    } else {
-                                        Log.e("NavigationError", "No route found for title: $title")
+                                    ,
+                                    loading = loading,
+                                    onQuantityChange = { newQuantity ->
+                                        Log.d("BuildActivity", "Quantity: $newQuantity")
+
+                                        editRamQuantity(
+                                            buildTitle = buildTitle,
+                                            quantity = newQuantity,
+                                            onSuccess = {
+                                                buildViewModel.fetchBuildByTitle(buildTitle)
+                                                println("RAM quantity and total price updated successfully!")
+                                            },
+                                            onFailure = { errorMessage ->
+                                                println("Error: $errorMessage")
+                                            },
+                                            onLoading = { isLoading ->
+                                                if (isLoading) {
+                                                    println("Updating RAM quantity and total price...")
+                                                } else {
+                                                    println("Update process completed.")
+                                                }
+                                            }
+                                        )
                                     }
-                                },
-                                onRemove = {
-                                    buildViewModel.removeComponent(title)
-                                },
-                                onUpdatePrice = { newPrice ->
-                                    buildViewModel.updateBuildComponentWithViewModel(
-                                        category = title,
-                                        updatedData = mapOf("price" to newPrice.toDouble())
-                                    )
-                                    Log.d("BuildActivity", "Price updated for $title: $newPrice")
-                                    buildViewModel.fetchBuildByTitle(buildTitle)
-                                },
-                                loading = loading
-                            )
+                                )
                         }
                     }
                 }
@@ -368,16 +404,30 @@ fun BuildScreen(
 @Composable
 fun ComponentCard(
     title: String,
+    totalPrice : String? = "nooo",
     componentDetail: String?,
     currentPrice: String,
+    initialQuantity: Int?, // Tambahkan parameter untuk inisialisasi quantity
     onClick: () -> Unit,
     onRemove: () -> Unit,
     onUpdatePrice: (String) -> Unit,
-    loading : Boolean = false
+    loading: Boolean = false,
+    onQuantityChange: ((Int) -> Unit)? = null
 ) {
-    // State untuk menampilkan dialog
+    // Inisialisasi quantity menggunakan initialQuantity
+    var quantity by rememberSaveable { mutableStateOf(initialQuantity) }
     var showDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    val displayText = if (title == "RAM") {
+        "Total Price: $$totalPrice"
+    } else {
+        "Current Price: $$currentPrice"
+    }
+
+
+    // Harga total berdasarkan quantity
+//    val totalPrice = remember(quantity, currentPrice) {
+//        (quantity?.times((currentPrice.toDoubleOrNull() ?: 0.0))).toString()
+//    }
 
     Card(
         modifier = Modifier
@@ -430,7 +480,7 @@ fun ComponentCard(
 
                         // Harga Komponen
                         Text(
-                            text = "Current Price: $$currentPrice",
+                            text = displayText,
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
                             color = Color.White,
                             modifier = Modifier.padding(8.dp)
@@ -451,13 +501,60 @@ fun ComponentCard(
 
                         // Tombol Configure
                         Button(
-                            onClick = {
-                                showDialog = true // Tampilkan dialog
-                            },
+                            onClick = { showDialog = true },
                             modifier = Modifier.background(Color.Transparent),
                             elevation = ButtonDefaults.buttonElevation(0.dp)
                         ) {
                             Text(text = "Configure Component")
+                        }
+
+                        // Tombol Plus-Minus khusus untuk RAM
+                        if (title.equals("RAM", ignoreCase = true)) {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                // Tombol Minus
+                                IconButton(
+                                    onClick = {
+                                        if (quantity!! > 1) {
+                                            quantity = quantity!! - 1 // Kurangi jumlah
+                                            onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Remove,
+                                        contentDescription = "Minus",
+                                        tint = Color.White
+                                    )
+                                }
+
+                                // Jumlah
+                                Text(
+                                    text = quantity.toString(),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+
+                                // Tombol Plus
+                                IconButton(
+                                    onClick = {
+                                        quantity = quantity!! + 1 // Tambah jumlah
+                                        onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Plus",
+                                        tint = Color.White
+                                    )
+                                }
+                            }
                         }
                     } else {
                         Text(
@@ -494,21 +591,18 @@ fun ComponentCard(
     if (showDialog) {
         PriceEditDialog(
             category = title,
-            currentPrice = currentPrice,
+            currentPrice = currentPrice, // Kirimkan harga total ke dialog
             onDismiss = { showDialog = false },
             onConfirm = { newPrice ->
                 showDialog = false
                 onUpdatePrice(newPrice)
-                Log.d("BuildActivity", "Price updated for $loading")
-//                if (!loading) {
-//                    Handler(Looper.getMainLooper()).postDelayed({
-//                        (context as? Activity)?.recreate()
-//                    }, 20)
-//                }
+                Log.d("BuildActivity", "Price updated for $title: $newPrice")
             }
         )
     }
 }
+
+
 
 @Composable
 fun PriceEditDialog(
@@ -518,6 +612,7 @@ fun PriceEditDialog(
     onConfirm: (String) -> Unit
 ) {
     var newPrice by remember { mutableStateOf(currentPrice) }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,

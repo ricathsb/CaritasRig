@@ -13,5 +13,7 @@ data class Memory(
     val color: String = "",
     val firstWordLatency: Double =0.0, // Updated to Double for correct mapping of decimal values
     val casLatency: Double = 0.0, // CAS latency remains as Int'
-    val socket: Int = 0 // Socket remains as Int
+    val socket: Int = 0, // Socket remains as Int
+    val quantity: Int = 1,
+    val totalPrice : Double = 0.0
 ):Parcelable

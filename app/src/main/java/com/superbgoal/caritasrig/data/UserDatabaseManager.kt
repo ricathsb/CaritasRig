@@ -389,7 +389,7 @@ fun editBuildTitle(
         .child(userId)
         .child("builds")
         .child(buildId)
-        .updateChildren(updates) // Memperbarui hanya field "title"
+        .updateChildren(updates)
         .addOnSuccessListener {
             onSuccess() // Callback sukses
         }
@@ -397,6 +397,83 @@ fun editBuildTitle(
             onFailure("Failed to update title: ${error.message}") // Callback gagal dengan pesan error
         }
 }
+
+fun editRamQuantity(
+    buildTitle: String,
+    quantity: Int,
+    onSuccess: (() -> Unit)? = null,
+    onFailure: ((String) -> Unit)? = null,
+    onLoading: ((Boolean) -> Unit)? = null
+) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val database = getDatabaseReference()
+
+    // Set loading state to true when the process starts
+    onLoading?.invoke(true)
+
+    // Cari buildId berdasarkan buildTitle
+    if (userId != null) {
+        database.child("users").child(userId).child("builds")
+            .orderByChild("title").equalTo(buildTitle)
+            .get()
+            .addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val buildId = dataSnapshot.children.firstOrNull()?.key
+                    if (buildId != null) {
+                        // Ambil harga satuan RAM dan monitor perubahan
+                        val memoryRef = database.child("users").child(userId).child("builds").child(buildId)
+                            .child("components").child("memory")
+
+                        memoryRef.child("price").addValueEventListener(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val unitPrice = snapshot.getValue(Double::class.java) ?: 0.0
+                                val updatedPrice = unitPrice * quantity
+
+                                // Perbarui totalPrice ketika price berubah
+                                memoryRef.child("totalPrice").setValue(updatedPrice)
+                                    .addOnFailureListener { error ->
+                                        onFailure?.invoke("Failed to update total price: ${error.message}")
+                                    }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                onFailure?.invoke("Price listener cancelled: ${error.message}")
+                            }
+                        })
+
+                        // Perbarui quantity dan harga
+                        val updates = mapOf(
+                            "quantity" to quantity
+                        )
+                        memoryRef.updateChildren(updates)
+                            .addOnSuccessListener {
+                                onLoading?.invoke(false) // Set loading state to false on success
+                                onSuccess?.invoke() // Callback sukses
+                            }
+                            .addOnFailureListener { error ->
+                                onLoading?.invoke(false) // Set loading state to false on failure
+                                onFailure?.invoke("Failed to update RAM quantity: ${error.message}")
+                            }
+                    } else {
+                        onLoading?.invoke(false) // Set loading state to false if buildId is not found
+                        onFailure?.invoke("Build ID not found.")
+                    }
+                } else {
+                    onLoading?.invoke(false) // Set loading state to false if build is not found
+                    onFailure?.invoke("Build with title \"$buildTitle\" not found.")
+                }
+            }
+            .addOnFailureListener { error ->
+                onLoading?.invoke(false) // Set loading state to false if query fails
+                onFailure?.invoke("Failed to find build: ${error.message}")
+            }
+    }
+}
+
+
+
+
+
 
 
 

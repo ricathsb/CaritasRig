@@ -8,7 +8,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
 import com.superbgoal.caritasrig.data.getDatabaseReference
@@ -254,18 +256,33 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
             // Update selectedComponents dengan nilai default untuk kategori yang dihapus
             val updatedComponents = _selectedComponents.value?.toMutableMap()?.apply {
-                this[category] = "No $category Selected" // Tampilkan kondisi awal
+                this[category] = "No $category Selected"
             } ?: mapOf(category to "No $category Selected")
 
-            _selectedComponents.value = updatedComponents // Perbarui selectedComponents
+            _selectedComponents.value = updatedComponents
+
+            val targetPath = when (category) {
+                "CPU" -> "cpu"
+                "Case" -> "case"
+                "GPU" -> "gpu"
+                "Motherboard" -> "motherboard"
+                "RAM" -> "memory"
+                "InternalHardDrive" -> "internalharddrive"
+                "PowerSupply" -> "powersupply"
+                "CPU Cooler" -> "cpucooler"
+                "Headphone" -> "headphone"
+                "Keyboard" -> "keyboard"
+                "Mouse" -> "mouse"
+                else -> category.lowercase()
+            }
 
             // Hapus data di server
             removeBuildComponent(
                 userId = Firebase.auth.currentUser?.uid ?: "",
                 buildId = currentBuildData.buildId,
-                componentCategory = category.lowercase(),
+                componentCategory = targetPath,
                 onSuccess = {
-                    Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "$category removed successfully from server.")
+                    Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "$targetPath removed successfully from server.")
                 },
                 onFailure = { errorMessage ->
                     // Jika gagal, restore nilai sebelumnya
@@ -356,4 +373,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 _loading.value = false
             }
     }
+
 }
+
+

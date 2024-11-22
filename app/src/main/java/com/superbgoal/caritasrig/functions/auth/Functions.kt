@@ -381,7 +381,7 @@ fun calculateTotalPrice(it: BuildComponents): Double {
         it.casing?.price,
         it.videoCard?.price,
         it.motherboard?.price,
-        it.memory?.price,
+        it.memory?.totalPrice,
         it.internalHardDrive?.price,
         it.powerSupply?.price,
         it.cpuCooler?.price,
