@@ -10,6 +10,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
@@ -469,6 +470,74 @@ fun editRamQuantity(
             }
     }
 }
+
+fun savedFavorite(
+    processor: Processor? = null,
+    videoCard: VideoCard? = null
+) {
+    val database = getDatabaseReference()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    if (userId != null) {
+        val favoriteRef = database.child("users").child(userId).child("favorites")
+
+        // Jika ada processor, simpan data processor dengan ID acak
+        processor?.let {
+            val processorId = UUID.randomUUID().toString() // Generate random ID for processor
+            val processorData = mapOf(
+                "id" to processor.id,
+                "name" to processor.name,
+                "price" to processor.price,
+                "boost_clock" to processor.boost_clock,
+                "core_clock" to processor.core_clock,
+                "core_count" to processor.core_count,
+                "graphics" to processor.graphics,
+                "smt" to processor.smt,
+                "tdp" to processor.tdp
+            )
+
+            // Menambahkan processor ke Firebase dengan ID acak
+            favoriteRef.child("processors").child(processorId).setValue(processorData)
+                .addOnSuccessListener {
+                    Log.d("savedFavorite", "Processor added successfully with ID: $processorId")
+                }
+                .addOnFailureListener { error ->
+                    Log.e("savedFavorite", "Failed to add processor: ${error.message}")
+                }
+        }
+
+        // Jika ada video card, simpan data video card dengan ID acak
+        videoCard?.let {
+            val videoCardId = UUID.randomUUID().toString() // Generate random ID for video card
+            val videoCardData = mapOf(
+                "id" to videoCard.id,
+                "name" to videoCard.name,
+                "price" to videoCard.price,
+                "boostClock" to videoCard.boostClock,
+                "coreClock" to videoCard.coreClock,
+                "memory" to videoCard.memory,
+                "chipset" to videoCard.chipset,
+                "color" to videoCard.color,
+                "length" to videoCard.length
+            )
+
+            // Menambahkan video card ke Firebase dengan ID acak
+            favoriteRef.child("videoCards").child(videoCardId).setValue(videoCardData)
+                .addOnSuccessListener {
+                    Log.d("savedFavorite", "Video card added successfully with ID: $videoCardId")
+                }
+                .addOnFailureListener { error ->
+                    Log.e("savedFavorite", "Failed to add video card: ${error.message}")
+                }
+        }
+    }
+}
+
+
+
+
+
+
 
 
 

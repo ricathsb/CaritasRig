@@ -73,6 +73,7 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.Motherboa
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MouseScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.PowerSupplyScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCardScreen
+import com.superbgoal.caritasrig.activity.homepage.favorites.FavoriteScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeScreen2
@@ -178,7 +179,7 @@ fun NavbarHost(
                 BenchmarkScreen(navController)
             }
             composable("favorite") {
-                Text(text = "Favorite")
+                FavoriteScreen()
             }
             composable(
                 route = "build_details",

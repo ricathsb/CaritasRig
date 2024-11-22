@@ -45,6 +45,7 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.Processor
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
+import com.superbgoal.caritasrig.data.savedFavorite
 
 @Composable
 fun BenchmarkScreen(navController: NavController) {
@@ -160,7 +161,9 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        IconButton(onClick = { /* Favorite logic */ }) {
+                        IconButton(onClick = {
+                            savedFavorite(processor=processor)
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite",
@@ -214,7 +217,7 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                         horizontalArrangement = Arrangement.End
                     ) {
                         IconButton(onClick = {
-
+                            savedFavorite(videoCard = videoCard)
                         }) {
                             Icon(
                                 imageVector = Icons.Default.FavoriteBorder,
