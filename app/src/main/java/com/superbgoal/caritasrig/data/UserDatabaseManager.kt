@@ -3,6 +3,7 @@ package com.superbgoal.caritasrig.data
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import com.google.firebase.database.DataSnapshot
@@ -187,22 +188,43 @@ fun getDatabaseReference(): DatabaseReference {
     return FirebaseDatabase.getInstance(databaseUrl).reference
 }
 
-fun saveBuildTitle(userId: String, buildTitle: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+fun saveBuildTitle(
+    context : Context,
+    userId: String,
+    buildTitle: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
     val database = getDatabaseReference()
-    val buildData = mapOf(
-        "title" to buildTitle
-    )
 
-    database.child("users").child(userId).child("builds")
-        .push() // Membuat key unik untuk setiap build
-        .setValue(buildData) // Menyimpan build sebagai objek dengan `title`
-        .addOnSuccessListener {
-            onSuccess()
+    // Referensi ke lokasi builds pengguna
+    val buildsRef = database.child("users").child(userId).child("builds")
+
+    // Cek apakah sudah ada build dengan title yang sama
+    buildsRef.get().addOnSuccessListener { snapshot ->
+        val isTitleExists = snapshot.children.any { it.child("title").value == buildTitle }
+
+        if (isTitleExists) {
+            // Jika title sudah ada, panggil onFailure dengan pesan error
+            onFailure("A build with the title '$buildTitle' already exists.")
+            Toast.makeText(context, "A build with the title '$buildTitle' already exists.", Toast.LENGTH_SHORT).show()
+        } else {
+            // Jika title belum ada, lanjutkan menyimpan
+            val buildData = mapOf("title" to buildTitle)
+            buildsRef.push() // Membuat key unik untuk setiap build
+                .setValue(buildData)
+                .addOnSuccessListener {
+                    onSuccess()
+                }
+                .addOnFailureListener { error ->
+                    onFailure("Failed to save build title: ${error.message}")
+                }
         }
-        .addOnFailureListener { error ->
-            onFailure("Failed to save build title: ${error.message}")
-        }
+    }.addOnFailureListener { error ->
+        onFailure("Failed to check existing builds: ${error.message}")
+    }
 }
+
 
 fun getUserBuilds(onSuccess: (List<Build>) -> Unit, onFailure: (String) -> Unit) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -353,6 +375,29 @@ fun deleteBuild(userId: String, buildId: String, onSuccess: () -> Unit, onFailur
             onFailure("Failed to delete build: ${error.message}") // Callback gagal dengan pesan error
         }
 }
+
+fun editBuildTitle(
+    userId: String,
+    buildId: String,
+    newTitle: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val updates = mapOf("title" to newTitle) // Data yang akan diperbarui
+    getDatabaseReference()
+        .child("users")
+        .child(userId)
+        .child("builds")
+        .child(buildId)
+        .updateChildren(updates) // Memperbarui hanya field "title"
+        .addOnSuccessListener {
+            onSuccess() // Callback sukses
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to update title: ${error.message}") // Callback gagal dengan pesan error
+        }
+}
+
 
 
 

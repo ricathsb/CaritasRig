@@ -51,6 +51,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> get() = _loading
 
+    private val _totalBuildPrice = MutableLiveData(0.0)
+    val totalBuildPrice: LiveData<Double> get() = _totalBuildPrice
+
     private val defaultCategories = mapOf(
         "CPU" to "No CPU Selected",
         "Case" to "No Case Selected",
@@ -73,6 +76,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     fun resetBuildTitle() {
         _buildTitle.value = ""
         println("Build title has been reset.")
+    }
+
+    fun setBuildPrice(price: Double) {
+        _totalBuildPrice.value = price
     }
 
     fun resetBuildData() {
@@ -279,6 +286,21 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         _loading.value = true
 
+        val targetPath = when (category) {
+            "CPU" -> "cpu"
+            "Case" -> "case"
+            "GPU" -> "gpu"
+            "Motherboard" -> "motherboard"
+            "RAM" -> "memory"
+            "InternalHardDrive" -> "internalharddrive"
+            "PowerSupply" -> "powersupply"
+            "CPU Cooler" -> "cpucooler"
+            "Headphone" -> "headphone"
+            "Keyboard" -> "keyboard"
+            "Mouse" -> "mouse"
+            else -> category.lowercase()
+        }
+
         val userId = Firebase.auth.currentUser?.uid
         val currentBuildData = _buildData.value
 
@@ -289,7 +311,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         val buildId = currentBuildData.buildId
-        val componentPath = "users/$userId/builds/$buildId/components/${category.lowercase()}"
+        val componentPath = "users/$userId/builds/$buildId/components/$targetPath"
+
+        Log.d("BuildViewModel1", "Updating $category in Firebase with data: $updatedData")
 
         getDatabaseReference().child(componentPath).updateChildren(updatedData)
             .addOnSuccessListener {
@@ -310,28 +334,26 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                     "Keyboard" -> components.copy(keyboard = updatedData["keyboard"] as? Keyboard ?: components.keyboard)
                     "Mouse" -> components.copy(mouse = updatedData["mouse"] as? Mouse ?: components.mouse)
                     else -> components
-                }.copy() // Buat salinan baru untuk memastikan perubahan referensi
+                }.copy()
 
                 val updatedBuildData = currentBuildData.copy(components = updatedComponents)
 
-                // Paksa perubahan agar terdeteksi Jetpack Compose
                 _buildData.value = null
                 _buildData.value = updatedBuildData
 
-                // Update selectedComponents untuk UI
                 val updatedSelectedComponents = _selectedComponents.value?.toMutableMap()?.apply {
                     this[category] = "Updated $category Successfully"
                 } ?: mapOf(category to "Updated $category Successfully")
                 _selectedComponents.value = updatedSelectedComponents
 
-                _loading.value = false // Selesai loading
+                _loading.value = false
             }
             .addOnFailureListener { error ->
                 Log.e("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Failed to update $category in Firebase: ${error.message}")
                 _selectedComponents.value = _selectedComponents.value?.toMutableMap()?.apply {
                     this[category] = "Failed to update $category"
                 }
-                _loading.value = false // Selesai loading, meskipun gagal
+                _loading.value = false
             }
     }
 }

@@ -56,10 +56,8 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 navController?.navigate("about_us")
             }
             SettingOption(stringResource(id = R.string.logout)) {
-                // Log out the user
                 FirebaseAuth.getInstance().signOut()
 
-                // Navigate to the login screen and clear the back stack
                 val sharedPreferences = context.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
                 sharedPreferences.edit().clear().apply()
 
@@ -68,11 +66,6 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 }
 
             }
-
-            SettingOption("AboutUs") {
-                navController?.navigate("test")
-            }
-
         }
     }
 

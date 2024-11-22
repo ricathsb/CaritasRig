@@ -30,6 +30,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -61,9 +62,11 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
 
 @Composable
 fun LoadingButton(
@@ -288,25 +291,29 @@ fun saveComponent(
 fun <T> SwipeToDeleteContainer(
     item: T,
     onDelete: (T) -> Unit,
+    onEdit: (T) -> Unit,
     animationDuration: Int = 500,
     content: @Composable (T) -> Unit
 ) {
-    var isRemoved by remember {
-        mutableStateOf(false)
-    }
+    var isRemoved by remember { mutableStateOf(false) }
     val state = rememberDismissState(
         confirmStateChange = { value ->
-            if (value == DismissValue.DismissedToStart) {
-                isRemoved = true
-                true
-            } else {
-                false
+            when (value) {
+                DismissValue.DismissedToStart -> {
+                    isRemoved = true
+                    true
+                }
+                DismissValue.DismissedToEnd -> {
+                    onEdit(item)
+                    false
+                }
+                else -> false
             }
         }
     )
 
     LaunchedEffect(key1 = isRemoved) {
-        if(isRemoved) {
+        if (isRemoved) {
             delay(animationDuration.toLong())
             onDelete(item)
         }
@@ -322,37 +329,70 @@ fun <T> SwipeToDeleteContainer(
         SwipeToDismiss(
             state = state,
             background = {
-                DeleteBackground(swipeDismissState = state)
+                EditOrDeleteBackground(swipeDismissState = state)
             },
             dismissContent = { content(item) },
-            directions = setOf(DismissDirection.EndToStart)
+            directions = setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart)
         )
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DeleteBackground(
+fun EditOrDeleteBackground(
     swipeDismissState: DismissState
 ) {
-    val color = if (swipeDismissState.dismissDirection == DismissDirection.EndToStart) {
-        Color.Red
-    } else Color.Transparent
+    val color = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> Color.Blue // Untuk edit
+        DismissDirection.EndToStart -> Color.Red // Untuk hapus
+        else -> Color.Transparent
+    }
+
+    val icon = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> Icons.Default.Edit // Ikon edit
+        DismissDirection.EndToStart -> Icons.Default.Delete // Ikon hapus
+        else -> null
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color)
             .padding(16.dp),
-        contentAlignment = Alignment.CenterEnd
+        contentAlignment = if (swipeDismissState.dismissDirection == DismissDirection.StartToEnd) {
+            Alignment.CenterStart
+        } else {
+            Alignment.CenterEnd
+        }
     ) {
-        Icon(
-            imageVector = Icons.Default.Delete,
-            contentDescription = null,
-            tint = Color.White
-        )
+        icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
     }
 }
+
+fun calculateTotalPrice(it: BuildComponents): Double {
+    val totalPrice = listOfNotNull(
+        it.processor?.price,
+        it.casing?.price,
+        it.videoCard?.price,
+        it.motherboard?.price,
+        it.memory?.price,
+        it.internalHardDrive?.price,
+        it.powerSupply?.price,
+        it.cpuCooler?.price,
+        it.headphone?.price,
+        it.keyboard?.price,
+        it.mouse?.price
+    ).sumOf { price -> price ?: 0.0 }
+
+    return ceil(totalPrice) // Membulatkan ke atas
+}
+
 
 
 
