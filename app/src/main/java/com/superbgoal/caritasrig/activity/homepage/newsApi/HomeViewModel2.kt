@@ -14,21 +14,18 @@ class HomeViewModel2 {
     private val _articles = MutableLiveData<List<Article>>()
     val articles: LiveData<List<Article>> = _articles
 
-    private val _articleUrl = MutableLiveData<String>()
-    val articleUrl: LiveData<String> = _articleUrl
-
     init {
         fetchNewsTopHeadlines()
     }
 
     fun fetchNewsTopHeadlines() {
         val newsApiClient = NewsApiClient(constant.apiKey)
-        val request = TopHeadlinesRequest.Builder().language("en").category("TECHNOLOGY").build()
+        val request = TopHeadlinesRequest.Builder().category("TECHNOLOGY").build()
 
         newsApiClient.getTopHeadlines(request, object : NewsApiClient.ArticlesResponseCallback {
             override fun onSuccess(response: ArticleResponse?) {
                 response?.articles?.let {
-                    Log.d("HomeViewModel", "Success: ${it}")
+                    Log.d("HomeViewModel", "Success: $it")
                     _articles.postValue(it)
                 }
             }
@@ -48,7 +45,7 @@ class HomeViewModel2 {
         newsApiClient.getEverything(request, object : NewsApiClient.ArticlesResponseCallback {
             override fun onSuccess(response: ArticleResponse?) {
                 response?.articles?.let {
-                    Log.d("HomeViewModel", "Success: ${it}")
+                    Log.d("HomeViewModel", "Success: $it")
                     _articles.postValue(it)
                 }
             }
@@ -59,11 +56,6 @@ class HomeViewModel2 {
                 }
             }
         })
-    }
-
-    // Fungsi untuk mengupdate URL artikel
-    fun setArticleUrl(url: String) {
-        _articleUrl.postValue(url)
     }
 }
 
