@@ -291,7 +291,7 @@ fun saveComponent(
 fun <T> SwipeToDeleteContainer(
     item: T,
     onDelete: (T) -> Unit,
-    onEdit: (T) -> Unit,
+    onEdit: ((T) -> Unit)? = null, // Jadikan nullable
     animationDuration: Int = 500,
     content: @Composable (T) -> Unit
 ) {
@@ -304,8 +304,10 @@ fun <T> SwipeToDeleteContainer(
                     true
                 }
                 DismissValue.DismissedToEnd -> {
-                    onEdit(item)
-                    false
+                    onEdit?.let { edit ->
+                        edit(item)
+                        false
+                    } ?: false // Matikan swipe jika onEdit null
                 }
                 else -> false
             }
@@ -329,11 +331,57 @@ fun <T> SwipeToDeleteContainer(
         SwipeToDismiss(
             state = state,
             background = {
-                EditOrDeleteBackground(swipeDismissState = state)
+                EditOrDeleteBackground(
+                    swipeDismissState = state,
+                    enableEdit = onEdit != null // Tentukan apakah swipe untuk edit diaktifkan
+                )
             },
             dismissContent = { content(item) },
-            directions = setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart)
+            directions = if (onEdit != null) {
+                setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart)
+            } else {
+                setOf(DismissDirection.EndToStart)
+            } // Matikan StartToEnd jika onEdit null
         )
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun EditOrDeleteBackground(
+    swipeDismissState: DismissState,
+    enableEdit: Boolean // Parameter baru untuk menentukan apakah edit diaktifkan
+) {
+    val color = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> if (enableEdit) Color.Blue else Color.Transparent
+        DismissDirection.EndToStart -> Color.Red
+        else -> Color.Transparent
+    }
+
+    val icon = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> if (enableEdit) Icons.Default.Edit else null
+        DismissDirection.EndToStart -> Icons.Default.Delete
+        else -> null
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(16.dp),
+        contentAlignment = if (swipeDismissState.dismissDirection == DismissDirection.StartToEnd) {
+            Alignment.CenterStart
+        } else {
+            Alignment.CenterEnd
+        }
+    ) {
+        icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
     }
 }
 

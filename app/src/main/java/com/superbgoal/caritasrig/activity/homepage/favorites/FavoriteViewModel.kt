@@ -89,5 +89,43 @@ class FavoriteViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteVideoCard(videoCardName: String) {
+        val database = getDatabaseReference()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        Log.d("FavoriteViewModel", "Deleting video card with name: $videoCardName")
+
+        if (userId != null) {
+            val favoriteRef = database.child("users").child(userId).child("favorites").child("videoCards")
+
+            // Log untuk memastikan referensi
+            Log.d("FavoriteViewModel", "Reference: ${favoriteRef.toString()}")
+
+            // Menghapus video card berdasarkan name
+            favoriteRef.orderByChild("name").equalTo(videoCardName).get().addOnSuccessListener { snapshot ->
+                Log.d("FavoriteViewModel", "Snapshot children count: ${snapshot.childrenCount}")
+
+                if (snapshot.exists()) {
+                    snapshot.children.forEach {
+                        Log.d("FavoriteViewModel", "Deleting video card with name: ${it.child("name").value}")
+                        it.ref.removeValue().addOnSuccessListener {
+                            Log.d("FavoriteViewModel", "Video card deleted successfully")
+                            // Update StateFlow setelah menghapus item dari Firebase
+                            _videoCards.value = _videoCards.value.filterNot { videoCard ->
+                                videoCard["name"] == videoCardName
+                            }
+                        }.addOnFailureListener { error ->
+                            Log.e("FavoriteViewModel", "Failed to delete video card: ${error.message}")
+                        }
+                    }
+                } else {
+                    Log.d("FavoriteViewModel", "No matching video card found to delete.")
+                }
+            }.addOnFailureListener { error ->
+                Log.e("FavoriteViewModel", "Failed to query video cards: ${error.message}")
+            }
+        }
+    }
+
 }
 
