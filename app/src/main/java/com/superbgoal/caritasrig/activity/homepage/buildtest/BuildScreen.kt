@@ -1,7 +1,6 @@
 package com.superbgoal.caritasrig.activity.homepage.buildtest
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -44,7 +43,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.currentCompositionErrors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +58,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -98,7 +98,8 @@ fun BuildScreen(
     val loading by buildViewModel.loading.observeAsState(false)
     val sharedPreferences = context.getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
     val totalBuildPrice by buildViewModel.totalBuildPrice.observeAsState(0.0)
-
+    val sancreekFont = FontFamily(Font(R.font.sancreek))
+    val sairastencilone = FontFamily(Font(R.font.sairastencilone))
     buildData?.components?.let { calculateTotalPrice(it) }?.let { buildViewModel.setBuildPrice(it) }
 
     // LazyListState untuk melacak posisi scroll
@@ -129,7 +130,7 @@ fun BuildScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Background image
         Image(
-            painter = painterResource(id = R.drawable.bg_build),
+            painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = Modifier.fillMaxSize()
@@ -139,26 +140,31 @@ fun BuildScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+
+
         ) {
             // Title
             Text(
                 text = "Build Title: ${buildTitle.ifEmpty { "" }}",
                 style = MaterialTheme.typography.headlineMedium,
-                color = Color.Black,
+                color = Color.White,
+                fontFamily = sairastencilone,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             //total price
             Text(
                 text = "Total Price: $totalBuildPrice",
                 style = MaterialTheme.typography.headlineMedium,
-                color = Color.Black,
+                color = Color.White,
+                fontFamily = sairastencilone,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
                 text = "Estimated Wattage : $totalBuildPrice",
                 style = MaterialTheme.typography.headlineMedium,
-                color = Color.Black,
+                color = Color.White,
+                fontFamily = sairastencilone,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -436,6 +442,7 @@ fun ComponentCard(
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.medium
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()

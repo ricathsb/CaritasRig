@@ -1,7 +1,7 @@
 package com.superbgoal.caritasrig.activity.homepage.benchmark
 
-import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,29 +20,26 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.ListItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.activity.homepage.buildtest.component.ProcessorList
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
@@ -73,43 +70,47 @@ fun BenchmarkScreen(navController: NavController) {
     val displayedItems = if (selectedCategory == "Processor") processors else videoCards
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1C1B1F)) // Latar belakang gelap
     ) {
-        // Set background image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        Column {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Tombol kategori
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(
                     onClick = { selectedCategory = "Processor" },
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (selectedCategory == "Processor") Color.Blue else Color.Gray
+                        backgroundColor = if (selectedCategory == "Processor") Color(0xFF3E3D42) else Color(0xFF2C2B30),
                     ),
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    modifier = Modifier.weight(1f).padding(end = 4.dp)
                 ) {
                     Text(text = "Processor", color = Color.White)
                 }
                 Button(
                     onClick = { selectedCategory = "GPU" },
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (selectedCategory == "GPU") Color.Blue else Color.Gray
+                        backgroundColor = if (selectedCategory == "GPU") Color(0xFF3E3D42) else Color(0xFF2C2B30)
                     ),
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    modifier = Modifier.weight(1f).padding(start = 4.dp)
                 ) {
                     Text(text = "GPU", color = Color.White)
                 }
             }
-
+            Spacer(modifier = Modifier.height(16.dp))
             // List content
             Surface(
                 modifier = Modifier.fillMaxSize(),
@@ -135,10 +136,15 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(processors) { processor ->
+            // Track favorite state for each processor
+            var isFavorite by remember { mutableStateOf(false) }
+
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                backgroundColor = Color(0xFF473947),
+                modifier = Modifier.fillMaxWidth()
+                    .shadow(5.dp, RoundedCornerShape(15.dp)),
                 elevation = 4.dp,
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(15.dp),
                 onClick = { /* Navigate to processor detail */ }
             ) {
                 Column(
@@ -149,13 +155,13 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                     Text(
                         text = processor.name,
                         style = MaterialTheme.typography.h6,
-                        color = Color.Black
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "${processor.core_count} cores, ${processor.core_clock} GHz",
                         style = MaterialTheme.typography.body2,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -163,10 +169,11 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                         horizontalArrangement = Arrangement.End
                     ) {
                         IconButton(onClick = {
-                            savedFavorite(processor=processor)
+                            isFavorite = !isFavorite
+                            savedFavorite(processor = processor)
                         }) {
                             Icon(
-                                imageVector = Icons.Default.FavoriteBorder,
+                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite",
                                 tint = Color.Red
                             )
@@ -178,6 +185,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
     }
 }
 
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavController) {
@@ -188,13 +196,14 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(videoCards) { videoCard ->
+            var isFavorite by remember { mutableStateOf(false) }
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = 4.dp,
                 shape = RoundedCornerShape(8.dp),
-                onClick = {
-
-                }
+                backgroundColor = Color(0xFF473947),
+                onClick = { /* Navigate to video card detail */ }
             ) {
                 Column(
                     modifier = Modifier
@@ -204,7 +213,7 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                     Text(
                         text = videoCard.name,
                         style = MaterialTheme.typography.h6,
-                        color = Color.Black
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -218,10 +227,11 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                         horizontalArrangement = Arrangement.End
                     ) {
                         IconButton(onClick = {
+                            isFavorite = !isFavorite
                             savedFavorite(videoCard = videoCard)
                         }) {
                             Icon(
-                                imageVector = Icons.Default.FavoriteBorder,
+                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite",
                                 tint = Color.Red
                             )

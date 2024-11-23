@@ -76,7 +76,6 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCard
 import com.superbgoal.caritasrig.activity.homepage.compare.ProcessorComparisonScreen
 import com.superbgoal.caritasrig.activity.homepage.compare.RadarChartProsesor
 import com.superbgoal.caritasrig.activity.homepage.favorites.FavoriteScreen
-import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeScreen2
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeViewModel2
@@ -323,7 +322,7 @@ fun BottomNavigationBar(
                 label = {
                     Text(
                         text = item.title,
-                        fontSize = 12.sp,
+                        fontSize = 10.sp,
                         color = if (isSelected) Color.White else Color.Gray
                     )
                 },
@@ -410,7 +409,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
             Text(
                 text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
                 style = MaterialTheme.typography.h5,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Normal,
                 color = Color.White
             )
 
