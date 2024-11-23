@@ -3,12 +3,14 @@ package com.superbgoal.caritasrig.data
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
@@ -187,22 +189,43 @@ fun getDatabaseReference(): DatabaseReference {
     return FirebaseDatabase.getInstance(databaseUrl).reference
 }
 
-fun saveBuildTitle(userId: String, buildTitle: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+fun saveBuildTitle(
+    context : Context,
+    userId: String,
+    buildTitle: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
     val database = getDatabaseReference()
-    val buildData = mapOf(
-        "title" to buildTitle
-    )
 
-    database.child("users").child(userId).child("builds")
-        .push() // Membuat key unik untuk setiap build
-        .setValue(buildData) // Menyimpan build sebagai objek dengan `title`
-        .addOnSuccessListener {
-            onSuccess()
+    // Referensi ke lokasi builds pengguna
+    val buildsRef = database.child("users").child(userId).child("builds")
+
+    // Cek apakah sudah ada build dengan title yang sama
+    buildsRef.get().addOnSuccessListener { snapshot ->
+        val isTitleExists = snapshot.children.any { it.child("title").value == buildTitle }
+
+        if (isTitleExists) {
+            // Jika title sudah ada, panggil onFailure dengan pesan error
+            onFailure("A build with the title '$buildTitle' already exists.")
+            Toast.makeText(context, "A build with the title '$buildTitle' already exists.", Toast.LENGTH_SHORT).show()
+        } else {
+            // Jika title belum ada, lanjutkan menyimpan
+            val buildData = mapOf("title" to buildTitle)
+            buildsRef.push() // Membuat key unik untuk setiap build
+                .setValue(buildData)
+                .addOnSuccessListener {
+                    onSuccess()
+                }
+                .addOnFailureListener { error ->
+                    onFailure("Failed to save build title: ${error.message}")
+                }
         }
-        .addOnFailureListener { error ->
-            onFailure("Failed to save build title: ${error.message}")
-        }
+    }.addOnFailureListener { error ->
+        onFailure("Failed to check existing builds: ${error.message}")
+    }
 }
+
 
 fun getUserBuilds(onSuccess: (List<Build>) -> Unit, onFailure: (String) -> Unit) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -338,6 +361,206 @@ fun updateBuildComponent(
             onFailure("Failed to update component: ${error.message}")
         }
 }
+
+fun deleteBuild(userId: String, buildId: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    getDatabaseReference()
+        .child("users")
+        .child(userId)
+        .child("builds")
+        .child(buildId)
+        .removeValue() // Langsung menghapus data berdasarkan buildId
+        .addOnSuccessListener {
+            onSuccess() // Callback sukses
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to delete build: ${error.message}") // Callback gagal dengan pesan error
+        }
+}
+
+fun editBuildTitle(
+    userId: String,
+    buildId: String,
+    newTitle: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val updates = mapOf("title" to newTitle) // Data yang akan diperbarui
+    getDatabaseReference()
+        .child("users")
+        .child(userId)
+        .child("builds")
+        .child(buildId)
+        .updateChildren(updates)
+        .addOnSuccessListener {
+            onSuccess() // Callback sukses
+        }
+        .addOnFailureListener { error ->
+            onFailure("Failed to update title: ${error.message}") // Callback gagal dengan pesan error
+        }
+}
+
+fun editRamQuantity(
+    buildTitle: String,
+    quantity: Int,
+    onSuccess: (() -> Unit)? = null,
+    onFailure: ((String) -> Unit)? = null,
+    onLoading: ((Boolean) -> Unit)? = null
+) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val database = getDatabaseReference()
+
+    // Set loading state to true when the process starts
+    onLoading?.invoke(true)
+
+    // Cari buildId berdasarkan buildTitle
+    if (userId != null) {
+        database.child("users").child(userId).child("builds")
+            .orderByChild("title").equalTo(buildTitle)
+            .get()
+            .addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val buildId = dataSnapshot.children.firstOrNull()?.key
+                    if (buildId != null) {
+                        // Ambil harga satuan RAM dan monitor perubahan
+                        val memoryRef = database.child("users").child(userId).child("builds").child(buildId)
+                            .child("components").child("memory")
+
+                        memoryRef.child("price").addValueEventListener(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val unitPrice = snapshot.getValue(Double::class.java) ?: 0.0
+                                val updatedPrice = unitPrice * quantity
+
+                                // Perbarui totalPrice ketika price berubah
+                                memoryRef.child("totalPrice").setValue(updatedPrice)
+                                    .addOnFailureListener { error ->
+                                        onFailure?.invoke("Failed to update total price: ${error.message}")
+                                    }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                onFailure?.invoke("Price listener cancelled: ${error.message}")
+                            }
+                        })
+
+                        // Perbarui quantity dan harga
+                        val updates = mapOf(
+                            "quantity" to quantity
+                        )
+                        memoryRef.updateChildren(updates)
+                            .addOnSuccessListener {
+                                onLoading?.invoke(false) // Set loading state to false on success
+                                onSuccess?.invoke() // Callback sukses
+                            }
+                            .addOnFailureListener { error ->
+                                onLoading?.invoke(false) // Set loading state to false on failure
+                                onFailure?.invoke("Failed to update RAM quantity: ${error.message}")
+                            }
+                    } else {
+                        onLoading?.invoke(false) // Set loading state to false if buildId is not found
+                        onFailure?.invoke("Build ID not found.")
+                    }
+                } else {
+                    onLoading?.invoke(false) // Set loading state to false if build is not found
+                    onFailure?.invoke("Build with title \"$buildTitle\" not found.")
+                }
+            }
+            .addOnFailureListener { error ->
+                onLoading?.invoke(false) // Set loading state to false if query fails
+                onFailure?.invoke("Failed to find build: ${error.message}")
+            }
+    }
+}
+
+fun savedFavorite(
+    processor: Processor? = null,
+    videoCard: VideoCard? = null
+) {
+    val database = getDatabaseReference()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    if (userId != null) {
+        val favoriteRef = database.child("users").child(userId).child("favorites")
+
+        processor?.let { proc ->
+            favoriteRef.child("processors").get().addOnSuccessListener { snapshot ->
+                val exists = snapshot.children.any { it.child("name").value == proc.name }
+                if (exists) {
+                    Log.d("savedFavorite", "Component is already on the favorite list.")
+                } else {
+                    val processorId = UUID.randomUUID().toString()
+                    val processorData = mapOf(
+                        "id" to proc.id,
+                        "name" to proc.name,
+                        "price" to proc.price,
+                        "boost_clock" to proc.boost_clock,
+                        "core_clock" to proc.core_clock,
+                        "core_count" to proc.core_count,
+                        "graphics" to proc.graphics,
+                        "smt" to proc.smt,
+                        "tdp" to proc.tdp
+                    )
+
+                    favoriteRef.child("processors").child(processorId).setValue(processorData)
+                        .addOnSuccessListener {
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("savedFavorite", "Failed to add processor: ${error.message}")
+                        }
+                }
+            }.addOnFailureListener { error ->
+                Log.e("savedFavorite", "Failed to check processors: ${error.message}")
+            }
+        }
+
+        videoCard?.let { vCard ->
+            favoriteRef.child("videoCards").get().addOnSuccessListener { snapshot ->
+                val exists = snapshot.children.any { it.child("name").value == vCard.name }
+                if (exists) {
+                    Log.d("savedFavorite", "Component is already on the favorite list.")
+                } else {
+                    val videoCardId = UUID.randomUUID().toString()
+                    val videoCardData = mapOf(
+                        "id" to vCard.id,
+                        "name" to vCard.name,
+                        "price" to vCard.price,
+                        "boostClock" to vCard.boostClock,
+                        "coreClock" to vCard.coreClock,
+                        "memory" to vCard.memory,
+                        "chipset" to vCard.chipset,
+                        "color" to vCard.color,
+                        "length" to vCard.length
+                    )
+
+                    favoriteRef.child("videoCards").child(videoCardId).setValue(videoCardData)
+                        .addOnSuccessListener {
+                            Log.d("savedFavorite", "Video card added to favorites.")
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("savedFavorite", "Failed to add video card: ${error.message}")
+                        }
+                }
+            }.addOnFailureListener { error ->
+                Log.e("savedFavorite", "Failed to check video cards: ${error.message}")
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

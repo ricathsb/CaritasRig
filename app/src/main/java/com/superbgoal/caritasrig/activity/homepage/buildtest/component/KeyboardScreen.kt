@@ -165,7 +165,7 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
                             componentType = "keyboard", // Specify component type
                             componentData = keyboardItem, // Pass keyboard data
                             onSuccess = {
-                                // Stop loading on success
+                                navController.navigateUp()
                                 isLoading.value = false
                                 Log.d("KeyboardActivity", "Keyboard ${keyboardItem.name} saved successfully under build title: $title")
 

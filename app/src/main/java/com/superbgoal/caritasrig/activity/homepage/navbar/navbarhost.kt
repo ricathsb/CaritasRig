@@ -1,18 +1,19 @@
 package com.superbgoal.caritasrig.activity.homepage.navbar
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.BottomAppBar
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -21,13 +22,16 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,21 +43,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.activity.homepage.benchmark.BenchmarkScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildListScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel
@@ -68,8 +73,14 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.Motherboa
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MouseScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.PowerSupplyScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCardScreen
+import com.superbgoal.caritasrig.activity.homepage.compare.ProcessorComparisonScreen
+import com.superbgoal.caritasrig.activity.homepage.compare.RadarChartProsesor
+import com.superbgoal.caritasrig.activity.homepage.favorites.FavoriteScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
+import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeScreen2
+import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeViewModel2
+import com.superbgoal.caritasrig.activity.homepage.newsApi.NewsArticleScreen
 import com.superbgoal.caritasrig.activity.homepage.settings.AboutUsScreen
 import com.superbgoal.caritasrig.activity.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -79,21 +90,22 @@ fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
     appController: NavController,
-
     ) {
     val navController = rememberNavController()
-    var selectedItem by remember { mutableIntStateOf(0) } // Default ke Home (index 0)
+    var selectedItem by remember { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
             val currentBackStackEntry = navController.currentBackStackEntryAsState()
             val currentRoute = currentBackStackEntry.value?.destination?.route
             val isProfileScreen = currentRoute?.startsWith("profile") == true
+            Log.d("NavbarHost", "Current Route: $currentRoute")
 
             val specificRoutes = listOf("settings", "about_us", "settings_profile")
             val isSpecificRoute = specificRoutes.contains(currentRoute)
 
             val title = when (currentRoute) {
+                "profile/{username}" -> "Profile"
                 "home" -> "Home"
                 "settings" -> "Settings"
                 "about_us" -> "About Us"
@@ -102,6 +114,7 @@ fun NavbarHost(
                 "build" -> "Build"
                 "benchmark" -> "Benchmark"
                 "favorite" -> "Favorite Component"
+                "build_details" -> "Building :3"
                 else -> "CaritasRig"
             }
             Log.d("NavbarHost", "Current Route: $currentRoute")
@@ -130,34 +143,15 @@ fun NavbarHost(
 
         bottomBar = {
             BottomNavigationBar(
-                selectedItem = selectedItem, // Pastikan ini adalah state yang dikelola
-                onItemSelected = { index ->
-                    // Update selectedItem di sini
-                    selectedItem = index // Misalnya, jika Anda menggunakan state untuk menyimpan nilai ini
-                    when (index) {
-                        0 -> navController.navigate("home") {
-                            popUpTo("home") { inclusive = true }
-                            launchSingleTop = true
-                        }
-                        1 -> navController.navigate("trending") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        2 -> navController.navigate("build") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        3 -> navController.navigate("benchmark") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
-                        4 -> navController.navigate("favorite") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
+                navController = navController,
+                onItemSelected = { route ->
+                    navController.navigate(route) {
+                        popUpTo("home") { inclusive = false }
+                        launchSingleTop = true
                     }
                 }
             )
+
         }
     ) { innerPadding ->
         NavHost(
@@ -166,7 +160,7 @@ fun NavbarHost(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
-                HomeScreen(viewModel = homeViewModel)
+                HomeScreen2(navController = navController)
             }
             composable("profile/{username}") {
                 ProfileScreen(homeViewModel = homeViewModel)
@@ -178,16 +172,16 @@ fun NavbarHost(
                 AboutUsScreen()
             }
             composable("trending") {
-                Text(text = "Trending")
+                ProcessorComparisonScreen()
             }
             composable("build") {
                 BuildListScreen(navController,buildViewModel)
             }
             composable("benchmark") {
-                Text(text = "Benchmark")
+                BenchmarkScreen(navController)
             }
             composable("favorite") {
-                Text(text = "Favorite")
+                FavoriteScreen()
             }
             composable(
                 route = "build_details",
@@ -204,6 +198,7 @@ fun NavbarHost(
             composable("keyboard_screen") { KeyboardScreen(navController) }
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
+            composable("news_article_screen") { NewsArticleScreen()}
         }
     }
 }
@@ -232,7 +227,7 @@ fun AppTopBar(
                 if (isSpecificRoute || isProfileScreen) {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Default.ArrowBackIosNew,
                             contentDescription = "Back Icon",
                             modifier = Modifier.size(28.dp)
                         )
@@ -266,7 +261,7 @@ fun AppTopBar(
                             model = user?.profileImageUrl,
                             contentDescription = "Profile",
                             modifier = Modifier
-                                .size(28.dp)
+                                .size(35.dp)
                                 .clip(CircleShape),
                             placeholder = painterResource(id = R.drawable.baseline_person_24),
                             error = painterResource(id = R.drawable.baseline_person_24)
@@ -275,7 +270,7 @@ fun AppTopBar(
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = "Default Profile Icon",
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier.size(35.dp)
                         )
                     }
                 }
@@ -289,8 +284,8 @@ fun AppTopBar(
 
 @Composable
 fun BottomNavigationBar(
-    selectedItem: Int,
-    onItemSelected: (Int) -> Unit
+    navController: NavController,
+    onItemSelected: (String) -> Unit
 ) {
     val items = listOf(
         NavigationItem.Home,
@@ -299,49 +294,68 @@ fun BottomNavigationBar(
         NavigationItem.Benchmark,
         NavigationItem.Favorite
     )
+    val currentRoute = currentRoute(navController)
     val navbarColor = Color(0xFF473947)
 
-    BottomAppBar(
-        backgroundColor = navbarColor,
-        cutoutShape = CircleShape,
-        modifier = Modifier.height(60.dp),
-        elevation = 8.dp
+    NavigationBar(
+        containerColor = navbarColor,
+        tonalElevation = 8.dp,
+        modifier = Modifier.height(75.dp)
     ) {
-        items.forEachIndexed { index, item ->
-            val isSelected = selectedItem == index
+        items.forEach { item ->
+            val isSelected = currentRoute == item.route
 
-            BottomNavigationItem(
+            NavigationBarItem(
                 icon = {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (isSelected) Color.White else Color.Gray, // Mengubah warna berdasarkan status dipilih
-                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp) // Mengubah ukuran berdasarkan status dipilih
+                        tint = if (isSelected) Color.White else Color.Gray,
+                        modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
                 },
                 selected = isSelected,
-                onClick = { onItemSelected(index) },
+                onClick = {
+                    if (currentRoute != item.route) {
+                        onItemSelected(item.route)
+                    }
+                },
                 label = {
                     Text(
                         text = item.title,
-                        color = if (isSelected) Color.White else Color.Gray // Mengubah warna teks berdasarkan status dipilih
+                        fontSize = 12.sp,
+                        color = if (isSelected) Color.White else Color.Gray
                     )
                 },
-                selectedContentColor = Color.White,
-                unselectedContentColor = Color.Gray,
+
+                alwaysShowLabel = false,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    unselectedIconColor = Color.Gray,
+                    selectedTextColor = Color.White,
+                    unselectedTextColor = Color.Gray
+                )
             )
         }
     }
 }
 
-
-sealed class NavigationItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    object Home : NavigationItem("Home", Icons.Default.Home) // Pastikan ikon ini valid
-    object Trending : NavigationItem("Trending", Icons.Filled.TrendingUp) // Ubah ke Icons.Filled agar lebih stabil
-    object Build : NavigationItem("My Build", Icons.Default.DesktopWindows)
-    object Benchmark : NavigationItem("Benchmark", Icons.Default.BarChart)
-    object Favorite : NavigationItem("Favorite", Icons.Default.Favorite)
+@Composable
+fun currentRoute(navController: NavController): String? {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    return navBackStackEntry?.destination?.route
 }
+
+
+
+sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
+    data object Home : NavigationItem("home", Icons.Default.Home, "Home")
+    data object Trending : NavigationItem("trending", Icons.Default.TrendingUp, "Trending")
+    data object Build : NavigationItem("build", Icons.Default.DesktopWindows, "Build")
+    data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
+    data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")
+}
+
 
 
 @Composable
@@ -352,53 +366,76 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
         homeViewModel.loadUserData("currentUserId")
     }
 
-    val currentUser = user // Salin nilai user ke variabel lokal
+    val currentUser = user
 
-    Column(
+    // Dark-themed background
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color(0xFF121212)) // Dark background
     ) {
-        // Profile Image
-        if (currentUser?.profileImageUrl != null) {
-            AsyncImage(
-                model = currentUser.profileImageUrl,
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, MaterialTheme.colors.primary, CircleShape),
-                placeholder = painterResource(id = R.drawable.baseline_person_24),
-                error = painterResource(id = R.drawable.baseline_person_24)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 15.dp) // Move content towards the top
+        ) {
+            // Profile Image
+            if (currentUser?.profileImageUrl != null) {
+                AsyncImage(
+                    model = currentUser.profileImageUrl,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, Color(0xFFBB86FC), CircleShape), // Accent color border
+                    placeholder = painterResource(id = R.drawable.baseline_person_24),
+                    error = painterResource(id = R.drawable.baseline_person_24)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Default Profile Icon",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, Color(0xFFBB86FC), CircleShape), // Accent color border
+                    tint = Color(0xFFBB86FC) // Accent color
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Full Name
+            Text(
+                text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
-        } else {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Default Profile Icon",
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, MaterialTheme.colors.primary, CircleShape)
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Username
+            Text(
+                text = "@${currentUser?.username ?: "username"}",
+                style = MaterialTheme.typography.body1,
+                color = Color(0xFFBB86FC) // Accent color
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Date of Birth
+            if (currentUser?.dateOfBirth?.isNotEmpty() == true) {
+                Text(
+                    text = "Born on ${currentUser.dateOfBirth}",
+                    style = MaterialTheme.typography.body2,
+                    color = Color(0xFFB0BEC5) // Muted gray
+                )
+            }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
-            style = MaterialTheme.typography.h6,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "@${currentUser?.username ?: "username"}",
-            style = MaterialTheme.typography.body2,
-            color = MaterialTheme.colors.secondary
-        )
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
+
+
 

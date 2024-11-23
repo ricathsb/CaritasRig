@@ -181,6 +181,7 @@ fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
                             componentType = "gpu",
                             componentData = videoCard,
                             onSuccess = {
+                                navController.navigateUp()
                             },
                             onFailure = { errorMessage ->
                                 isLoading.value = false

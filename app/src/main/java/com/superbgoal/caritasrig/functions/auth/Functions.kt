@@ -1,10 +1,16 @@
-// Function.kt
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+
 package com.superbgoal.caritasrig.functions.auth
 
 import android.content.Context
 import android.os.Parcelable
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +23,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissState
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -30,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,8 +62,11 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
 
 @Composable
 fun LoadingButton(
@@ -264,6 +283,162 @@ fun saveComponent(
             onLoading?.invoke(false) // Set loading state to false if there is a failure in the database query
             onFailure("Failed to find build: ${error.message}")
         }
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun <T> SwipeToDeleteContainer(
+    item: T,
+    onDelete: (T) -> Unit,
+    onEdit: ((T) -> Unit)? = null, // Jadikan nullable
+    animationDuration: Int = 500,
+    content: @Composable (T) -> Unit
+) {
+    var isRemoved by remember { mutableStateOf(false) }
+    val state = rememberDismissState(
+        confirmStateChange = { value ->
+            when (value) {
+                DismissValue.DismissedToStart -> {
+                    isRemoved = true
+                    true
+                }
+                DismissValue.DismissedToEnd -> {
+                    onEdit?.let { edit ->
+                        edit(item)
+                        false
+                    } ?: false // Matikan swipe jika onEdit null
+                }
+                else -> false
+            }
+        }
+    )
+
+    LaunchedEffect(key1 = isRemoved) {
+        if (isRemoved) {
+            delay(animationDuration.toLong())
+            onDelete(item)
+        }
+    }
+
+    AnimatedVisibility(
+        visible = !isRemoved,
+        exit = shrinkVertically(
+            animationSpec = tween(durationMillis = animationDuration),
+            shrinkTowards = Alignment.Top
+        ) + fadeOut()
+    ) {
+        SwipeToDismiss(
+            state = state,
+            background = {
+                EditOrDeleteBackground(
+                    swipeDismissState = state,
+                    enableEdit = onEdit != null // Tentukan apakah swipe untuk edit diaktifkan
+                )
+            },
+            dismissContent = { content(item) },
+            directions = if (onEdit != null) {
+                setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart)
+            } else {
+                setOf(DismissDirection.EndToStart)
+            } // Matikan StartToEnd jika onEdit null
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun EditOrDeleteBackground(
+    swipeDismissState: DismissState,
+    enableEdit: Boolean // Parameter baru untuk menentukan apakah edit diaktifkan
+) {
+    val color = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> if (enableEdit) Color.Blue else Color.Transparent
+        DismissDirection.EndToStart -> Color.Red
+        else -> Color.Transparent
+    }
+
+    val icon = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> if (enableEdit) Icons.Default.Edit else null
+        DismissDirection.EndToStart -> Icons.Default.Delete
+        else -> null
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(16.dp),
+        contentAlignment = if (swipeDismissState.dismissDirection == DismissDirection.StartToEnd) {
+            Alignment.CenterStart
+        } else {
+            Alignment.CenterEnd
+        }
+    ) {
+        icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun EditOrDeleteBackground(
+    swipeDismissState: DismissState
+) {
+    val color = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> Color.Blue // Untuk edit
+        DismissDirection.EndToStart -> Color.Red // Untuk hapus
+        else -> Color.Transparent
+    }
+
+    val icon = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> Icons.Default.Edit // Ikon edit
+        DismissDirection.EndToStart -> Icons.Default.Delete // Ikon hapus
+        else -> null
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(16.dp),
+        contentAlignment = if (swipeDismissState.dismissDirection == DismissDirection.StartToEnd) {
+            Alignment.CenterStart
+        } else {
+            Alignment.CenterEnd
+        }
+    ) {
+        icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
+    }
+}
+
+fun calculateTotalPrice(it: BuildComponents): Double {
+    val totalPrice = listOfNotNull(
+        it.processor?.price,
+        it.casing?.price,
+        it.videoCard?.price,
+        it.motherboard?.price,
+        it.memory?.totalPrice,
+        it.internalHardDrive?.price,
+        it.powerSupply?.price,
+        it.cpuCooler?.price,
+        it.headphone?.price,
+        it.keyboard?.price,
+        it.mouse?.price
+    ).sumOf { price -> price ?: 0.0 }
+
+    return ceil(totalPrice) // Membulatkan ke atas
 }
 
 

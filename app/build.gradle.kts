@@ -54,7 +54,8 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.thechance101.chart)
+    implementation (libs.news.api.java)
     implementation(platform(libs.firebase.bom))
     implementation(libs.google.firebase.auth)
     implementation(libs.gson)
