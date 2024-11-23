@@ -73,6 +73,8 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.Motherboa
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.MouseScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.PowerSupplyScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCardScreen
+import com.superbgoal.caritasrig.activity.homepage.compare.ProcessorComparisonScreen
+import com.superbgoal.caritasrig.activity.homepage.compare.RadarChartProsesor
 import com.superbgoal.caritasrig.activity.homepage.favorites.FavoriteScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
@@ -170,7 +172,7 @@ fun NavbarHost(
                 AboutUsScreen()
             }
             composable("trending") {
-                Text(text = "Trending")
+                ProcessorComparisonScreen()
             }
             composable("build") {
                 BuildListScreen(navController,buildViewModel)
