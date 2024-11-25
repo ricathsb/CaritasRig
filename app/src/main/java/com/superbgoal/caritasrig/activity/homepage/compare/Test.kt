@@ -31,13 +31,10 @@ import com.aay.compose.radarChart.model.PolygonStyle
 
 @Composable
 fun ProcessorComparisonScreen() {
-    // State untuk menyimpan daftar prosesor
     val processorList = remember { mutableStateListOf<Processor2>() }
 
-    // State untuk mengontrol tampilan dialog
     val isDialogVisible = remember { mutableStateOf(false) }
 
-    // Contoh data prosesor yang tersedia
     val availableProcessors = listOf(
         Processor2(
             name = "AMD Ryzen 9 7950X3D",
@@ -76,7 +73,6 @@ fun ProcessorComparisonScreen() {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Tombol utama untuk membuka dialog daftar prosesor
         Button(
             onClick = { isDialogVisible.value = true },
             modifier = Modifier.fillMaxWidth()
@@ -86,7 +82,6 @@ fun ProcessorComparisonScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Menampilkan daftar prosesor yang sudah ditambahkan
         Text(
             text = "Selected Processors:",
             style = MaterialTheme.typography.bodyMedium
@@ -97,7 +92,6 @@ fun ProcessorComparisonScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Hanya tampilkan RadarChart jika sudah ada 2 prosesor
         if (processorList.size == 2) {
             RadarChartProsesor(processorList[0], processorList[1])
         } else {
@@ -109,7 +103,6 @@ fun ProcessorComparisonScreen() {
         }
     }
 
-    // Dialog untuk memilih prosesor
     if (isDialogVisible.value) {
         AlertDialog(
             onDismissRequest = { isDialogVisible.value = false },
@@ -145,7 +138,7 @@ fun ProcessorComparisonScreen() {
 
 @Composable
 fun RadarChartProsesor(processor1: Processor2, processor2: Processor2) {
-    val maxValues = listOf(16.0, 5.0, 6.0, 200.0, 2500.0, 30000.0) // Max value for each attribute
+    val maxValues = listOf(16.0, 5.0, 6.0, 200.0, 2500.0, 30000.0)
     val scalarValue = 20.0
 
     val processor1Values = listOf(

@@ -3,17 +3,13 @@ package com.superbgoal.caritasrig.activity.homepage.buildtest
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
-import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.functions.fetchBuildsWithAuth
+import com.superbgoal.caritasrig.functions.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Casing
@@ -27,7 +23,7 @@ import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
-import com.superbgoal.caritasrig.data.removeBuildComponent
+import com.superbgoal.caritasrig.functions.removeBuildComponent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

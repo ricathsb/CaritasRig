@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.functions.auth.SwipeToDeleteContainer
+import com.superbgoal.caritasrig.functions.SwipeToDeleteContainer
 
 @Composable
 fun FavoriteScreen(favoriteViewModel: FavoriteViewModel = viewModel()) {

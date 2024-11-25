@@ -1,4 +1,4 @@
-package com.superbgoal.caritasrig.data
+package com.superbgoal.caritasrig.functions
 
 import android.content.Context
 import android.net.Uri
@@ -10,7 +10,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
@@ -378,26 +377,47 @@ fun deleteBuild(userId: String, buildId: String, onSuccess: () -> Unit, onFailur
 }
 
 fun editBuildTitle(
+    context: Context,
     userId: String,
     buildId: String,
     newTitle: String,
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit
 ) {
-    val updates = mapOf("title" to newTitle) // Data yang akan diperbarui
-    getDatabaseReference()
-        .child("users")
-        .child(userId)
-        .child("builds")
-        .child(buildId)
-        .updateChildren(updates)
-        .addOnSuccessListener {
-            onSuccess() // Callback sukses
+    val database = getDatabaseReference()
+
+    // Referensi ke lokasi builds pengguna
+    val buildsRef = database.child("users").child(userId).child("builds")
+
+    // Cek apakah sudah ada build dengan title yang sama (selain build yang sedang diedit)
+    buildsRef.get().addOnSuccessListener { snapshot ->
+        val isTitleExists = snapshot.children.any {
+            val title = it.child("title").value
+            val id = it.key
+            title == newTitle && id != buildId // Pastikan bukan build yang sedang diedit
         }
-        .addOnFailureListener { error ->
-            onFailure("Failed to update title: ${error.message}") // Callback gagal dengan pesan error
+
+        if (isTitleExists) {
+            // Jika title sudah ada, panggil onFailure dengan pesan error
+            onFailure("A build with the title '$newTitle' already exists.")
+            Toast.makeText(context, "A build with the title '$newTitle' already exists.", Toast.LENGTH_SHORT).show()
+        } else {
+            // Jika title belum ada, lanjutkan proses edit
+            val updates = mapOf("title" to newTitle)
+            buildsRef.child(buildId).updateChildren(updates)
+                .addOnSuccessListener {
+                    onSuccess()
+                    Toast.makeText(context, "Build updated successfully.", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { error ->
+                    onFailure("Failed to update build title: ${error.message}")
+                }
         }
+    }.addOnFailureListener { error ->
+        onFailure("Failed to check existing builds: ${error.message}")
+    }
 }
+
 
 fun editRamQuantity(
     buildTitle: String,
