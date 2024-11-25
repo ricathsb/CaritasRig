@@ -3,8 +3,7 @@ package com.superbgoal.caritasrig.activity.homepage.favorites
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.GenericTypeIndicator
-import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.functions.getDatabaseReference
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

@@ -1,7 +1,6 @@
 package com.superbgoal.caritasrig.functions.auth
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -66,9 +65,8 @@ class AuthenticationManager(private val context: Context) {
                 }.addOnFailureListener { exception ->
                     Log.e("checkUserInDatabase", "Error checking user in database: ${exception.message}")
                     if (callback != null) {
-                        callback("login")  // Call the callback with "login" in case of failure
+                        callback("login")
                     } else {
-                        // Default behavior (not using callback)
                         navController.navigate("login")
                     }
                 }

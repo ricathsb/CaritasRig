@@ -1,6 +1,7 @@
 package com.superbgoal.caritasrig.activity.homepage.buildtest
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -43,6 +44,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.currentCompositionErrors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -69,9 +71,9 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.editRamQuantity
-import com.superbgoal.caritasrig.data.saveBuildTitle
-import com.superbgoal.caritasrig.functions.auth.calculateTotalPrice
+import com.superbgoal.caritasrig.functions.calculateTotalPrice
+import com.superbgoal.caritasrig.functions.editRamQuantity
+import com.superbgoal.caritasrig.functions.saveBuildTitle
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -100,6 +102,7 @@ fun BuildScreen(
     val totalBuildPrice by buildViewModel.totalBuildPrice.observeAsState(0.0)
     val sancreekFont = FontFamily(Font(R.font.sancreek))
     val sairastencilone = FontFamily(Font(R.font.sairastencilone))
+
     buildData?.components?.let { calculateTotalPrice(it) }?.let { buildViewModel.setBuildPrice(it) }
 
     // LazyListState untuk melacak posisi scroll
@@ -140,35 +143,17 @@ fun BuildScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-
-
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             // Title
             Text(
-                text = "Build Title: ${buildTitle.ifEmpty { "" }}",
-                style = MaterialTheme.typography.headlineMedium,
+                text = buildTitle.ifEmpty { "" },
+                style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontFamily = sairastencilone,
                 modifier = Modifier.padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
             )
-            //total price
-            Text(
-                text = "Total Price: $totalBuildPrice",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                fontFamily = sairastencilone,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Text(
-                text = "Estimated Wattage : $totalBuildPrice",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                fontFamily = sairastencilone,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-
             if (loading) {
                 // Full-screen loading indicator
                 Box(
@@ -442,7 +427,6 @@ fun ComponentCard(
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.medium
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()

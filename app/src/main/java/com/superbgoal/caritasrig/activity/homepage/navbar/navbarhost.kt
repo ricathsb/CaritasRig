@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,6 +58,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
+import com.aay.compose.donutChart.DonutChart
+import com.aay.compose.donutChart.model.PieChartData
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.homepage.benchmark.BenchmarkScreen
 import com.superbgoal.caritasrig.activity.homepage.buildtest.BuildListScreen
@@ -424,6 +427,8 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            DonutChartSample()
+
             // Date of Birth
             if (currentUser?.dateOfBirth?.isNotEmpty() == true) {
                 Text(
@@ -434,6 +439,43 @@ fun ProfileScreen(homeViewModel: HomeViewModel) {
             }
         }
     }
+}
+
+@Composable
+fun DonutChartSample() {
+
+    val testPieChartData: List<PieChartData> = listOf(
+        PieChartData(
+            partName = "part A",
+            data = 500.0,
+            color = Color(0xFF0B666A),
+        ),
+        PieChartData(
+            partName = "Part B",
+            data = 700.0,
+            color = Color(0xFF35A29F),
+        ),
+        PieChartData(
+            partName = "Part C",
+            data = 500.0,
+            color = Color(0xFF97FEED),
+        ),
+        PieChartData(
+            partName = "Part D",
+            data = 100.0,
+            color = Color(0xFF071952),
+        ),
+    )
+
+    DonutChart(
+        modifier = Modifier.fillMaxSize(),
+        pieChartData = testPieChartData,
+        centerTitle = "Orders",
+        centerTitleStyle = TextStyle(color = Color(0xFF071952)),
+        outerCircularColor = Color.LightGray,
+        innerCircularColor = Color.Gray,
+        ratioLineColor = Color.LightGray,
+    )
 }
 
 

@@ -47,8 +47,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.User
-import com.superbgoal.caritasrig.data.saveUserData
-import com.superbgoal.caritasrig.data.uploadImageToFirebase
+import com.superbgoal.caritasrig.functions.saveUserData
+import com.superbgoal.caritasrig.functions.uploadImageToFirebase
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
-package com.superbgoal.caritasrig.functions.auth
+package com.superbgoal.caritasrig.functions
 
 import android.content.Context
 import android.os.Parcelable
@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -307,7 +306,7 @@ fun <T> SwipeToDeleteContainer(
                     onEdit?.let { edit ->
                         edit(item)
                         false
-                    } ?: false // Matikan swipe jika onEdit null
+                    } ?: false
                 }
                 else -> false
             }
