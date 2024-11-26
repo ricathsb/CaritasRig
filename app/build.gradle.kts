@@ -108,4 +108,9 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
+    //pager
+    implementation ("com.google.accompanist:accompanist-pager:0.32.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.32.0")
+
+
 }
