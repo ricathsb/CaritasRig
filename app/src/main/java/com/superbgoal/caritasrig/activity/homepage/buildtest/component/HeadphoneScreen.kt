@@ -37,6 +37,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun HeadphoneScreen(navController: NavController) {
@@ -146,6 +147,9 @@ fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {
                 // Passing context from LocalContext
                 component = headphone,
                 isLoading = isLoading.value, // Pass loading state to card
+                onFavClick = {
+                    savedFavorite(headphones = headphone)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

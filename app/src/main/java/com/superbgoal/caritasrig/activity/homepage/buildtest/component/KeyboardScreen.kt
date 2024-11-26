@@ -37,6 +37,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Keyboard
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun KeyboardScreen(navController: NavController) {
@@ -147,6 +148,9 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
                 // Passing context from LocalContext
                 component = keyboardItem,
                 isLoading = isLoading.value, // Pass loading state to card
+                onFavClick = {
+                    savedFavorite(keyboard = keyboardItem)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

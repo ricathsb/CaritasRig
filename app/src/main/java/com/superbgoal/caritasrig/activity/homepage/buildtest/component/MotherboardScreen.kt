@@ -44,6 +44,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Motherboard
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun MotherboardScreen(navController: NavController) {
@@ -281,6 +282,10 @@ fun MotherboardList(motherboards: List<Motherboard>, navController: NavControlle
                 context = context,
                 component = motherboard,
                 isLoading = isLoading.value,
+                onFavClick = {
+                    // Handle favorite click
+                    savedFavorite(motherboard = motherboard)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

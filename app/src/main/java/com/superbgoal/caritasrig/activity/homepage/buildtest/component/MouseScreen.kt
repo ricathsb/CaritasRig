@@ -37,6 +37,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun MouseScreen(navController: NavController) {
@@ -145,6 +146,10 @@ fun MouseList(mice: List<Mouse>, navController: NavController) {
                 details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
                 component = mouseItem,
                 isLoading = isLoading.value, // Pass loading state to card
+                onFavClick = {
+                    // Handle favorite click
+                    savedFavorite(mouse = mouseItem)
+                },
                 onAddClick = {
                     // Mulai proses loading ketika tombol Add ditekan
                     isLoading.value = true

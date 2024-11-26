@@ -494,9 +494,17 @@ fun editRamQuantity(
 fun savedFavorite(
     processor: Processor? = null,
     videoCard: VideoCard? = null,
-    casing: Casing? = null
+    casing: Casing? = null,
+    cpuCooler: CpuCooler? = null,
+    headphones: Headphones? = null,
+    internalHardDrive: InternalHardDrive? = null,
+    keyboard: Keyboard? = null,
+    memory: Memory? = null,
+    motherboard: Motherboard? = null,
+    mouse: Mouse? = null,
+    powerSupply: PowerSupply? = null
 ) {
-    val database = getDatabaseReference()
+    val database = FirebaseDatabase.getInstance("https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app").reference
     val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     if (userId != null) {
@@ -528,66 +536,173 @@ fun savedFavorite(
         }
 
         processor?.let {
-            saveComponent(
-                component = it,
-                type = "processors",
-                idGenerator = { UUID.randomUUID().toString() },
-                dataMapper = { proc ->
-                    mapOf(
-                        "id" to proc.id,
-                        "name" to proc.name,
-                        "price" to proc.price,
-                        "boost_clock" to proc.boost_clock,
-                        "core_clock" to proc.core_clock,
-                        "core_count" to proc.core_count,
-                        "graphics" to proc.graphics,
-                        "smt" to proc.smt,
-                        "tdp" to proc.tdp
-                    )
-                }
-            )
+            saveComponent(it, "processors", { UUID.randomUUID().toString() }) { proc ->
+                mapOf(
+                    "id" to proc.id,
+                    "name" to proc.name,
+                    "price" to proc.price,
+                    "boost_clock" to proc.boost_clock,
+                    "core_clock" to proc.core_clock,
+                    "core_count" to proc.core_count,
+                    "graphics" to proc.graphics,
+                    "smt" to proc.smt,
+                    "tdp" to proc.tdp
+                )
+            }
         }
 
         videoCard?.let {
-            saveComponent(
-                component = it,
-                type = "videoCards",
-                idGenerator = { UUID.randomUUID().toString() },
-                dataMapper = { vCard ->
-                    mapOf(
-                        "id" to vCard.id,
-                        "name" to vCard.name,
-                        "price" to vCard.price,
-                        "boostClock" to vCard.boostClock,
-                        "coreClock" to vCard.coreClock,
-                        "memory" to vCard.memory,
-                        "chipset" to vCard.chipset,
-                        "color" to vCard.color,
-                        "length" to vCard.length
-                    )
-                }
-            )
+            saveComponent(it, "videoCards", { UUID.randomUUID().toString() }) { vCard ->
+                mapOf(
+                    "id" to vCard.id,
+                    "name" to vCard.name,
+                    "price" to vCard.price,
+                    "boostClock" to vCard.boostClock,
+                    "coreClock" to vCard.coreClock,
+                    "memory" to vCard.memory,
+                    "chipset" to vCard.chipset,
+                    "color" to vCard.color,
+                    "length" to vCard.length
+                )
+            }
         }
 
         casing?.let {
-            saveComponent(
-                component = it,
-                type = "casings",
-                idGenerator = { UUID.randomUUID().toString() },
-                dataMapper = { casing ->
-                    mapOf(
-                        "id" to casing.id,
-                        "name" to casing.name,
-                        "price" to casing.price,
-                        "material" to casing.sidePanel,
-                        "form_factor" to casing.externalVolume,
-                        "color" to casing.color
-                    )
-                }
-            )
+            saveComponent(it, "casings", { UUID.randomUUID().toString() }) { casing ->
+                mapOf(
+                    "id" to casing.id,
+                    "name" to casing.name,
+                    "price" to casing.price,
+                    "sidePanel" to casing.sidePanel,
+                    "externalVolume" to casing.externalVolume,
+                    "color" to casing.color
+                )
+            }
+        }
+
+        cpuCooler?.let {
+            saveComponent(it, "cpuCoolers", { UUID.randomUUID().toString() }) { cooler ->
+                mapOf(
+                    "name" to cooler.name,
+                    "price" to cooler.price,
+                    "rpm" to cooler.rpm,
+                    "noise_level" to cooler.noise_level,
+                    "color" to cooler.color,
+                    "size" to cooler.size
+                )
+            }
+        }
+
+        headphones?.let {
+            saveComponent(it, "headphones", { UUID.randomUUID().toString() }) { hp ->
+                mapOf(
+                    "name" to hp.name,
+                    "price" to hp.price,
+                    "type" to hp.type,
+                    "frequencyResponse" to hp.frequencyResponse,
+                    "microphone" to hp.microphone,
+                    "wireless" to hp.wireless,
+                    "enclosureType" to hp.enclosureType,
+                    "color" to hp.color
+                )
+            }
+        }
+
+        internalHardDrive?.let {
+            saveComponent(it, "internalHardDrives", { UUID.randomUUID().toString() }) { hdd ->
+                mapOf(
+                    "name" to hdd.name,
+                    "price" to hdd.price,
+                    "capacity" to hdd.capacity,
+                    "pricePerGb" to hdd.pricePerGb,
+                    "type" to hdd.type,
+                    "cache" to hdd.cache,
+                    "formFactor" to hdd.formFactor,
+                    "interfacee" to hdd.interfacee
+                )
+            }
+        }
+
+        keyboard?.let {
+            saveComponent(it, "keyboards", { UUID.randomUUID().toString() }) { kb ->
+                mapOf<String, Any>(
+                    "name" to kb.name,
+                    "price" to kb.price,
+                    "style" to kb.style,
+                    "switches" to (kb.switches ?: ""), // Ensure null safety by providing a default empty string
+                    "backlit" to (kb.backlit ?: ""),   // Ensure null safety by providing a default empty string
+                    "tenkeyless" to kb.tenkeyless,
+                    "connectionType" to kb.connectionType,
+                    "color" to kb.color
+                )
+            }
+        }
+
+
+        memory?.let {
+            saveComponent(it, "memory", { UUID.randomUUID().toString() }) { mem ->
+                mapOf(
+                    "name" to mem.name,
+                    "price" to mem.price,
+                    "speed" to mem.speed,
+                    "modules" to mem.modules,
+                    "pricePerGb" to mem.pricePerGb,
+                    "color" to mem.color,
+                    "firstWordLatency" to mem.firstWordLatency,
+                    "casLatency" to mem.casLatency,
+                    "socket" to mem.socket,
+                    "quantity" to mem.quantity,
+                    "totalPrice" to mem.totalPrice
+                )
+            }
+        }
+
+        motherboard?.let {
+            saveComponent(it, "motherboards", { UUID.randomUUID().toString() }) { mb ->
+                mapOf(
+                    "name" to mb.name,
+                    "price" to mb.price,
+                    "socket" to mb.socket,
+                    "formFactor" to mb.formFactor,
+                    "maxMemory" to mb.maxMemory,
+                    "memorySlots" to mb.memorySlots,
+                    "color" to mb.color,
+                    "imageUrl" to mb.imageUrl
+                )
+            }
+        }
+
+        mouse?.let {
+            saveComponent(it, "mice", { UUID.randomUUID().toString() }) { ms ->
+                mapOf(
+                    "name" to ms.name,
+                    "price" to ms.price,
+                    "trackingMethod" to ms.trackingMethod,
+                    "connectionType" to ms.connectionType,
+                    "maxDpi" to ms.maxDpi,
+                    "handOrientation" to ms.handOrientation,
+                    "color" to ms.color
+                )
+            }
+        }
+
+        powerSupply?.let {
+            saveComponent(it, "powerSupplies", { UUID.randomUUID().toString() }) { psu ->
+                mapOf(
+                    "name" to psu.name,
+                    "price" to psu.price,
+                    "type" to psu.type,
+                    "efficiency" to psu.efficiency,
+                    "wattage" to psu.wattage,
+                    "modular" to psu.modular,
+                    "color" to psu.color
+                )
+            }
         }
     }
 }
+
+
 
 
 

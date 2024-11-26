@@ -79,7 +79,6 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCard
 import com.superbgoal.caritasrig.activity.homepage.compare.ProcessorComparisonScreen
 import com.superbgoal.caritasrig.activity.homepage.compare.RadarChartProsesor
 import com.superbgoal.caritasrig.activity.homepage.favorites.FavoriteScreen
-import com.superbgoal.caritasrig.activity.homepage.favorites.component.CasingFavScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeScreen2
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeViewModel2
@@ -203,11 +202,6 @@ fun NavbarHost(
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
-
-            //component for add component (favorite)
-            composable("casing_fav_screen") { CasingFavScreen(navController) }
-
-
         }
     }
 }

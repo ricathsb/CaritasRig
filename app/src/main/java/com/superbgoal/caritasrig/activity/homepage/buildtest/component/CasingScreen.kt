@@ -37,6 +37,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Casing
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CasingScreen(navController: NavController) {
@@ -181,13 +182,16 @@ fun CasingList(casings: List<Casing>,navController: NavController) {
                                 isLoading.value = false
                                 Log.e("CasingActivity", "Failed to store casing under build title: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it } // Update the loading state
+                            onLoading = { isLoading.value = it }
                         )
                     } ?: run {
                         // Stop loading if buildTitle is null
                         isLoading.value = false
                         Log.e("CasingActivity", "Build title is null; unable to store casing.")
                     }
+                },
+                onFavClick = {
+                    savedFavorite(casing = casing)
                 }
             )
         }

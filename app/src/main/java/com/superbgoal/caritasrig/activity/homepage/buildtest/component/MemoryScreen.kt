@@ -38,6 +38,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.data.model.component.Memory
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun MemoryScreen(navController: NavController) {
@@ -234,6 +235,9 @@ fun MemoryList(memories: List<Memory>, navController: NavController) {
                     append("Socket: DDR${memoryItem.socket}\n")
                 },
                 isLoading = isLoading.value,
+                onFavClick = {
+                    savedFavorite(memory = memoryItem)
+                },
                 onAddClick = {
                     isLoading.value = true
                     Log.d("MemoryActivity", "Selected Memory: ${memoryItem.name}")

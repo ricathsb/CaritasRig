@@ -111,12 +111,12 @@ fun LoadingButton(
 fun ComponentCard(
     title: String,
     details: String? = null,
-    // Komponen yang akan dikirim melalui Intent
-    context : Context? = null,
-    component : Any?= null,
+    context: Context? = null,
+    component: Any? = null,
     imageUrl: String? = null, // URL untuk gambar (opsional)
     isLoading: Boolean, // Status loading untuk tombol
-    onAddClick: () -> Unit, // Callback dengan aksi sukses
+    onAddClick: (() -> Unit)? = null, // Callback opsional untuk tombol Add
+    onFavClick: (() -> Unit)? = null, // Callback opsional untuk tombol Favorite
     backgroundColor: Color = Color(0xFF3E2C47), // Warna latar belakang kartu
     buttonColor: Color = Color(0xFF6E5768), // Warna tombol
     navController: NavController? = null
@@ -159,35 +159,58 @@ fun ComponentCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = details?: "",
+                    text = details ?: "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White
                 )
             }
 
-            // Tampilkan indikator loading atau tombol Add
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = Color.White
-                )
-            } else {
-                Button(
-                    onClick = {
-                        Log.d("ComponentCard", "onAddClick triggered for component: $title")
-                        onAddClick() // Panggil callback ketika tombol ditekan
-                    },
-                    enabled = !isLoading, // Nonaktifkan tombol saat loading
-                    colors = ButtonDefaults.buttonColors(buttonColor)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_btn),
-                        contentDescription = "Add Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
+            // Tampilkan indikator loading, tombol Add, atau tombol Favorite
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add", color = Color.White)
+                } else {
+                    // Tombol Add
+                    if (onAddClick != null) {
+                        Button(
+                            onClick = {
+                                Log.d("ComponentCard", "onAddClick triggered for component: $title")
+                                onAddClick()
+                            },
+                            enabled = !isLoading,
+                            colors = ButtonDefaults.buttonColors(buttonColor),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add_btn),
+                                contentDescription = "Add Icon",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Add", color = Color.White)
+                        }
+                    }
+
+                    // Tombol Favorite
+                    if (onFavClick != null) {
+                        IconButton(
+                            onClick = {
+                                Log.d("ComponentCard", "onFavClick triggered for component: $title")
+                                onFavClick()
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add_btn),
+                                contentDescription = "Favorite Icon",
+                                tint = Color.Red, // Warna ikon favorit
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

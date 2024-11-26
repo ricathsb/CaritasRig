@@ -27,10 +27,21 @@ import com.superbgoal.caritasrig.functions.SwipeToDeleteContainer
 @Composable
 fun FavoriteScreen(navController: NavController) {
     val favoriteViewModel: FavoriteViewModel = viewModel()
-    var isShowingProcessors by remember { mutableStateOf(true) }
+    var selectedComponent by remember { mutableStateOf("All") }
 
-    val processors by favoriteViewModel.processors.collectAsState()
-    val videoCards by favoriteViewModel.videoCards.collectAsState()
+    val allComponents = mapOf(
+        "processors" to favoriteViewModel.processors.collectAsState().value,
+        "videoCards" to favoriteViewModel.videoCards.collectAsState().value,
+        "motherboards" to favoriteViewModel.motherboards.collectAsState().value,
+        "memory" to favoriteViewModel.memory.collectAsState().value,
+        "powerSupplies" to favoriteViewModel.powerSupplies.collectAsState().value,
+        "cpuCoolers" to favoriteViewModel.cpuCoolers.collectAsState().value,
+        "casings" to favoriteViewModel.casings.collectAsState().value,
+        "headphones" to favoriteViewModel.headphones.collectAsState().value,
+        "internalHardDrives" to favoriteViewModel.internalHardDrives.collectAsState().value,
+        "keyboards" to favoriteViewModel.keyboards.collectAsState().value,
+        "mice" to favoriteViewModel.mice.collectAsState().value
+    )
 
     LaunchedEffect(Unit) {
         favoriteViewModel.fetchFavorites()
@@ -58,132 +69,243 @@ fun FavoriteScreen(navController: NavController) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // LazyRow for "Add Component" buttons
+            // Navigation Tabs
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(listOf("Casing", "Processor", "Video Card", "Memory", "Storage", "Power Supply")) { component ->
+                items(listOf("All") + allComponents.keys.toList()) { component ->
                     Button(
-                        onClick = {
-                            when (component) {
-                                "Casing" -> navController.navigate("casing_fav_screen")
-                                else -> Log.d("AddComponent", "$component clicked")
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2B30)),
-                        modifier = Modifier.padding(4.dp)
+                        onClick = { selectedComponent = component },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (selectedComponent == component) Color(0xFFD4AF37) else Color(0xFF2C2B30)
+                        ),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .padding(horizontal = 4.dp)
                     ) {
-                        Text(text = component, color = Color.White)
+                        Text(
+                            text = component.capitalize(),
+                            color = if (selectedComponent == component) Color.Black else Color.White
+                        )
                     }
                 }
             }
 
-            // Row for "Processors" and "Video Cards" buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(
-                    onClick = { isShowingProcessors = true },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2B30))
-                ) {
-                    Text(text = "Processors", color = Color.White)
-                }
-                Button(
-                    onClick = { isShowingProcessors = false },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2B30))
-                ) {
-                    Text(text = "Video Cards", color = Color.White)
-                }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Display selected component list
+            val filteredComponents = when (selectedComponent) {
+                "All" -> allComponents.flatMap { it.value }
+                else -> allComponents[selectedComponent] ?: emptyList()
             }
 
-            // Conditional content based on selected tab
-            if (isShowingProcessors) {
-                ListFavoriteProcessor(processors = processors) { processorId ->
-                    Log.d("FavoriteScreen", "Deleting processor with ID: $processorId")
-                    favoriteViewModel.deleteProcessor(processorId)
+            ListFavoriteComponents(
+                title = selectedComponent.capitalize(),
+                components = filteredComponents,
+                onDelete = { componentId ->
+                    // Temukan kategori komponen berdasarkan data
+                    val componentCategory = allComponents.entries.find { it.value.any { it["name"] == componentId } }?.key
+
+                    // Hapus komponen
+                    favoriteViewModel.deleteComponent(componentCategory ?: "All", componentId)
+
+                    // Tetapkan ulang selectedComponent hanya jika bukan dalam kategori "All"
+                    if (selectedComponent != "All" && componentCategory != null) {
+                        selectedComponent = componentCategory
+                    }
+
+                    Log.d("FavoriteScreen", "Deleted component: $componentId, category: $componentCategory")
                 }
-            } else {
-                ListFavoriteVideoCard(videoCards = videoCards) { videoCardId ->
-                    Log.d("FavoriteScreen", "Deleting video card with ID: $videoCardId")
-                    favoriteViewModel.deleteVideoCard(videoCardId)
-                }
+            ) { component ->
+                val name = component["name"] as? String ?: "Unknown ${selectedComponent.capitalize()}"
+                val description = component["description"] as? String ?: "No description available"
+                val price = component["price"] as? Double ?: 0.0
+                ComponentCard(
+                    name = name,
+                    description = description,
+                    price = price
+                )
             }
 
             // Show message if no favorites are added
-            if (processors.isEmpty() && videoCards.isEmpty()) {
+            if (allComponents.all { it.value.isEmpty() }) {
                 Text(
                     text = "No favorites added yet.",
                     textAlign = TextAlign.Center,
                     color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                 )
             }
         }
     }
 }
 
+
+
+
+//@Composable
+//fun ListFavoriteProcessor(processors: List<Map<String, Any>>, te: (String) -> Unit) {
+//    if (processors.isNotEmpty()) {
+//        Text(
+//            text = "Processors:",
+//            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD4AF37))
+//        )
+//        LazyColumn(
+//            verticalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            items(
+//                items = processors,
+//                key = { processor -> "${processor["name"]}_${processor["price"]}" }
+//            ) { processor ->
+//                SwipeToDeleteContainer(
+//                    item = processor,
+//                    onDelete = { item ->
+//                        val processorName = item["name"] as? String
+//                        processorName?.let { onDelete(it) }
+//                    },
+//                ) { item ->
+//                    val processorName = item["name"] as? String ?: "Unknown Processor"
+//                    val processorPrice = item["price"] as? Double ?: 0.0
+//                    val processorCoreCount = item["core_count"] as? Int ?: 0
+//                    val processorCoreClock = item["core_clock"] as? Double ?: 0.0
+//
+//                    Card(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(vertical = 4.dp),
+//                        colors = CardDefaults.cardColors(containerColor = Color(0xFF473947)),
+//                        elevation = CardDefaults.cardElevation(8.dp),
+//                        shape = RoundedCornerShape(12.dp)
+//                    ) {
+//                        Column(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(16.dp)
+//                        ) {
+//                            Text(
+//                                text = processorName,
+//                                style = MaterialTheme.typography.titleSmall,
+//                                color = Color.White
+//                            )
+//                            Spacer(modifier = Modifier.height(4.dp))
+//                            Text(
+//                                text = "${processorCoreCount} cores, ${processorCoreClock} GHz",
+//                                style = MaterialTheme.typography.bodySmall,
+//                                color = Color.Gray
+//                            )
+//                            Spacer(modifier = Modifier.height(8.dp))
+//                            Text(
+//                                text = "$${"%.2f".format(processorPrice)}",
+//                                style = MaterialTheme.typography.bodyLarge,
+//                                color = MaterialTheme.colorScheme.primary
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//fun ListFavoriteVideoCard(
+//    videoCards: List<Map<String, Any>>,
+//    onDelete: (String) -> Unit
+//) {
+//    if (videoCards.isNotEmpty()) {
+//        Text(
+//            text = "Video Cards:",
+//            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD4AF37))
+//        )
+//        LazyColumn(
+//            verticalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            items(
+//                items = videoCards,
+//                key = { videoCard -> "${videoCard["name"]}_${videoCard["price"]}" }
+//            ) { videoCard ->
+//                SwipeToDeleteContainer(
+//                    item = videoCard,
+//                    onDelete = { item ->
+//                        val videoCardName = item["name"] as? String
+//                        videoCardName?.let { onDelete(it) }
+//                    },
+//                ) { item ->
+//                    val videoCardName = item["name"] as? String ?: "Unknown Video Card"
+//                    val videoCardPrice = item["price"] as? Double ?: 0.0
+//                    val videoCardMemory = item["memory"] as? Int ?: 0
+//                    val videoCardCoreClock = item["coreClock"] as? Double ?: 0.0
+//
+//                    Card(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(vertical = 4.dp),
+//                        colors = CardDefaults.cardColors(containerColor = Color(0xFF473947)),
+//                        elevation = CardDefaults.cardElevation(8.dp),
+//                        shape = RoundedCornerShape(12.dp)
+//                    ) {
+//                        Column(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(16.dp)
+//                        ) {
+//                            Text(
+//                                text = videoCardName,
+//                                style = MaterialTheme.typography.titleSmall,
+//                                color = Color.White
+//                            )
+//                            Spacer(modifier = Modifier.height(4.dp))
+//                            Text(
+//                                text = "${videoCardMemory} GB, ${videoCardCoreClock} MHz",
+//                                style = MaterialTheme.typography.bodySmall,
+//                                color = Color.Gray
+//                            )
+//                            Spacer(modifier = Modifier.height(8.dp))
+//                            Text(
+//                                text = "$${"%.2f".format(videoCardPrice)}",
+//                                style = MaterialTheme.typography.bodyLarge,
+//                                color = MaterialTheme.colorScheme.primary
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+
 @Composable
-fun ListFavoriteProcessor(processors: List<Map<String, Any>>, onDelete: (String) -> Unit) {
-    if (processors.isNotEmpty()) {
+fun ListFavoriteComponents(
+    title: String,
+    components: List<Map<String, Any>>,
+    onDelete: (String) -> Unit,
+    itemContent: @Composable (Map<String, Any>) -> Unit
+) {
+    if (components.isNotEmpty()) {
         Text(
-            text = "Processors:",
-            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD4AF37))
+            text = "$title:",
+            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD4AF37)),
+            modifier = Modifier.padding(bottom = 8.dp)
         )
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             items(
-                items = processors,
-                key = { processor -> "${processor["name"]}_${processor["price"]}" }
-            ) { processor ->
+                items = components,
+                key = { component -> "${component["name"]}_${component["price"]}" }
+            ) { component ->
                 SwipeToDeleteContainer(
-                    item = processor,
+                    item = component,
                     onDelete = { item ->
-                        val processorName = item["name"] as? String
-                        processorName?.let { onDelete(it) }
-                    },
-                ) { item ->
-                    val processorName = item["name"] as? String ?: "Unknown Processor"
-                    val processorPrice = item["price"] as? Double ?: 0.0
-                    val processorCoreCount = item["core_count"] as? Int ?: 0
-                    val processorCoreClock = item["core_clock"] as? Double ?: 0.0
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF473947)),
-                        elevation = CardDefaults.cardElevation(8.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = processorName,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "${processorCoreCount} cores, ${processorCoreClock} GHz",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "$${"%.2f".format(processorPrice)}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        val componentName = item["name"] as? String
+                        componentName?.let { onDelete(it) }
                     }
+                ) {
+                    itemContent(component)
                 }
             }
         }
@@ -191,68 +313,41 @@ fun ListFavoriteProcessor(processors: List<Map<String, Any>>, onDelete: (String)
 }
 
 @Composable
-fun ListFavoriteVideoCard(
-    videoCards: List<Map<String, Any>>,
-    onDelete: (String) -> Unit
+fun ComponentCard(
+    name: String,
+    description: String,
+    price: Double
 ) {
-    if (videoCards.isNotEmpty()) {
-        Text(
-            text = "Video Cards:",
-            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD4AF37))
-        )
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF473947)),
+        elevation = CardDefaults.cardElevation(8.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            items(
-                items = videoCards,
-                key = { videoCard -> "${videoCard["name"]}_${videoCard["price"]}" }
-            ) { videoCard ->
-                SwipeToDeleteContainer(
-                    item = videoCard,
-                    onDelete = { item ->
-                        val videoCardName = item["name"] as? String
-                        videoCardName?.let { onDelete(it) }
-                    },
-                ) { item ->
-                    val videoCardName = item["name"] as? String ?: "Unknown Video Card"
-                    val videoCardPrice = item["price"] as? Double ?: 0.0
-                    val videoCardMemory = item["memory"] as? Int ?: 0
-                    val videoCardCoreClock = item["coreClock"] as? Double ?: 0.0
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF473947)),
-                        elevation = CardDefaults.cardElevation(8.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = videoCardName,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "${videoCardMemory} GB, ${videoCardCoreClock} MHz",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "$${"%.2f".format(videoCardPrice)}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-            }
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleSmall,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "$${"%.2f".format(price)}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

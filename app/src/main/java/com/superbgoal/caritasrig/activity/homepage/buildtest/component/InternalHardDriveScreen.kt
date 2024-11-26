@@ -37,6 +37,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun InternalHardDriveScreen(navController: NavController) {
@@ -147,6 +148,9 @@ fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>, navContro
                 // Passing context from LocalContext
                 component = hardDrive,
                 isLoading = isLoading.value, // Pass loading state to card
+                onFavClick = {
+                    savedFavorite(internalHardDrive = hardDrive)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

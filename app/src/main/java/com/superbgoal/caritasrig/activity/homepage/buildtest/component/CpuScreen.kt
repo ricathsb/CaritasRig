@@ -46,6 +46,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CpuScreen(navController: NavController) {
@@ -185,14 +186,17 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
                                 isLoading.value = false
 
                             },
-                            onLoading = { isLoading.value = it }
+                            onLoading = { isLoading.value = it },
                         )
                     } ?: run {
                         isLoading.value = false
                         Log.e("BuildActivity", "Build title is null; unable to store CPU.")
                     }
                 },
-                navController = navController
+                navController = navController,
+                onFavClick = {
+                    savedFavorite(processor)
+                }
             )
         }
     }
