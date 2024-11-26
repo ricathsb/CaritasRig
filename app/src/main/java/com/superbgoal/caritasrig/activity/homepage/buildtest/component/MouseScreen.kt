@@ -148,7 +148,7 @@ fun MouseList(mice: List<Mouse>, navController: NavController) {
                 isLoading = isLoading.value, // Pass loading state to card
                 onFavClick = {
                     // Handle favorite click
-                    savedFavorite(mouse = mouseItem)
+                    savedFavorite(mouse = mouseItem, context = context)
                 },
                 onAddClick = {
                     // Mulai proses loading ketika tombol Add ditekan

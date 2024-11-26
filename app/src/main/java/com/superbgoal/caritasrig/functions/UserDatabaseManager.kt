@@ -502,10 +502,12 @@ fun savedFavorite(
     memory: Memory? = null,
     motherboard: Motherboard? = null,
     mouse: Mouse? = null,
-    powerSupply: PowerSupply? = null
+    powerSupply: PowerSupply? = null,
+    context : Context? = null
 ) {
     val database = FirebaseDatabase.getInstance("https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app").reference
     val userId = FirebaseAuth.getInstance().currentUser?.uid
+
 
     if (userId != null) {
         val favoriteRef = database.child("users").child(userId).child("favorites")
@@ -520,18 +522,28 @@ fun savedFavorite(
                 val exists = snapshot.children.any { it.child("name").value == dataMapper(component)["name"] }
                 if (exists) {
                     Log.d("saveFavorite", "$type is already in the favorite list.")
+                    if (context != null){
+                    Toast.makeText(context, "$type is already in the favorite list.", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     val id = idGenerator()
                     favoriteRef.child(type).child(id).setValue(dataMapper(component))
                         .addOnSuccessListener {
                             Log.d("saveFavorite", "$type added to favorites.")
+                            if (context != null){
+                            Toast.makeText(context, "$type added to favorites.", Toast.LENGTH_SHORT).show()
+                            }
                         }
                         .addOnFailureListener { error ->
                             Log.e("saveFavorite", "Failed to add $type: ${error.message}")
+                            if (context != null){
+                            Toast.makeText(context, "Failed to add $type: ${error.message}", Toast.LENGTH_SHORT).show()
                         }
+                    }
                 }
             }.addOnFailureListener { error ->
                 Log.e("saveFavorite", "Failed to check $type: ${error.message}")
+            }.addOnCompleteListener {
             }
         }
 
@@ -701,6 +713,86 @@ fun savedFavorite(
         }
     }
 }
+
+fun countUserFavorites(onComplete: (Map<String, Int>, Int) -> Unit) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId == null) {
+        Log.e("countUserFavorites", "User ID is null, exiting function.")
+        onComplete(emptyMap(), 0)
+        return
+    }
+
+    val database = getDatabaseReference()
+    val userFavoritesRef = database.child("users").child(userId).child("favorites")
+
+    userFavoritesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            if (!snapshot.exists()) {
+                Log.w("countUserFavorites", "No favorites found for user: $userId")
+                onComplete(emptyMap(), 0)
+                return
+            }
+
+            val categoryCounts = mutableMapOf<String, Int>()
+            var totalFavorites = 0
+
+            snapshot.children.forEach { category ->
+                // Setiap kategori memiliki children berupa item favorit
+                val categoryKey = category.key ?: "Unknown"
+                val count = category.childrenCount.toInt()
+
+                Log.d("countUserFavorites", "Category: $categoryKey, Count: $count")
+                categoryCounts[categoryKey] = count
+                totalFavorites += count
+            }
+
+            Log.d("countUserFavorites", "Final category counts: $categoryCounts")
+            Log.d("countUserFavorites", "Total favorites: $totalFavorites")
+
+            onComplete(categoryCounts, totalFavorites)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("countUserFavorites", "Error fetching data: ${error.message}")
+            onComplete(emptyMap(), 0)
+        }
+    })
+}
+
+fun countUserBuilds(onComplete: (Int) -> Unit) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId == null) {
+        Log.e("countUserBuilds", "User ID is null, exiting function.")
+        onComplete(0)
+        return
+    }
+
+    val database = getDatabaseReference()
+    val userBuildsRef = database.child("users").child(userId).child("builds")
+
+    userBuildsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            if (!snapshot.exists()) {
+                Log.w("countUserBuilds", "No builds found for user: $userId")
+                onComplete(0)
+                return
+            }
+
+            val totalBuilds = snapshot.childrenCount.toInt()
+            Log.d("countUserBuilds", "Total builds for user $userId: $totalBuilds")
+
+            onComplete(totalBuilds)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("countUserBuilds", "Error fetching builds: ${error.message}")
+            onComplete(0)
+        }
+    })
+}
+
+
+
 
 
 

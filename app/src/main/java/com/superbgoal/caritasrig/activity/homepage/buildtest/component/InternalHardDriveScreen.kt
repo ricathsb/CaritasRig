@@ -149,7 +149,7 @@ fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>, navContro
                 component = hardDrive,
                 isLoading = isLoading.value, // Pass loading state to card
                 onFavClick = {
-                    savedFavorite(internalHardDrive = hardDrive)
+                    savedFavorite(internalHardDrive = hardDrive, context = context)
                 },
                 onAddClick = {
                     // Start loading when the add button is clicked

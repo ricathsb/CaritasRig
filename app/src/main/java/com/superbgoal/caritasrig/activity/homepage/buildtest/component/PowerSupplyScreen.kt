@@ -166,7 +166,7 @@ fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavControll
                 details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
                 isLoading = isLoading.value,
                 onFavClick = {
-                    savedFavorite(powerSupply = powerSupply)
+                    savedFavorite(powerSupply = powerSupply, context = context)
                 },
                 onAddClick = {
                     isLoading.value = true

@@ -199,6 +199,7 @@ fun ComponentCard(
                     if (onFavClick != null) {
                         IconButton(
                             onClick = {
+
                                 Log.d("ComponentCard", "onFavClick triggered for component: $title")
                                 onFavClick()
                             }

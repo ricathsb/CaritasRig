@@ -219,6 +219,7 @@ fun FilterDialogMemory(
 
 @Composable
 fun MemoryList(memories: List<Memory>, navController: NavController) {
+    val context = LocalContext.current
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -236,7 +237,7 @@ fun MemoryList(memories: List<Memory>, navController: NavController) {
                 },
                 isLoading = isLoading.value,
                 onFavClick = {
-                    savedFavorite(memory = memoryItem)
+                    savedFavorite(memory = memoryItem, context = context)
                 },
                 onAddClick = {
                     isLoading.value = true

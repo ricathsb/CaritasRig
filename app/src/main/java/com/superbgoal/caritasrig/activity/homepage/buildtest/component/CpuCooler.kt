@@ -150,7 +150,7 @@ fun CpuCoolerList(cpuCoolers: List<CpuCooler>,navController: NavController) {
                 component = coolerItem,
                 isLoading = isLoading.value,
                 onFavClick = {
-                    savedFavorite(cpuCooler = coolerItem)
+                    savedFavorite(cpuCooler = coolerItem, context = context)
                 },
                 onAddClick = {
                     // Start loading when the add button is clicked

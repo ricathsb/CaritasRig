@@ -168,7 +168,7 @@ fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
                 details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
                 isLoading = isLoading.value,
                 onFavClick = {
-                    savedFavorite(videoCard = videoCard)
+                    savedFavorite(videoCard = videoCard, context = context)
                 },
                 onAddClick = {
                     isLoading.value = true

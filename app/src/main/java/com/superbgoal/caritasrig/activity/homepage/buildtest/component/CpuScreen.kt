@@ -195,7 +195,7 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
                 },
                 navController = navController,
                 onFavClick = {
-                    savedFavorite(processor)
+                    savedFavorite(processor, context = context)
                 }
             )
         }

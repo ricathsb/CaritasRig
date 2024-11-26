@@ -191,7 +191,7 @@ fun CasingList(casings: List<Casing>,navController: NavController) {
                     }
                 },
                 onFavClick = {
-                    savedFavorite(casing = casing)
+                    savedFavorite(casing = casing, context = context)
                 }
             )
         }

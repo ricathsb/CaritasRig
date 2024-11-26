@@ -148,7 +148,7 @@ fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {
                 component = headphone,
                 isLoading = isLoading.value, // Pass loading state to card
                 onFavClick = {
-                    savedFavorite(headphones = headphone)
+                    savedFavorite(headphones = headphone, context = context)
                 },
                 onAddClick = {
                     // Start loading when the add button is clicked

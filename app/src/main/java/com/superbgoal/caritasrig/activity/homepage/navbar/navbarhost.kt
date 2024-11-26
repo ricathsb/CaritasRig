@@ -83,6 +83,7 @@ import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeScreen2
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeViewModel2
 import com.superbgoal.caritasrig.activity.homepage.newsApi.NewsArticleScreen
+import com.superbgoal.caritasrig.activity.homepage.profile.ProfileScreen
 import com.superbgoal.caritasrig.activity.homepage.settings.AboutUsScreen
 import com.superbgoal.caritasrig.activity.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -359,125 +360,6 @@ sealed class NavigationItem(val route: String, val icon: ImageVector, val title:
     data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")
 }
 
-
-
-@Composable
-fun ProfileScreen(homeViewModel: HomeViewModel) {
-    val user by homeViewModel.user.collectAsState()
-
-    LaunchedEffect(Unit) {
-        homeViewModel.loadUserData("currentUserId")
-    }
-
-    val currentUser = user
-
-    // Dark-themed background
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF121212)) // Dark background
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 15.dp) // Move content towards the top
-        ) {
-            // Profile Image
-            if (currentUser?.profileImageUrl != null) {
-                AsyncImage(
-                    model = currentUser.profileImageUrl,
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, Color(0xFFBB86FC), CircleShape), // Accent color border
-                    placeholder = painterResource(id = R.drawable.baseline_person_24),
-                    error = painterResource(id = R.drawable.baseline_person_24)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Default Profile Icon",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, Color(0xFFBB86FC), CircleShape), // Accent color border
-                    tint = Color(0xFFBB86FC) // Accent color
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Full Name
-            Text(
-                text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
-                style = MaterialTheme.typography.h5,
-                fontWeight = FontWeight.Normal,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Username
-            Text(
-                text = "@${currentUser?.username ?: "username"}",
-                style = MaterialTheme.typography.body1,
-                color = Color(0xFFBB86FC) // Accent color
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            DonutChartSample()
-
-            // Date of Birth
-            if (currentUser?.dateOfBirth?.isNotEmpty() == true) {
-                Text(
-                    text = "Born on ${currentUser.dateOfBirth}",
-                    style = MaterialTheme.typography.body2,
-                    color = Color(0xFFB0BEC5) // Muted gray
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun DonutChartSample() {
-
-    val testPieChartData: List<PieChartData> = listOf(
-        PieChartData(
-            partName = "part A",
-            data = 500.0,
-            color = Color(0xFF0B666A),
-        ),
-        PieChartData(
-            partName = "Part B",
-            data = 700.0,
-            color = Color(0xFF35A29F),
-        ),
-        PieChartData(
-            partName = "Part C",
-            data = 500.0,
-            color = Color(0xFF97FEED),
-        ),
-        PieChartData(
-            partName = "Part D",
-            data = 100.0,
-            color = Color(0xFF071952),
-        ),
-    )
-
-    DonutChart(
-        modifier = Modifier.fillMaxSize(),
-        pieChartData = testPieChartData,
-        centerTitle = "Orders",
-        centerTitleStyle = TextStyle(color = Color(0xFF071952)),
-        outerCircularColor = Color.LightGray,
-        innerCircularColor = Color.Gray,
-        ratioLineColor = Color.LightGray,
-    )
-}
 
 
 

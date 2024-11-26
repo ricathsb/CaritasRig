@@ -149,7 +149,7 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
                 component = keyboardItem,
                 isLoading = isLoading.value, // Pass loading state to card
                 onFavClick = {
-                    savedFavorite(keyboard = keyboardItem)
+                    savedFavorite(keyboard = keyboardItem, context = context)
                 },
                 onAddClick = {
                     // Start loading when the add button is clicked

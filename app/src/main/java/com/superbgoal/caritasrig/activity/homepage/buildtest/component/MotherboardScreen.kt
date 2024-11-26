@@ -284,7 +284,7 @@ fun MotherboardList(motherboards: List<Motherboard>, navController: NavControlle
                 isLoading = isLoading.value,
                 onFavClick = {
                     // Handle favorite click
-                    savedFavorite(motherboard = motherboard)
+                    savedFavorite(motherboard = motherboard, context = context)
                 },
                 onAddClick = {
                     // Start loading when the add button is clicked
