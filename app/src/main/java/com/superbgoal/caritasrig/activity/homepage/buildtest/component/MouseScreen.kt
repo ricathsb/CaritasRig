@@ -32,11 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Mouse
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
 
 @Composable
 fun MouseScreen(navController: NavController) {
@@ -164,7 +164,7 @@ fun MouseList(mice: List<Mouse>, navController: NavController) {
                             componentType = "mouse", // Tipe komponen
                             componentData = mouseItem, // Data mouse
                             onSuccess = {
-                                // Berhenti loading ketika sukses
+                                navController.navigateUp()
                                 isLoading.value = false
                                 Log.d("MouseActivity", "Mouse ${mouseItem.name} saved successfully under build title: $title")
 

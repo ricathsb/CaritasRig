@@ -47,11 +47,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
@@ -72,6 +75,8 @@ fun LoginScreen(navController : NavController) {
         animationSpec = tween(durationMillis = 600), label = ""
     )
     val backgroundColor = Color(0xFF473947)
+    val sancreekFont = FontFamily(Font(R.font.sancreek))
+    val sairastencilone = FontFamily(Font(R.font.sairastencilone))
 
     Box(
         modifier = Modifier
@@ -79,11 +84,56 @@ fun LoginScreen(navController : NavController) {
             .background(backgroundColor)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.background),
+            painter = painterResource(id = R.drawable.bg4),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxWidth()
         )
+        Column (
+            modifier = Modifier.padding(40.dp),
+        ){
+            Text(
+                text = "CaritasRig",
+                modifier = Modifier.padding(bottom = 16.dp),
+                color = Color.White,
+                fontSize = 50.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = sancreekFont
+            )
+            Text(
+                text = "Pick Parts.",
+                modifier = Modifier.padding(bottom = 4.dp),
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = sairastencilone
+            )
+            Text(
+                text = "Build Your PC.",
+                modifier = Modifier.padding(bottom = 4.dp),
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = sairastencilone
+            )
+            Text(
+                text = "Compare.",
+                modifier = Modifier.padding(bottom = 4.dp),
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = sairastencilone
+            )
+            Text(
+                text = "Benchmark.",
+                modifier = Modifier.padding(bottom = 16.dp),
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = sairastencilone
+            )
+        }
+
 
         Box(
             modifier = Modifier

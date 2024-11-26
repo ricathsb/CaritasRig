@@ -32,11 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Keyboard
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
 
 @Composable
 fun KeyboardScreen(navController: NavController) {
@@ -165,7 +165,7 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
                             componentType = "keyboard", // Specify component type
                             componentData = keyboardItem, // Pass keyboard data
                             onSuccess = {
-                                // Stop loading on success
+                                navController.navigateUp()
                                 isLoading.value = false
                                 Log.d("KeyboardActivity", "Keyboard ${keyboardItem.name} saved successfully under build title: $title")
 

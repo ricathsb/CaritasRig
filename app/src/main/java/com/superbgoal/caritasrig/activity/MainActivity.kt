@@ -15,16 +15,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.activity.auth.login.LoginScreen
-import com.superbgoal.caritasrig.activity.auth.register.RegisterViewModel
 import com.superbgoal.caritasrig.activity.auth.register.RegisterScreen
-import com.superbgoal.caritasrig.activity.auth.signup.SignUpViewModel
+import com.superbgoal.caritasrig.activity.auth.register.RegisterViewModel
 import com.superbgoal.caritasrig.activity.auth.signup.SignUpScreen
+import com.superbgoal.caritasrig.activity.auth.signup.SignUpViewModel
 import com.superbgoal.caritasrig.activity.homepage.navbar.NavbarHost
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
-    private lateinit var authenticationManager: AuthenticationManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,14 +40,14 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
         val startDestination = remember { mutableStateOf<String?>(null) }
         val context = LocalContext.current
-        val authenticationManager = remember { AuthenticationManager(context) }
+        remember { AuthenticationManager(context) }
 
 
         // Check user authentication state
         LaunchedEffect(auth.currentUser) {
             val user = auth.currentUser
             if (user == null) {
-                setStartDestinationForUnauthenticated(navController) { destination ->
+                setStartDestinationForUnauthenticated { destination ->
                     startDestination.value = destination
                 }
             } else {
@@ -80,14 +80,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun setStartDestinationForUnauthenticated(
-        navController: NavController,
+    private fun setStartDestinationForUnauthenticated(
         callback: (String) -> Unit
     ) {
         callback("login") // Default for unauthenticated users
     }
 
-    fun setStartDestination(
+    private fun setStartDestination(
         userId: String,
         navController: NavController,
         callback: (String) -> Unit

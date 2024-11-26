@@ -35,7 +35,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.functions.auth.LoadingButton
+import com.superbgoal.caritasrig.functions.LoadingButton
 import com.superbgoal.caritasrig.functions.auth.signUpUser
 
 @Composable
