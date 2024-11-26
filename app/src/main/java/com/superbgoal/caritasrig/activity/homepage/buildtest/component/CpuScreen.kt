@@ -164,10 +164,7 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
             ComponentCard(
                 title = processor.name,
                 details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
-                context = context,
-                component = processor,
                 isLoading = isLoading.value,
-                navController = navController,
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -194,7 +191,8 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
                         isLoading.value = false
                         Log.e("BuildActivity", "Build title is null; unable to store CPU.")
                     }
-                }
+                },
+                navController = navController
             )
         }
     }

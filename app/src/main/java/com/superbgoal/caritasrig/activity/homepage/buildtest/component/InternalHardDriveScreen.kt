@@ -144,7 +144,7 @@ fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>, navContro
             ComponentCard(
                 title = hardDrive.name,
                 details = "Capacity: ${hardDrive.capacity}GB | Price per GB: \$${hardDrive.pricePerGb} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfacee}",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = hardDrive,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {

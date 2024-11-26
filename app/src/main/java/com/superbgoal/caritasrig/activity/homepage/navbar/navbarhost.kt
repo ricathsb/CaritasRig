@@ -79,6 +79,7 @@ import com.superbgoal.caritasrig.activity.homepage.buildtest.component.VideoCard
 import com.superbgoal.caritasrig.activity.homepage.compare.ProcessorComparisonScreen
 import com.superbgoal.caritasrig.activity.homepage.compare.RadarChartProsesor
 import com.superbgoal.caritasrig.activity.homepage.favorites.FavoriteScreen
+import com.superbgoal.caritasrig.activity.homepage.favorites.component.CasingFavScreen
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeScreen2
 import com.superbgoal.caritasrig.activity.homepage.newsApi.HomeViewModel2
@@ -183,12 +184,13 @@ fun NavbarHost(
                 BenchmarkScreen(navController)
             }
             composable("favorite") {
-                FavoriteScreen()
+                FavoriteScreen(navController)
             }
             composable(
                 route = "build_details",
             ) { BuildScreen(buildViewModel, navController)
             }
+            //component for add comoponent
             composable("cpu_screen") { CpuScreen(navController) }
             composable("casing_screen") { CasingScreen(navController) }
             composable("cpu_cooler_screen") { CpuCoolerScreen(navController) }
@@ -201,6 +203,11 @@ fun NavbarHost(
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
+
+            //component for add component (favorite)
+            composable("casing_fav_screen") { CasingFavScreen(navController) }
+
+
         }
     }
 }

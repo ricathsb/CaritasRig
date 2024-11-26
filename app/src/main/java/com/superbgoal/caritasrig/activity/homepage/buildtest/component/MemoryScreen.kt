@@ -233,8 +233,6 @@ fun MemoryList(memories: List<Memory>, navController: NavController) {
                     append("Modules: ${memoryItem.modules} GB\n")
                     append("Socket: DDR${memoryItem.socket}\n")
                 },
-                context = LocalContext.current,
-                component = memoryItem,
                 isLoading = isLoading.value,
                 onAddClick = {
                     isLoading.value = true

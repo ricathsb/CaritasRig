@@ -144,7 +144,7 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
             ComponentCard(
                 title = keyboardItem.name,
                 details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = keyboardItem,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {
