@@ -143,7 +143,6 @@ fun MouseList(mice: List<Mouse>, navController: NavController) {
             ComponentCard(
                 title = mouseItem.name,
                 details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
-                context = context,
                 component = mouseItem,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {

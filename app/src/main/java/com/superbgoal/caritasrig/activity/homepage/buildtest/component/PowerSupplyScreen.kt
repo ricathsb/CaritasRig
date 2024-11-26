@@ -163,8 +163,6 @@ fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavControll
             ComponentCard(
                 title = powerSupply.name,
                 details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
-                context = context,
-                component = powerSupply,
                 isLoading = isLoading.value,
                 onAddClick = {
                     isLoading.value = true

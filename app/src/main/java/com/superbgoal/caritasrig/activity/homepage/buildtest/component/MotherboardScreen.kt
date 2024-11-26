@@ -278,8 +278,6 @@ fun MotherboardList(motherboards: List<Motherboard>, navController: NavControlle
             ComponentCard(
                 imageUrl = motherboard.imageUrl, // Image URL for the card
                 title = motherboard.name,
-                details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | " +
-                        "Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
                 context = context,
                 component = motherboard,
                 isLoading = isLoading.value,

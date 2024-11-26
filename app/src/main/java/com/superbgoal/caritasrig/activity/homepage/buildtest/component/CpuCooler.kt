@@ -145,7 +145,7 @@ fun CpuCoolerList(cpuCoolers: List<CpuCooler>,navController: NavController) {
                 title = coolerItem.name,
                 details = "Price: $${coolerItem.price} | Size: ${coolerItem.size}mm | Color: ${coolerItem.color} | " +
                         "RPM: ${coolerItem.rpm} | Noise Level: ${coolerItem.noise_level} dB",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = coolerItem,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {

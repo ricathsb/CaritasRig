@@ -143,7 +143,7 @@ fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {
             ComponentCard(
                 title = headphone.name,
                 details = "Type: ${headphone.type} | Color: ${headphone.color} | Frequency Response: ${headphone.frequencyResponse} Hz",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = headphone,
                 isLoading = isLoading.value, // Pass loading state to card
                 onAddClick = {

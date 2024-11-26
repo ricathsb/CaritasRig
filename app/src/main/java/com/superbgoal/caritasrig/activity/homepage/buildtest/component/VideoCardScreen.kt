@@ -165,8 +165,6 @@ fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
             ComponentCard(
                 title = videoCard.name,
                 details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
-                context = context,
-                component = videoCard,
                 isLoading = isLoading.value,
                 onAddClick = {
                     isLoading.value = true

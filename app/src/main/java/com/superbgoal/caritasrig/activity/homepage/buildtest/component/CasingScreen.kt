@@ -40,7 +40,6 @@ import com.superbgoal.caritasrig.functions.saveComponent
 
 @Composable
 fun CasingScreen(navController: NavController) {
-    // Load casing data
     val context = LocalContext.current
     val casings: List<Casing> = remember {
         loadItemsFromResources(
@@ -144,7 +143,7 @@ fun CasingList(casings: List<Casing>,navController: NavController) {
             ComponentCard(
                 title = casing.name,
                 details = "${casing.type} | ${casing.color} | PSU: ${casing.psu ?: "Not included"} | Volume: ${casing.externalVolume} L | 3.5\" Bays: ${casing.internal35Bays}",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = casing,
                 isLoading = isLoading.value, // Pass loading state to card
                 navController = navController,

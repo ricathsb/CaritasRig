@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -19,11 +20,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.functions.SwipeToDeleteContainer
 
 @Composable
-fun FavoriteScreen(favoriteViewModel: FavoriteViewModel = viewModel()) {
+fun FavoriteScreen(navController: NavController) {
+    val favoriteViewModel: FavoriteViewModel = viewModel()
     var isShowingProcessors by remember { mutableStateOf(true) }
 
     val processors by favoriteViewModel.processors.collectAsState()
@@ -55,28 +58,49 @@ fun FavoriteScreen(favoriteViewModel: FavoriteViewModel = viewModel()) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // LazyRow for "Add Component" buttons
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(listOf("Casing", "Processor", "Video Card", "Memory", "Storage", "Power Supply")) { component ->
+                    Button(
+                        onClick = {
+                            when (component) {
+                                "Casing" -> navController.navigate("casing_fav_screen")
+                                else -> Log.d("AddComponent", "$component clicked")
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2B30)),
+                        modifier = Modifier.padding(4.dp)
+                    ) {
+                        Text(text = component, color = Color.White)
+                    }
+                }
+            }
+
+            // Row for "Processors" and "Video Cards" buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
                     onClick = { isShowingProcessors = true },
-                    modifier = Modifier
-                        .weight(1f) ,
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2B30))
                 ) {
                     Text(text = "Processors", color = Color.White)
                 }
                 Button(
                     onClick = { isShowingProcessors = false },
-                    modifier = Modifier
-                        .weight(1f),
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2B30))
                 ) {
                     Text(text = "Video Cards", color = Color.White)
                 }
             }
 
+            // Conditional content based on selected tab
             if (isShowingProcessors) {
                 ListFavoriteProcessor(processors = processors) { processorId ->
                     Log.d("FavoriteScreen", "Deleting processor with ID: $processorId")
@@ -89,6 +113,7 @@ fun FavoriteScreen(favoriteViewModel: FavoriteViewModel = viewModel()) {
                 }
             }
 
+            // Show message if no favorites are added
             if (processors.isEmpty() && videoCards.isEmpty()) {
                 Text(
                     text = "No favorites added yet.",

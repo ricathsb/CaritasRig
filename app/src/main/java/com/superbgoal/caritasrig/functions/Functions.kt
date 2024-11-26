@@ -3,7 +3,6 @@
 package com.superbgoal.caritasrig.functions
 
 import android.content.Context
-import android.os.Parcelable
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -11,9 +10,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissState
@@ -31,6 +33,7 @@ import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -38,12 +41,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,7 +56,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
@@ -108,48 +107,14 @@ fun LoadingButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Maintenance() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Under Maintenance :3",
-                        textAlign = TextAlign.Center
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
-            )
-        }
-    ) { paddingValues ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Add a simple content box to ensure something renders
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text= "Oops! We’re brewing up some cool updates. The site will be back online shortly. Thanks for hanging tight!",
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
-}
-
 @Composable
 fun ComponentCard(
     title: String,
-    details: String,
-    component: Parcelable? = null, // Komponen yang akan dikirim melalui Intent
+    details: String? = null,
+    // Komponen yang akan dikirim melalui Intent
+    context : Context? = null,
+    component : Any?= null,
     imageUrl: String? = null, // URL untuk gambar (opsional)
-    context: Context,
     isLoading: Boolean, // Status loading untuk tombol
     onAddClick: () -> Unit, // Callback dengan aksi sukses
     backgroundColor: Color = Color(0xFF3E2C47), // Warna latar belakang kartu
@@ -194,7 +159,7 @@ fun ComponentCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = details,
+                    text = details?: "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White
                 )
@@ -438,6 +403,47 @@ fun calculateTotalPrice(it: BuildComponents): Double {
     ).sumOf { price -> price ?: 0.0 }
 
     return ceil(totalPrice) // Membulatkan ke atas
+}
+
+@Composable
+fun <T> GenericCard(
+    item: T,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit, // Aksi saat card diklik
+    onFavoriteClick: () -> Unit, // Aksi saat tombol favorite diklik
+    content: @Composable ColumnScope.(T) -> Unit
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onClick() },
+        elevation = 4.dp,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween, // Mengatur isi ke kiri dan kanan
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f) // Kolom isi mengambil ruang sisa
+            ) {
+                content(item)
+            }
+            IconButton(
+                onClick = onFavoriteClick // Aksi tombol favorite
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorite",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
 }
 
 

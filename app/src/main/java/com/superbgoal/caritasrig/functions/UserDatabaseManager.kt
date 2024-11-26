@@ -493,7 +493,8 @@ fun editRamQuantity(
 
 fun savedFavorite(
     processor: Processor? = null,
-    videoCard: VideoCard? = null
+    videoCard: VideoCard? = null,
+    casing: Casing? = null
 ) {
     val database = getDatabaseReference()
     val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -501,14 +502,38 @@ fun savedFavorite(
     if (userId != null) {
         val favoriteRef = database.child("users").child(userId).child("favorites")
 
-        processor?.let { proc ->
-            favoriteRef.child("processors").get().addOnSuccessListener { snapshot ->
-                val exists = snapshot.children.any { it.child("name").value == proc.name }
+        fun <T> saveComponent(
+            component: T,
+            type: String,
+            idGenerator: () -> String,
+            dataMapper: (T) -> Map<String, Any>
+        ) {
+            favoriteRef.child(type).get().addOnSuccessListener { snapshot ->
+                val exists = snapshot.children.any { it.child("name").value == dataMapper(component)["name"] }
                 if (exists) {
-                    Log.d("savedFavorite", "Component is already on the favorite list.")
+                    Log.d("saveFavorite", "$type is already in the favorite list.")
                 } else {
-                    val processorId = UUID.randomUUID().toString()
-                    val processorData = mapOf(
+                    val id = idGenerator()
+                    favoriteRef.child(type).child(id).setValue(dataMapper(component))
+                        .addOnSuccessListener {
+                            Log.d("saveFavorite", "$type added to favorites.")
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("saveFavorite", "Failed to add $type: ${error.message}")
+                        }
+                }
+            }.addOnFailureListener { error ->
+                Log.e("saveFavorite", "Failed to check $type: ${error.message}")
+            }
+        }
+
+        processor?.let {
+            saveComponent(
+                component = it,
+                type = "processors",
+                idGenerator = { UUID.randomUUID().toString() },
+                dataMapper = { proc ->
+                    mapOf(
                         "id" to proc.id,
                         "name" to proc.name,
                         "price" to proc.price,
@@ -519,27 +544,17 @@ fun savedFavorite(
                         "smt" to proc.smt,
                         "tdp" to proc.tdp
                     )
-
-                    favoriteRef.child("processors").child(processorId).setValue(processorData)
-                        .addOnSuccessListener {
-                        }
-                        .addOnFailureListener { error ->
-                            Log.e("savedFavorite", "Failed to add processor: ${error.message}")
-                        }
                 }
-            }.addOnFailureListener { error ->
-                Log.e("savedFavorite", "Failed to check processors: ${error.message}")
-            }
+            )
         }
 
-        videoCard?.let { vCard ->
-            favoriteRef.child("videoCards").get().addOnSuccessListener { snapshot ->
-                val exists = snapshot.children.any { it.child("name").value == vCard.name }
-                if (exists) {
-                    Log.d("savedFavorite", "Component is already on the favorite list.")
-                } else {
-                    val videoCardId = UUID.randomUUID().toString()
-                    val videoCardData = mapOf(
+        videoCard?.let {
+            saveComponent(
+                component = it,
+                type = "videoCards",
+                idGenerator = { UUID.randomUUID().toString() },
+                dataMapper = { vCard ->
+                    mapOf(
                         "id" to vCard.id,
                         "name" to vCard.name,
                         "price" to vCard.price,
@@ -550,21 +565,30 @@ fun savedFavorite(
                         "color" to vCard.color,
                         "length" to vCard.length
                     )
-
-                    favoriteRef.child("videoCards").child(videoCardId).setValue(videoCardData)
-                        .addOnSuccessListener {
-                            Log.d("savedFavorite", "Video card added to favorites.")
-                        }
-                        .addOnFailureListener { error ->
-                            Log.e("savedFavorite", "Failed to add video card: ${error.message}")
-                        }
                 }
-            }.addOnFailureListener { error ->
-                Log.e("savedFavorite", "Failed to check video cards: ${error.message}")
-            }
+            )
+        }
+
+        casing?.let {
+            saveComponent(
+                component = it,
+                type = "casings",
+                idGenerator = { UUID.randomUUID().toString() },
+                dataMapper = { casing ->
+                    mapOf(
+                        "id" to casing.id,
+                        "name" to casing.name,
+                        "price" to casing.price,
+                        "material" to casing.sidePanel,
+                        "form_factor" to casing.externalVolume,
+                        "color" to casing.color
+                    )
+                }
+            )
         }
     }
 }
+
 
 
 
