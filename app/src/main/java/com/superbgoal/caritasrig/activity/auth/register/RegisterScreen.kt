@@ -1,32 +1,20 @@
 package com.superbgoal.caritasrig.activity.auth.register
 
-import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,32 +34,21 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.transformations
-import coil3.transform.CircleCropTransformation
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.User
-import com.superbgoal.caritasrig.data.saveUserData
-import com.superbgoal.caritasrig.data.uploadImageToFirebase
+import com.superbgoal.caritasrig.functions.saveUserData
+import com.superbgoal.caritasrig.functions.uploadImageToFirebase
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -102,81 +79,12 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
+    )
+    {
         Text(
             text = stringResource(id = R.string.register),
             style = MaterialTheme.typography.titleLarge
         )
-
-        var isViewingProfileImage by remember { mutableStateOf(false) }
-
-
-        Box(
-            modifier = Modifier
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-                            Log.d("Modifier", "Long clicked! yeay")
-                        },
-                        onTap = {
-
-                        }
-                    )
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            RegisterProfileIcon(imageUri, imageUrl)
-
-            // Icon add/remove overlay
-            Box(
-                modifier = Modifier
-                    .offset(x = 50.dp, y = 50.dp)
-                    .size(32.dp)
-                    .background(
-                        color = Color.White,
-                        shape = CircleShape
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color.Black,
-                        shape = CircleShape
-                    )
-                    .zIndex(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
-                    contentDescription = if (imageUri != null) "Remove Profile Photo" else "Add Profile Photo",
-                    tint = Color.Black,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-
-// Dialog untuk menampilkan foto profil jika isViewingProfileImage = true
-        if (isViewingProfileImage && imageUri != null) {
-            AlertDialog(
-                onDismissRequest = { isViewingProfileImage = false }, // Tutup dialog saat diketuk di luar
-                buttons = {},
-                text = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Transparent)
-                            .padding(0.dp) // Hilangkan padding
-                    ) {
-                        AsyncImage(
-                            model = imageUri,
-                            contentDescription = "Profile Image",
-                            contentScale = ContentScale.Crop, // Mengisi seluruh area dengan crop
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f) // Mengatur rasio tampilan gambar
-                        )
-                    }
-                }
-            )
-        }
 
         Row(
             modifier = Modifier
@@ -374,47 +282,5 @@ fun RegisterScreen(viewModel: RegisterViewModel,navController: NavController) {
             Text(text = stringResource(id = R.string.already_have_account), color = Color.White)
         }
 
-    }
-}
-
-@Composable
-fun RegisterProfileIcon(imageUri: Uri?, imageUrl: String?) {
-    when {
-        imageUri != null -> {
-            Log.d("RegisterProfileIcon", "Image URI: $imageUri")
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUri)
-                    .transformations(CircleCropTransformation())
-                    .build(),
-                contentDescription = "Selected image",
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-            )
-        }
-
-        imageUrl != null -> {
-            // Jika imageUrl ada, tampilkan gambar dari URL
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .transformations(CircleCropTransformation())
-                    .build(),
-                contentDescription = "Image from URL",
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-            )
-        }
-
-        else -> {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Default Icon",
-                modifier = Modifier.size(150.dp),
-                tint = Color.White
-            )
-        }
     }
 }

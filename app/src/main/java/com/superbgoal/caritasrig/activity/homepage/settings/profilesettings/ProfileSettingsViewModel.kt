@@ -6,9 +6,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.data.loadUserData
+import com.superbgoal.caritasrig.functions.loadUserData
 import com.superbgoal.caritasrig.data.model.User
-import com.superbgoal.caritasrig.data.updateUserProfileData
+import com.superbgoal.caritasrig.functions.updateUserProfileData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

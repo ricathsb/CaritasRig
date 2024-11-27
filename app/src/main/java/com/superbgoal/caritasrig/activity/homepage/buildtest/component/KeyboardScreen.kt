@@ -32,11 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Keyboard
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun KeyboardScreen(navController: NavController) {
@@ -144,9 +145,12 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
             ComponentCard(
                 title = keyboardItem.name,
                 details = "Type: ${keyboardItem.name} | Color: ${keyboardItem.color} | Switch: ${keyboardItem.switches}",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = keyboardItem,
                 isLoading = isLoading.value, // Pass loading state to card
+                onFavClick = {
+                    savedFavorite(keyboard = keyboardItem, context = context)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true
@@ -165,7 +169,7 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
                             componentType = "keyboard", // Specify component type
                             componentData = keyboardItem, // Pass keyboard data
                             onSuccess = {
-                                // Stop loading on success
+                                navController.navigateUp()
                                 isLoading.value = false
                                 Log.d("KeyboardActivity", "Keyboard ${keyboardItem.name} saved successfully under build title: $title")
 

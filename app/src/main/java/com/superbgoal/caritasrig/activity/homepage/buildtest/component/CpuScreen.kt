@@ -41,11 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Processor
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CpuScreen(navController: NavController) {
@@ -162,12 +163,10 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
         items(processors) { processor ->
             val isLoading = remember { mutableStateOf(false) }
             ComponentCard(
+                imageUrl = processor.image_url,
                 title = processor.name,
                 details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
-                context = context,
-                component = processor,
                 isLoading = isLoading.value,
-                navController = navController,
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -188,12 +187,16 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
                                 isLoading.value = false
 
                             },
-                            onLoading = { isLoading.value = it }
+                            onLoading = { isLoading.value = it },
                         )
                     } ?: run {
                         isLoading.value = false
                         Log.e("BuildActivity", "Build title is null; unable to store CPU.")
                     }
+                },
+                navController = navController,
+                onFavClick = {
+                    savedFavorite(processor, context = context)
                 }
             )
         }

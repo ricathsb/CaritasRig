@@ -32,15 +32,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Casing
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CasingScreen(navController: NavController) {
-    // Load casing data
     val context = LocalContext.current
     val casings: List<Casing> = remember {
         loadItemsFromResources(
@@ -144,7 +144,7 @@ fun CasingList(casings: List<Casing>,navController: NavController) {
             ComponentCard(
                 title = casing.name,
                 details = "${casing.type} | ${casing.color} | PSU: ${casing.psu ?: "Not included"} | Volume: ${casing.externalVolume} L | 3.5\" Bays: ${casing.internal35Bays}",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = casing,
                 isLoading = isLoading.value, // Pass loading state to card
                 navController = navController,
@@ -182,13 +182,16 @@ fun CasingList(casings: List<Casing>,navController: NavController) {
                                 isLoading.value = false
                                 Log.e("CasingActivity", "Failed to store casing under build title: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it } // Update the loading state
+                            onLoading = { isLoading.value = it }
                         )
                     } ?: run {
                         // Stop loading if buildTitle is null
                         isLoading.value = false
                         Log.e("CasingActivity", "Build title is null; unable to store casing.")
                     }
+                },
+                onFavClick = {
+                    savedFavorite(casing = casing, context = context)
                 }
             )
         }

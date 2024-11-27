@@ -39,11 +39,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.PowerSupply
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun PowerSupplyScreen(navController: NavController) {
@@ -163,9 +164,10 @@ fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavControll
             ComponentCard(
                 title = powerSupply.name,
                 details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiency} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
-                context = context,
-                component = powerSupply,
                 isLoading = isLoading.value,
+                onFavClick = {
+                    savedFavorite(powerSupply = powerSupply, context = context)
+                },
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -179,6 +181,7 @@ fun PowerSupplyList(powerSupplies: List<PowerSupply>, navController: NavControll
                             componentType = "powersupply",
                             componentData = powerSupply,
                             onSuccess = {
+                                navController.navigateUp()
 
                             },
                             onFailure = { errorMessage ->
