@@ -15,4 +15,5 @@ data class Processor(
     val smt: Boolean = false,
     val single_core_score: Int = 0,
     val multi_core_score: Int = 0,
+    val image_url: String = ""
 ) :Parcelable

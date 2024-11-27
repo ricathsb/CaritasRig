@@ -163,6 +163,7 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
         items(processors) { processor ->
             val isLoading = remember { mutableStateOf(false) }
             ComponentCard(
+                imageUrl = processor.image_url,
                 title = processor.name,
                 details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
                 isLoading = isLoading.value,

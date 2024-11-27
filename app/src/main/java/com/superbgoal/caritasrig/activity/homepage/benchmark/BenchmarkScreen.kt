@@ -5,6 +5,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,7 +14,6 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -21,22 +22,14 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.accompanist.pager.*
 import com.superbgoal.caritasrig.R
-
-import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import kotlinx.coroutines.launch
-
-import com.superbgoal.caritasrig.activity.homepage.buildtest.component.ProcessorList
-import com.superbgoal.caritasrig.data.model.component.Processor
-import com.superbgoal.caritasrig.data.model.component.VideoCard
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.savedFavorite
 
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun BenchmarkScreen(navController: NavController) {
     val context = LocalContext.current
@@ -55,7 +48,7 @@ fun BenchmarkScreen(navController: NavController) {
         )
     }
 
-    val pagerState = rememberPagerState(initialPage = 0)
+    val pagerState = rememberPagerState(initialPage = 0){2}
     val coroutineScope = rememberCoroutineScope()
 
     Box(
@@ -107,7 +100,6 @@ fun BenchmarkScreen(navController: NavController) {
 
             // Swipeable Pager
             HorizontalPager(
-                count = 2,
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
