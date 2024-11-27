@@ -32,11 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.CpuCooler
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CpuCoolerScreen(navController: NavController) {
@@ -145,9 +146,12 @@ fun CpuCoolerList(cpuCoolers: List<CpuCooler>,navController: NavController) {
                 title = coolerItem.name,
                 details = "Price: $${coolerItem.price} | Size: ${coolerItem.size}mm | Color: ${coolerItem.color} | " +
                         "RPM: ${coolerItem.rpm} | Noise Level: ${coolerItem.noise_level} dB",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = coolerItem,
-                isLoading = isLoading.value, // Pass loading state to card
+                isLoading = isLoading.value,
+                onFavClick = {
+                    savedFavorite(cpuCooler = coolerItem, context = context)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true
@@ -176,7 +180,9 @@ fun CpuCoolerList(cpuCoolers: List<CpuCooler>,navController: NavController) {
                                 isLoading.value = false
                                 Log.e("CpuCoolerActivity", "Failed to store CPU Cooler under build title: $errorMessage")
                             },
-                            onLoading = { isLoading.value = it } // Update loading state
+                            onLoading = { isLoading.value = it },
+
+
                         )
                     } ?: run {
                         // Stop loading if buildTitle is nulla

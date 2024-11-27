@@ -1,9 +1,8 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
-package com.superbgoal.caritasrig.functions.auth
+package com.superbgoal.caritasrig.functions
 
 import android.content.Context
-import android.os.Parcelable
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -11,9 +10,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissState
@@ -31,6 +33,7 @@ import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -38,12 +41,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,12 +56,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -109,50 +107,16 @@ fun LoadingButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Maintenance() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Under Maintenance :3",
-                        textAlign = TextAlign.Center
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
-            )
-        }
-    ) { paddingValues ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Add a simple content box to ensure something renders
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text= "Oops! We’re brewing up some cool updates. The site will be back online shortly. Thanks for hanging tight!",
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
-}
-
 @Composable
 fun ComponentCard(
     title: String,
-    details: String,
-    component: Parcelable? = null, // Komponen yang akan dikirim melalui Intent
+    details: String? = null,
+    context: Context? = null,
+    component: Any? = null,
     imageUrl: String? = null, // URL untuk gambar (opsional)
-    context: Context,
     isLoading: Boolean, // Status loading untuk tombol
-    onAddClick: () -> Unit, // Callback dengan aksi sukses
+    onAddClick: (() -> Unit)? = null, // Callback opsional untuk tombol Add
+    onFavClick: (() -> Unit)? = null, // Callback opsional untuk tombol Favorite
     backgroundColor: Color = Color(0xFF3E2C47), // Warna latar belakang kartu
     buttonColor: Color = Color(0xFF6E5768), // Warna tombol
     navController: NavController? = null
@@ -195,35 +159,59 @@ fun ComponentCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = details,
+                    text = details ?: "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White
                 )
             }
 
-            // Tampilkan indikator loading atau tombol Add
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = Color.White
-                )
-            } else {
-                Button(
-                    onClick = {
-                        Log.d("ComponentCard", "onAddClick triggered for component: $title")
-                        onAddClick() // Panggil callback ketika tombol ditekan
-                    },
-                    enabled = !isLoading, // Nonaktifkan tombol saat loading
-                    colors = ButtonDefaults.buttonColors(buttonColor)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_btn),
-                        contentDescription = "Add Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
+            // Tampilkan indikator loading, tombol Add, atau tombol Favorite
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add", color = Color.White)
+                } else {
+                    // Tombol Add
+                    if (onAddClick != null) {
+                        Button(
+                            onClick = {
+                                Log.d("ComponentCard", "onAddClick triggered for component: $title")
+                                onAddClick()
+                            },
+                            enabled = !isLoading,
+                            colors = ButtonDefaults.buttonColors(buttonColor),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add_btn),
+                                contentDescription = "Add Icon",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Add", color = Color.White)
+                        }
+                    }
+
+                    // Tombol Favorite
+                    if (onFavClick != null) {
+                        IconButton(
+                            onClick = {
+
+                                Log.d("ComponentCard", "onFavClick triggered for component: $title")
+                                onFavClick()
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add_btn),
+                                contentDescription = "Favorite Icon",
+                                tint = Color.Red, // Warna ikon favorit
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -291,7 +279,7 @@ fun saveComponent(
 fun <T> SwipeToDeleteContainer(
     item: T,
     onDelete: (T) -> Unit,
-    onEdit: (T) -> Unit,
+    onEdit: ((T) -> Unit)? = null, // Jadikan nullable
     animationDuration: Int = 500,
     content: @Composable (T) -> Unit
 ) {
@@ -304,8 +292,10 @@ fun <T> SwipeToDeleteContainer(
                     true
                 }
                 DismissValue.DismissedToEnd -> {
-                    onEdit(item)
-                    false
+                    onEdit?.let { edit ->
+                        edit(item)
+                        false
+                    } ?: false
                 }
                 else -> false
             }
@@ -329,11 +319,57 @@ fun <T> SwipeToDeleteContainer(
         SwipeToDismiss(
             state = state,
             background = {
-                EditOrDeleteBackground(swipeDismissState = state)
+                EditOrDeleteBackground(
+                    swipeDismissState = state,
+                    enableEdit = onEdit != null // Tentukan apakah swipe untuk edit diaktifkan
+                )
             },
             dismissContent = { content(item) },
-            directions = setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart)
+            directions = if (onEdit != null) {
+                setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart)
+            } else {
+                setOf(DismissDirection.EndToStart)
+            } // Matikan StartToEnd jika onEdit null
         )
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun EditOrDeleteBackground(
+    swipeDismissState: DismissState,
+    enableEdit: Boolean // Parameter baru untuk menentukan apakah edit diaktifkan
+) {
+    val color = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> if (enableEdit) Color.Blue else Color.Transparent
+        DismissDirection.EndToStart -> Color.Red
+        else -> Color.Transparent
+    }
+
+    val icon = when (swipeDismissState.dismissDirection) {
+        DismissDirection.StartToEnd -> if (enableEdit) Icons.Default.Edit else null
+        DismissDirection.EndToStart -> Icons.Default.Delete
+        else -> null
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(16.dp),
+        contentAlignment = if (swipeDismissState.dismissDirection == DismissDirection.StartToEnd) {
+            Alignment.CenterStart
+        } else {
+            Alignment.CenterEnd
+        }
+    ) {
+        icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
     }
 }
 
@@ -381,7 +417,7 @@ fun calculateTotalPrice(it: BuildComponents): Double {
         it.casing?.price,
         it.videoCard?.price,
         it.motherboard?.price,
-        it.memory?.price,
+        it.memory?.totalPrice,
         it.internalHardDrive?.price,
         it.powerSupply?.price,
         it.cpuCooler?.price,
@@ -391,6 +427,47 @@ fun calculateTotalPrice(it: BuildComponents): Double {
     ).sumOf { price -> price ?: 0.0 }
 
     return ceil(totalPrice) // Membulatkan ke atas
+}
+
+@Composable
+fun <T> GenericCard(
+    item: T,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit, // Aksi saat card diklik
+    onFavoriteClick: () -> Unit, // Aksi saat tombol favorite diklik
+    content: @Composable ColumnScope.(T) -> Unit
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onClick() },
+        elevation = 4.dp,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween, // Mengatur isi ke kiri dan kanan
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f) // Kolom isi mengambil ruang sisa
+            ) {
+                content(item)
+            }
+            IconButton(
+                onClick = onFavoriteClick // Aksi tombol favorite
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorite",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
 }
 
 

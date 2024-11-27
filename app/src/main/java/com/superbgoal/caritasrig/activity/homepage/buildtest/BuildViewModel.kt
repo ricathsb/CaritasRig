@@ -3,15 +3,13 @@ package com.superbgoal.caritasrig.activity.homepage.buildtest
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
-import com.superbgoal.caritasrig.data.getDatabaseReference
+import com.superbgoal.caritasrig.functions.fetchBuildsWithAuth
+import com.superbgoal.caritasrig.functions.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Casing
@@ -25,7 +23,7 @@ import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
-import com.superbgoal.caritasrig.data.removeBuildComponent
+import com.superbgoal.caritasrig.functions.removeBuildComponent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -254,18 +252,33 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
             // Update selectedComponents dengan nilai default untuk kategori yang dihapus
             val updatedComponents = _selectedComponents.value?.toMutableMap()?.apply {
-                this[category] = "No $category Selected" // Tampilkan kondisi awal
+                this[category] = "No $category Selected"
             } ?: mapOf(category to "No $category Selected")
 
-            _selectedComponents.value = updatedComponents // Perbarui selectedComponents
+            _selectedComponents.value = updatedComponents
+
+            val targetPath = when (category) {
+                "CPU" -> "cpu"
+                "Case" -> "case"
+                "GPU" -> "gpu"
+                "Motherboard" -> "motherboard"
+                "RAM" -> "memory"
+                "InternalHardDrive" -> "internalharddrive"
+                "PowerSupply" -> "powersupply"
+                "CPU Cooler" -> "cpucooler"
+                "Headphone" -> "headphone"
+                "Keyboard" -> "keyboard"
+                "Mouse" -> "mouse"
+                else -> category.lowercase()
+            }
 
             // Hapus data di server
             removeBuildComponent(
                 userId = Firebase.auth.currentUser?.uid ?: "",
                 buildId = currentBuildData.buildId,
-                componentCategory = category.lowercase(),
+                componentCategory = targetPath,
                 onSuccess = {
-                    Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "$category removed successfully from server.")
+                    Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "$targetPath removed successfully from server.")
                 },
                 onFailure = { errorMessage ->
                     // Jika gagal, restore nilai sebelumnya
@@ -356,4 +369,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 _loading.value = false
             }
     }
+
 }
+
+

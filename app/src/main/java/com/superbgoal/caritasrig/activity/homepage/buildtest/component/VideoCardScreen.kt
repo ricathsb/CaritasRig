@@ -41,11 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.VideoCard
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun VideoCardScreen(navController: NavController) {
@@ -165,9 +166,10 @@ fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
             ComponentCard(
                 title = videoCard.name,
                 details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
-                context = context,
-                component = videoCard,
                 isLoading = isLoading.value,
+                onFavClick = {
+                    savedFavorite(videoCard = videoCard, context = context)
+                },
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser

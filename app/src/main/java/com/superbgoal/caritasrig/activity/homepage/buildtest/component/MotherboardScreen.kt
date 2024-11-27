@@ -39,11 +39,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Motherboard
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun MotherboardScreen(navController: NavController) {
@@ -278,11 +279,13 @@ fun MotherboardList(motherboards: List<Motherboard>, navController: NavControlle
             ComponentCard(
                 imageUrl = motherboard.imageUrl, // Image URL for the card
                 title = motherboard.name,
-                details = "Socket: ${motherboard.socket} | Form Factor: ${motherboard.formFactor} | " +
-                        "Max Memory: ${motherboard.maxMemory}GB | Slots: ${motherboard.memorySlots} | Color: ${motherboard.color}",
                 context = context,
                 component = motherboard,
                 isLoading = isLoading.value,
+                onFavClick = {
+                    // Handle favorite click
+                    savedFavorite(motherboard = motherboard, context = context)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

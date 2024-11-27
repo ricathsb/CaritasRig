@@ -32,11 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Headphones
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun HeadphoneScreen(navController: NavController) {
@@ -143,9 +144,12 @@ fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {
             ComponentCard(
                 title = headphone.name,
                 details = "Type: ${headphone.type} | Color: ${headphone.color} | Frequency Response: ${headphone.frequencyResponse} Hz",
-                context = context, // Passing context from LocalContext
+                // Passing context from LocalContext
                 component = headphone,
                 isLoading = isLoading.value, // Pass loading state to card
+                onFavClick = {
+                    savedFavorite(headphones = headphone, context = context)
+                },
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

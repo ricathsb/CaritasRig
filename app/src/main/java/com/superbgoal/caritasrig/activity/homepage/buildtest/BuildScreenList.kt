@@ -35,18 +35,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.data.deleteBuild
-import com.superbgoal.caritasrig.data.editBuildTitle
-import com.superbgoal.caritasrig.data.fetchBuildsWithAuth
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
-import com.superbgoal.caritasrig.functions.auth.SwipeToDeleteContainer
+import com.superbgoal.caritasrig.functions.SwipeToDeleteContainer
+import com.superbgoal.caritasrig.functions.deleteBuild
+import com.superbgoal.caritasrig.functions.editBuildTitle
+import com.superbgoal.caritasrig.functions.fetchBuildsWithAuth
 
 
 @Composable
 fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewModel) {
+    val context = LocalContext.current
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     val builds = remember { mutableStateOf<List<Build>>(emptyList()) } // Gunakan state
 
@@ -141,7 +143,8 @@ fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewMo
                             },
                             onFailure = { error ->
                                 Log.e("EditBuild", error)
-                            }
+                            },
+                            context = context
                         )
                     } else {
                         Log.e("EditBuild", "Build not found for title: $editedBuildTitle")

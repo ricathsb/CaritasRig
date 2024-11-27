@@ -76,13 +76,12 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.activity.MainActivity
 import com.superbgoal.caritasrig.activity.homepage.home.HomeViewModel
 import com.superbgoal.caritasrig.data.model.User
-import com.superbgoal.caritasrig.data.updateUserProfileData
+import com.superbgoal.caritasrig.functions.updateUserProfileData
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class)
 class ProfileSettingsActivity : ComponentActivity() {
     private val viewModel: ProfileSettingsViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()

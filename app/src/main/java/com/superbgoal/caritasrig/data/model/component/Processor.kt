@@ -4,6 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Processor(
+    val id : String = "",
     val name: String = "",
     val price: Double = 0.0,
     val core_count: Int = 0,

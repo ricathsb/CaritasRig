@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.activity.homepage.benchmark
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,10 +23,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.pager.*
 import com.superbgoal.caritasrig.R
+
 import com.superbgoal.caritasrig.data.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import kotlinx.coroutines.launch
+
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.ProcessorList
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.VideoCard
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.savedFavorite
+
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -149,7 +158,9 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        IconButton(onClick = { /* Favorite logic */ }) {
+                        IconButton(onClick = {
+                            savedFavorite(processor=processor)
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite",
@@ -203,7 +214,7 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                         horizontalArrangement = Arrangement.End
                     ) {
                         IconButton(onClick = {
-
+                            savedFavorite(videoCard = videoCard)
                         }) {
                             Icon(
                                 imageVector = Icons.Default.FavoriteBorder,

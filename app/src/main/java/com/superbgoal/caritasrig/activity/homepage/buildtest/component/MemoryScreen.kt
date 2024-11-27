@@ -33,11 +33,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.functions.auth.ComponentCard
-import com.superbgoal.caritasrig.functions.auth.saveComponent
+import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.data.model.component.Memory
+import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun MemoryScreen(navController: NavController) {
@@ -218,6 +219,7 @@ fun FilterDialogMemory(
 
 @Composable
 fun MemoryList(memories: List<Memory>, navController: NavController) {
+    val context = LocalContext.current
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -233,9 +235,10 @@ fun MemoryList(memories: List<Memory>, navController: NavController) {
                     append("Modules: ${memoryItem.modules} GB\n")
                     append("Socket: DDR${memoryItem.socket}\n")
                 },
-                context = LocalContext.current,
-                component = memoryItem,
                 isLoading = isLoading.value,
+                onFavClick = {
+                    savedFavorite(memory = memoryItem, context = context)
+                },
                 onAddClick = {
                     isLoading.value = true
                     Log.d("MemoryActivity", "Selected Memory: ${memoryItem.name}")
