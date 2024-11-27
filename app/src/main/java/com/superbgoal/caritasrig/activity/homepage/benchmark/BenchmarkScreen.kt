@@ -11,6 +11,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
+
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,6 +30,12 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import kotlinx.coroutines.launch
+import com.superbgoal.caritasrig.activity.homepage.buildtest.component.ProcessorList
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.savedFavorite
+
+@OptIn(ExperimentalPagerApi::class)
+=======
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -47,6 +57,16 @@ fun BenchmarkScreen(navController: NavController) {
             resourceId = R.raw.videocard
         )
     }
+
+    var sortOrder by remember { mutableStateOf("Descending") }
+    val sortedProcessors = remember(sortOrder) {
+        if (sortOrder == "Descending") processors else processors.reversed()
+    }
+    val sortedVideoCards = remember(sortOrder) {
+        if (sortOrder == "Descending") videoCards else videoCards.reversed()
+    }
+
+    val pagerState = rememberPagerState(initialPage = 0)
 
     val pagerState = rememberPagerState(initialPage = 0){2}
     val coroutineScope = rememberCoroutineScope()
@@ -79,7 +99,9 @@ fun BenchmarkScreen(navController: NavController) {
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = if (pagerState.currentPage == 0) colorResource(id = R.color.brown) else Color.Gray
                     ),
-                    modifier = Modifier.padding(horizontal = 8.dp).weight(1f)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .weight(1f)
                 ) {
                     Text(text = "Processor", color = Color.White)
                 }
@@ -92,11 +114,19 @@ fun BenchmarkScreen(navController: NavController) {
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = if (pagerState.currentPage == 1) colorResource(id = R.color.brown) else Color.Gray
                     ),
-                    modifier = Modifier.padding(horizontal = 8.dp).weight(1f)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .weight(1f)
                 ) {
                     Text(text = "GPU", color = Color.White)
                 }
             }
+
+            // Dropdown for sorting
+            SortingDropdown(
+                sortOrder = sortOrder,
+                onOrderChange = { sortOrder = it }
+            )
 
             // Swipeable Pager
             HorizontalPager(
@@ -104,14 +134,70 @@ fun BenchmarkScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    0 -> ProcessorListWithFavorite(processors = processors, navController = navController)
-                    1 -> VideoCardListWithFavorite(videoCards = videoCards, navController = navController)
+                    0 -> ProcessorListWithFavorite(processors = sortedProcessors, navController = navController)
+                    1 -> VideoCardListWithFavorite(videoCards = sortedVideoCards, navController = navController)
                 }
             }
         }
     }
 }
 
+@Composable
+fun SortingDropdown(sortOrder: String, onOrderChange: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Teks "Sort by" di sebelah kiri
+        Text(
+            text = "Sort by:",
+            style = MaterialTheme.typography.body1,
+            color = Color.Black // Warna teks bisa disesuaikan
+        )
+
+        // Tombol Dropdown di sebelah kanan
+        Box {
+            Button(
+                onClick = { expanded = true },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = colorResource(id = R.color.brown), // Warna tombol dari resources
+                    contentColor = Color.White // Warna teks tombol
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(text = sortOrder)
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null
+                )
+            }
+
+            // Dropdown Menu
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(onClick = {
+                    onOrderChange("Descending")
+                    expanded = false
+                }) {
+                    Text("Descending")
+                }
+                DropdownMenuItem(onClick = {
+                    onOrderChange("Ascending")
+                    expanded = false
+                }) {
+                    Text("Ascending")
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -119,7 +205,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 5.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(processors) { processor ->
@@ -127,6 +213,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                 modifier = Modifier.fillMaxWidth(),
                 elevation = 4.dp,
                 shape = RoundedCornerShape(8.dp),
+                backgroundColor = colorResource(id = R.color.brown1),
                 onClick = { /* Navigate to processor detail */ }
             ) {
                 Column(
@@ -143,7 +230,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                     Text(
                         text = "${processor.core_count} cores, ${processor.core_clock} GHz",
                         style = MaterialTheme.typography.body2,
-                        color = Color.Gray
+                        color = Color.DarkGray
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -151,7 +238,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                         horizontalArrangement = Arrangement.End
                     ) {
                         IconButton(onClick = {
-                            savedFavorite(processor=processor)
+                            savedFavorite(processor = processor)
                         }) {
                             Icon(
                                 imageVector = Icons.Default.FavoriteBorder,
@@ -172,7 +259,7 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 5.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(videoCards) { videoCard ->
@@ -180,9 +267,8 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                 modifier = Modifier.fillMaxWidth(),
                 elevation = 4.dp,
                 shape = RoundedCornerShape(8.dp),
-                onClick = {
-
-                }
+                backgroundColor = colorResource(id = R.color.brown1),
+                onClick = { }
             ) {
                 Column(
                     modifier = Modifier
@@ -198,7 +284,7 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                     Text(
                         text = "${videoCard.memory} GB, ${videoCard.coreClock} MHz",
                         style = MaterialTheme.typography.body2,
-                        color = Color.Gray
+                        color = Color.DarkGray
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
