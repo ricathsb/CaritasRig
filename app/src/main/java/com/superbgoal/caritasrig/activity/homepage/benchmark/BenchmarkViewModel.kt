@@ -7,9 +7,12 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
+import kotlinx.coroutines.Dispatchers
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BenchmarkViewModel : ViewModel() {
 
@@ -27,19 +30,25 @@ class BenchmarkViewModel : ViewModel() {
      */
     fun loadBenchmarkData(context: Context) {
         viewModelScope.launch {
-            val loadedProcessors = loadItemsFromResources<Processor>(
-                context = context,
-                resourceId = R.raw.processor
-            )
-            val loadedVideoCards = loadItemsFromResources<VideoCard>(
-                context = context,
-                resourceId = R.raw.videocard
-            )
-
-            _processors.value = listOf(loadedProcessors)
-            _videoCards.value = listOf(loadedVideoCards)
+            // Perform loading on the IO dispatcher
+            withContext(Dispatchers.IO) {
+                val loadedProcessors = loadItemsFromResources<Processor>(
+                    context = context,
+                    resourceId = R.raw.processor
+                )
+                val loadedVideoCards = loadItemsFromResources<VideoCard>(
+                    context = context,
+                    resourceId = R.raw.videocard
+                )
+                // Update states on the main thread
+                withContext(Dispatchers.Main) {
+                    _processors.value = listOf(loadedProcessors)
+                    _videoCards.value = listOf(loadedVideoCards)
+                }
+            }
         }
     }
+
 
     /**
      * Toggle favorite status for a given item.

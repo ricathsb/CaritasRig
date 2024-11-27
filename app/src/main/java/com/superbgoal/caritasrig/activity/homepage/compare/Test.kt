@@ -1,23 +1,34 @@
 package com.superbgoal.caritasrig.activity.homepage.compare
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -27,120 +38,155 @@ import com.aay.compose.radarChart.RadarChart
 import com.aay.compose.radarChart.model.NetLinesStyle
 import com.aay.compose.radarChart.model.Polygon
 import com.aay.compose.radarChart.model.PolygonStyle
+import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 
 
 @Composable
 fun ProcessorComparisonScreen() {
-    val processorList = remember { mutableStateListOf<Processor2>() }
-
-    val isDialogVisible = remember { mutableStateOf(false) }
-
-    val availableProcessors = listOf(
-        Processor2(
-            name = "AMD Ryzen 9 7950X3D",
-            price = 564.0,
-            core_count = 16,
-            core_clock = 4.2,
-            boost_clock = 5.7,
-            tdp = 120,
-            graphics = "Radeon",
-            smt = true,
-            single_core_score = 2100,
-            multi_core_score = 30000
-        ),
-        Processor2(
-            name = "AMD Ryzen 9 7900X",
-            price = 396.58,
-            core_count = 12,
-            core_clock = 4.7,
-            boost_clock = 5.6,
-            tdp = 170,
-            graphics = "Radeon",
-            smt = true,
-            single_core_score = 2050,
-            multi_core_score = 26500
+    val context = LocalContext.current
+    // Load processor data
+    val processors: List<Processor> = remember {
+        loadItemsFromResources(
+            context = context,
+            resourceId = R.raw.processor
         )
-    )
+    }
 
+    // State to hold selected processors
+    var selectedProcessors by remember { mutableStateOf<List<Processor>>(emptyList()) }
+
+    // State to manage dialog visibility for selecting processor
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedProcessorIndex by remember { mutableStateOf(-1) } // -1 indicates no selection
+
+    // Add processor to selected list
+    fun addProcessor(processor: Processor) {
+        selectedProcessors = selectedProcessors + processor
+    }
+
+    // Remove processor from selected list
+    fun removeProcessor(processor: Processor) {
+        selectedProcessors = selectedProcessors - processor
+    }
+
+    // Display UI for comparison
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         Text(
-            text = "Processor Comparison",
+            text = "Compare Processors",
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
+            color = Color.White
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display button to add processor
         Button(
-            onClick = { isDialogVisible.value = true },
+            onClick = { showDialog = true },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Add Processor")
+            Text(text = "Add Processor")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Selected Processors:",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        processorList.forEach { processor ->
-            Text(text = "- ${processor.name}", style = MaterialTheme.typography.bodySmall)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (processorList.size == 2) {
-            RadarChartProsesor(processorList[0], processorList[1])
-        } else {
+        // Display selected processors list
+        if (selectedProcessors.isNotEmpty()) {
             Text(
-                text = "Please select 2 processors to compare.",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
+                text = "Selected Processors:",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
+            )
+
+            LazyColumn {
+                items(selectedProcessors) { processor ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable {
+                                // Logic for handling click to compare processors (optional)
+                            }
+                    ) {
+                        Text(
+                            text = processor.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Black,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { removeProcessor(processor) }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Remove Processor",
+                                tint = Color.Red
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Show Radar Chart comparison if 2 processors are selected
+        if (selectedProcessors.size == 2) {
+            RadarChartProsesor(
+                processor1 = selectedProcessors[0],
+                processor2 = selectedProcessors[1]
             )
         }
     }
 
-    if (isDialogVisible.value) {
+    // Show dialog for processor selection
+    if (showDialog) {
         AlertDialog(
-            onDismissRequest = { isDialogVisible.value = false },
-            title = {
-                Text("Select a Processor")
-            },
+            onDismissRequest = { showDialog = false },
+            title = { Text("Select Processor") },
             text = {
-                Column {
-                    availableProcessors.forEach { processor ->
-                        Button(
-                            onClick = {
-                                if (processorList.size < 2 && !processorList.contains(processor)) {
-                                    processorList.add(processor)
+                LazyColumn {
+                    items(processors) { processor ->
+                        Text(
+                            text = processor.name,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .clickable {
+                                    addProcessor(processor)
+                                    showDialog = false
                                 }
-                                isDialogVisible.value = false
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(processor.name)
-                        }
+                                .padding(8.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { isDialogVisible.value = false }) {
-                    Text("Close")
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
                 }
             }
         )
     }
 }
 
-
 @Composable
-fun RadarChartProsesor(processor1: Processor2, processor2: Processor2) {
+fun RadarChartProsesor(processor1: Processor, processor2: Processor) {
     val maxValues = listOf(16.0, 5.0, 6.0, 200.0, 2500.0, 30000.0)
     val scalarValue = 20.0
 
+    // Function to ensure values are within the range [0, scalarValue]
+    fun clamp(value: Double): Double {
+        return value.coerceIn(0.0, scalarValue)
+    }
+
+    // Calculate values for processor1
     val processor1Values = listOf(
         processor1.core_count.toDouble(),
         processor1.core_clock,
@@ -149,9 +195,10 @@ fun RadarChartProsesor(processor1: Processor2, processor2: Processor2) {
         processor1.single_core_score.toDouble(),
         processor1.multi_core_score.toDouble()
     ).mapIndexed { index, value ->
-        (value / maxValues[index]) * scalarValue
+        clamp((value / maxValues[index]) * scalarValue)  // Ensure the value is within range
     }
 
+    // Calculate values for processor2
     val processor2Values = listOf(
         processor2.core_count.toDouble(),
         processor2.core_clock,
@@ -160,9 +207,10 @@ fun RadarChartProsesor(processor1: Processor2, processor2: Processor2) {
         processor2.single_core_score.toDouble(),
         processor2.multi_core_score.toDouble()
     ).mapIndexed { index, value ->
-        (value / maxValues[index]) * scalarValue
+        clamp((value / maxValues[index]) * scalarValue)  // Ensure the value is within range
     }
 
+    // Draw Radar Chart with clamped values
     RadarChart(
         modifier = Modifier.fillMaxSize(),
         radarLabels = listOf(
@@ -217,17 +265,7 @@ fun RadarChartProsesor(processor1: Processor2, processor2: Processor2) {
     )
 }
 
-data class Processor2(
-    val name: String,
-    val price: Double,
-    val core_count: Int,
-    val core_clock: Double,
-    val boost_clock: Double,
-    val tdp: Int,
-    val graphics: String,
-    val smt: Boolean,
-    val single_core_score: Int,
-    val multi_core_score: Int
-)
+
+
 
 
