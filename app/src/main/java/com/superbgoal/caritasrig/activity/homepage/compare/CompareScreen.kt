@@ -1,112 +1,411 @@
 package com.superbgoal.caritasrig.activity.homepage.compare
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
+import androidx.compose.ui.unit.sp
+import com.aay.compose.radarChart.RadarChart
+import com.aay.compose.radarChart.model.NetLinesStyle
+import com.aay.compose.radarChart.model.Polygon
+import com.aay.compose.radarChart.model.PolygonStyle
+import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 
-//@Composable
-//fun RadarChart(
-//    data: List<Float>,            // Normalized data points (0 to 1)
-//    labels: List<String>,         // Labels for the axes
-//    maxValue: Float = 1f,         // Maximum value for scaling
-//    modifier: Modifier = Modifier,
-//    primaryColor: Color = Color.Red,
-//    secondaryColor: Color = Color.Blue
-//) {
-//    Canvas(modifier = modifier) {
-//        val centerX = size.width / 2
-//        val centerY = size.height / 2
-//        val radius = min(centerX, centerY) * 0.8f
-//        val numAxes = data.size
-//        val angleStep = (2 * Math.PI / numAxes).toFloat()
-//
-//        // Draw grid and labels
-//        for (i in 1..5) { // Create concentric rings
-//            val scale = i / 5f
-//            drawCircle(
-//                color = Color.Gray.copy(alpha = 0.3f),
-//                radius = radius * scale,
-//                center = Offset(centerX, centerY)
-//            )
-//        }
-//
-//        // Draw axes
-//        for (i in data.indices) {
-//            val angle = i * angleStep
-//            val endX = centerX + radius * cos(angle)
-//            val endY = centerY + radius * sin(angle)
-//            drawLine(
-//                color = Color.Gray,
-//                start = Offset(centerX, centerY),
-//                end = Offset(endX, endY),
-//                strokeWidth = 2f
-//            )
-//        }
-//
-//        // Draw data (polygon)
-//        val path = Path()
-//        for (i in data.indices) {
-//            val angle = i * angleStep
-//            val valueRadius = radius * (data[i] / maxValue)
-//            val pointX = centerX + valueRadius * cos(angle)
-//            val pointY = centerY + valueRadius * sin(angle)
-//
-//            if (i == 0) {
-//                path.moveTo(pointX, pointY)
-//            } else {
-//                path.lineTo(pointX, pointY)
-//            }
-//        }
-//        path.close()
-//
-//        drawPath(
-//            path = path,
-//            color = primaryColor.copy(alpha = 0.4f)
-//        )
-//        drawPath(
-//            path = path,
-//            color = primaryColor,
-//            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f)
-//        )
-//    }
-//}
-//
-//@Preview
-//@Composable
-//fun RadarChartPreview() {
-//    val labels = listOf(
-//        "Single-Core Score",
-//        "Multi-Core Score",
-//        "Price",
-//        "Core Count",
-//        "Boost Clock",
-//        "TDP"
-//    )
-//
-//    // Normalized data points (0 to 1)
-//    val data7950X3D = listOf(1f, 1f, 1f, 1f, 1f, 0.7f)
-//    val data7900X = listOf(0.98f, 0.88f, 0.7f, 0.75f, 0.98f, 1f)
-//
-//    MaterialTheme {
-//        RadarChart(
-//            data = data7950X3D,
-//            labels = labels,
-//            modifier = Modifier
-//                .size(300.dp)
-//                .padding(16.dp),
-//            primaryColor = Color.Red
-//        )
-//    }
-//}
+
+@Composable
+fun ComparisonScreen() {
+    var selectedTab by remember { mutableStateOf(0) } // 0 for Processor, 1 for GPU
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        TabRow(
+            selectedTabIndex = selectedTab,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Tab(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                text = { Text("Processor") }
+            )
+            Tab(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                text = { Text("GPU") }
+            )
+        }
+
+        when (selectedTab) {
+            0 -> ProcessorComparisonScreen()
+            1 -> GPUComparisonScreen()
+        }
+    }
+}
+
+@Composable
+fun ProcessorComparisonScreen() {
+    val context = LocalContext.current
+    val processors: List<Processor> = remember {
+        loadItemsFromResources(
+            context = context,
+            resourceId = R.raw.processor
+        )
+    }
+
+    var searchText by remember { mutableStateOf("") }
+    var selectedProcessors by remember { mutableStateOf<List<Processor>>(emptyList()) }
+
+    // Show search bar based on the number of selected processors
+    val showSearchbar by remember(selectedProcessors) {
+        mutableStateOf(selectedProcessors.size < 2)
+    }
+
+    // Filtered list based on search text
+    val filteredProcessors = remember(searchText, processors) {
+        if (searchText.isBlank()) processors
+        else processors.filter { it.name.contains(searchText, ignoreCase = true) }
+    }
+
+    fun addProcessor(processor: Processor) {
+        selectedProcessors = selectedProcessors + processor
+    }
+
+    fun removeProcessor(processor: Processor) {
+        selectedProcessors = selectedProcessors - processor
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        if (showSearchbar) {
+            item {
+                TextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    placeholder = { Text("Search Processor") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search Icon"
+                        )
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        if (selectedProcessors.isNotEmpty()) {
+            items(selectedProcessors) { processor ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = processor.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Black,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { removeProcessor(processor) }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Remove Processor",
+                            tint = Color.Red
+                        )
+                    }
+                }
+            }
+        }
+
+        if (selectedProcessors.size == 2) {
+            item {
+                RadarChartProcessor(
+                    processor1 = selectedProcessors[0],
+                    processor2 = selectedProcessors[1]
+                )
+
+                PerformanceBar(
+                    label = "Single-Core Score",
+                    processor1Score = selectedProcessors[0].single_core_score,
+                    processor2Score = selectedProcessors[1].single_core_score
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                PerformanceBar(
+                    label = "Multi-Core Score",
+                    processor1Score = selectedProcessors[0].multi_core_score,
+                    processor2Score = selectedProcessors[1].multi_core_score
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+
+        if (filteredProcessors.isNotEmpty() && searchText.isNotBlank()) {
+            items(filteredProcessors) { processor ->
+                Text(
+                    text = processor.name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable {
+                            addProcessor(processor)
+                            searchText = "" // Clear search after selection
+                        },
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun GPUComparisonScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "GPU Comparison Coming Soon", style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+
+@Composable
+fun RadarChartProcessor(processor1: Processor, processor2: Processor) {
+    val maxValues = listOf(16.0, 5.0, 6.0, 200.0, 2500.0, 30000.0)
+    val scalarValue = 20.0
+
+    fun clamp(value: Double): Double {
+        return value.coerceIn(0.0, scalarValue)
+    }
+
+    val processor1Values = listOf(
+        processor1.core_count.toDouble(),
+        processor1.core_clock,
+        processor1.boost_clock,
+        processor1.tdp.toDouble(),
+        processor1.single_core_score.toDouble(),
+        processor1.multi_core_score.toDouble()
+    ).mapIndexed { index, value ->
+        clamp((value / maxValues[index]) * scalarValue)
+    }
+
+    val processor2Values = listOf(
+        processor2.core_count.toDouble(),
+        processor2.core_clock,
+        processor2.boost_clock,
+        processor2.tdp.toDouble(),
+        processor2.single_core_score.toDouble(),
+        processor2.multi_core_score.toDouble()
+    ).mapIndexed { index, value ->
+        clamp((value / maxValues[index]) * scalarValue)
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Radar Chart
+        RadarChart(
+            modifier = Modifier
+                .height(300.dp)
+                .fillMaxWidth(),
+            radarLabels = listOf(
+                "Core Count", "Core Clock", "Boost Clock",
+                "TDP", "Single Core Score", "Multi Core Score"
+            ),
+            labelsStyle = TextStyle(
+                color = Color.Black,
+                fontFamily = FontFamily.Serif,
+                fontWeight = FontWeight.Medium,
+                fontSize = 10.sp
+            ),
+            netLinesStyle = NetLinesStyle(
+                netLineColor = Color(0x90D3D3D3),
+                netLinesStrokeWidth = 2f,
+                netLinesStrokeCap = StrokeCap.Round
+            ),
+            scalarSteps = 5,
+            scalarValue = scalarValue,
+            scalarValuesStyle = TextStyle(
+                color = Color.Black,
+                fontFamily = FontFamily.Serif,
+                fontWeight = FontWeight.Medium,
+                fontSize = 10.sp
+            ),
+            polygons = listOf(
+                Polygon(
+                    values = processor1Values,
+                    unit = "",
+                    style = PolygonStyle(
+                        fillColor = Color(0xffc2ff86),
+                        fillColorAlpha = 0.5f,
+                        borderColor = Color(0xffe6ffd6),
+                        borderColorAlpha = 0.5f,
+                        borderStrokeWidth = 2f,
+                        borderStrokeCap = StrokeCap.Butt,
+                    )
+                ),
+                Polygon(
+                    values = processor2Values,
+                    unit = "",
+                    style = PolygonStyle(
+                        fillColor = Color(0xffFFDBDE),
+                        fillColorAlpha = 0.5f,
+                        borderColor = Color(0xffFF8B99),
+                        borderColorAlpha = 0.5f,
+                        borderStrokeWidth = 2f,
+                        borderStrokeCap = StrokeCap.Butt
+                    )
+                )
+            )
+        )
+
+        // Legend
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LegendItem(
+                color = Color(0xffc2ff86),
+                name = processor1.name
+            )
+            LegendItem(
+                color = Color(0xffFFDBDE),
+                name = processor2.name
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Horizontal Bars for Single and Multi-Core Scores
+
+    }
+}
+
+@Composable
+fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
+    val maxScore = maxOf(processor1Score.coerceAtLeast(0), processor2Score.coerceAtLeast(0)).takeIf { it > 0 } ?: 1
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Bar untuk Processor 1
+            Box(
+                modifier = Modifier
+                    .weight(
+                        (processor1Score.coerceAtLeast(0) / maxScore.toFloat()).coerceAtLeast(0.01f)
+                    ) // Berat minimal 0.01 untuk memastikan nilai positif
+                    .fillMaxHeight()
+                    .background(Color(0xffc2ff86))
+            )
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            // Bar untuk Processor 2
+            Box(
+                modifier = Modifier
+                    .weight(
+                        (processor2Score.coerceAtLeast(0) / maxScore.toFloat()).coerceAtLeast(0.01f)
+                    ) // Berat minimal 0.01 untuk memastikan nilai positif
+                    .fillMaxHeight()
+                    .background(Color(0xffFFDBDE))
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "$processor1Score",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xffc2ff86)
+            )
+            Text(
+                text = "$processor2Score",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xffFFDBDE)
+            )
+        }
+    }
+}
+
+@Composable
+fun LegendItem(color: Color, name: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .background(color, shape = CircleShape)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = name, style = TextStyle(fontSize = 12.sp))
+    }
+}
+
+
+
+
+
 

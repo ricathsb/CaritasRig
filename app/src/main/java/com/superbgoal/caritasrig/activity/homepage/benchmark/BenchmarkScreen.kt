@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.activity.homepage.benchmark
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.accompanist.pager.ExperimentalPagerApi
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
@@ -35,11 +37,6 @@ import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.savedFavorite
 
 @OptIn(ExperimentalPagerApi::class)
-=======
-import com.superbgoal.caritasrig.functions.loadItemsFromResources
-import com.superbgoal.caritasrig.functions.savedFavorite
-
-
 @Composable
 fun BenchmarkScreen(navController: NavController) {
     val context = LocalContext.current
@@ -60,13 +57,18 @@ fun BenchmarkScreen(navController: NavController) {
 
     var sortOrder by remember { mutableStateOf("Descending") }
     val sortedProcessors = remember(sortOrder) {
-        if (sortOrder == "Descending") processors else processors.reversed()
+        if (sortOrder == "Descending") {
+            processors.sortedWith(compareByDescending<Processor> { it.single_core_score }
+                .thenByDescending { it.multi_core_score })
+        } else {
+            processors.sortedWith(compareBy<Processor> { it.single_core_score }
+                .thenBy { it.multi_core_score })
+        }
     }
     val sortedVideoCards = remember(sortOrder) {
         if (sortOrder == "Descending") videoCards else videoCards.reversed()
     }
 
-    val pagerState = rememberPagerState(initialPage = 0)
 
     val pagerState = rememberPagerState(initialPage = 0){2}
     val coroutineScope = rememberCoroutineScope()
@@ -221,37 +223,68 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    // Processor Name
                     Text(
                         text = processor.name,
                         style = MaterialTheme.typography.h6,
                         color = Color.Black
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+
+                    // Processor Details
                     Text(
                         text = "${processor.core_count} cores, ${processor.core_clock} GHz",
                         style = MaterialTheme.typography.body2,
                         color = Color.DarkGray
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        IconButton(onClick = {
-                            savedFavorite(processor = processor)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorite",
-                                tint = Color.Red
-                            )
-                        }
-                    }
+
+                    // Horizontal Bar Chart
+                    Text(
+                        text = "Single-Core Score: ${processor.single_core_score}",
+                        style = MaterialTheme.typography.body2,
+                        color = Color.Black
+                    )
+                    HorizontalBar(
+                        value = processor.single_core_score,
+                        maxValue = 3000, // Adjust max value based on your dataset
+                        color = Color.Blue
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Multi-Core Score: ${processor.multi_core_score}",
+                        style = MaterialTheme.typography.body2,
+                        color = Color.Black
+                    )
+                    HorizontalBar(
+                        value = processor.multi_core_score,
+                        maxValue = 35000, // Adjust max value based on your dataset
+                        color = Color.Green
+                    )
                 }
             }
         }
     }
 }
+
+@Composable
+fun HorizontalBar(value: Int, maxValue: Int, color: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(8.dp)
+            .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction = value / maxValue.toFloat())
+                .height(8.dp)
+                .background(color, shape = RoundedCornerShape(4.dp))
+        )
+    }
+}
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -286,21 +319,6 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                         style = MaterialTheme.typography.body2,
                         color = Color.DarkGray
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        IconButton(onClick = {
-                            savedFavorite(videoCard = videoCard)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorite",
-                                tint = Color.Red
-                            )
-                        }
-                    }
                 }
             }
         }
