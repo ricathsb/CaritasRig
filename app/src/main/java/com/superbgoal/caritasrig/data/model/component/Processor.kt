@@ -13,4 +13,6 @@ data class Processor(
     val tdp: Int = 0,
     val graphics: String = "",
     val smt: Boolean = false,
+    val single_core_score: Int = 0,
+    val multi_core_score: Int = 0,
 ) :Parcelable

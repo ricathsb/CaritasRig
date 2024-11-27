@@ -89,9 +89,6 @@ fun BuildScreen(
             buildViewModel.setNewBuildState(false)
         }
 
-
-
-
     val context = LocalContext.current
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")

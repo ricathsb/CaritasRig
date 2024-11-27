@@ -7,7 +7,9 @@
     "boost_clock": 5.7,
     "tdp": 120,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2100,
+    "multi_core_score": 30000
   },
   {
     "name": "AMD Ryzen 9 7900X",
@@ -17,7 +19,9 @@
     "boost_clock": 5.6,
     "tdp": 170,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2050,
+    "multi_core_score": 26500
   },
   {
     "name": "AMD Ryzen 9 5900X",
@@ -27,7 +31,9 @@
     "boost_clock": 4.8,
     "tdp": 105,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 23000
   },
   {
     "name": "AMD Ryzen 9 7900X3D",
@@ -37,7 +43,9 @@
     "boost_clock": 5.6,
     "tdp": 120,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1950,
+    "multi_core_score": 28000
   },
   {
     "name": "AMD Ryzen 9 7950X",
@@ -47,7 +55,9 @@
     "boost_clock": 5.7,
     "tdp": 170,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2000,
+    "multi_core_score": 28500
   },
   {
     "name": "AMD Ryzen 9 5950X",
@@ -57,7 +67,9 @@
     "boost_clock": 4.9,
     "tdp": 105,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1750,
+    "multi_core_score": 25000
   },
   {
     "name": "AMD Ryzen 9 7900",
@@ -67,7 +79,9 @@
     "boost_clock": 5.4,
     "tdp": 65,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1900,
+    "multi_core_score": 25000
   },
   {
     "name": "AMD Ryzen 7 7800X3D",
@@ -77,7 +91,9 @@
     "boost_clock": 5,
     "tdp": 120,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1850,
+    "multi_core_score": 16000
   },
   {
     "name": "AMD Ryzen 7 7700X",
@@ -87,7 +103,9 @@
     "boost_clock": 5.4,
     "tdp": 105,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 15000
   },
   {
     "name": "AMD Ryzen 7 5800X",
@@ -97,7 +115,9 @@
     "boost_clock": 4.7,
     "tdp": 105,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 13000
   },
   {
     "name": "AMD Ryzen 7 5700X",
@@ -107,7 +127,9 @@
     "boost_clock": 4.6,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1600,
+    "multi_core_score": 12000
   },
   {
     "name": "AMD Ryzen 7 5800X3D",
@@ -117,7 +139,9 @@
     "boost_clock": 4.5,
     "tdp": 105,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 16000
   },
   {
     "name": "AMD Ryzen 7 7700",
@@ -127,7 +151,9 @@
     "boost_clock": 5.3,
     "tdp": 65,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1750,
+    "multi_core_score": 14000
   },
   {
     "name": "AMD Ryzen 7 5700X3D",
@@ -137,7 +163,9 @@
     "boost_clock": 4.1,
     "tdp": 105,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 15000
   },
   {
     "name": "AMD Ryzen 7 8700G",
@@ -147,7 +175,9 @@
     "boost_clock": 5.1,
     "tdp": 65,
     "graphics": "Radeon 780M",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 15000
   },
   {
     "name": "AMD Ryzen 7 5700",
@@ -157,7 +187,9 @@
     "boost_clock": 4.6,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 12500
   },
   {
     "name": "AMD Ryzen 5 7600X",
@@ -167,7 +199,9 @@
     "boost_clock": 5.3,
     "tdp": 105,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 11000
   },
   {
     "name": "AMD Ryzen 5 5600X",
@@ -177,7 +211,9 @@
     "boost_clock": 4.6,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1550,
+    "multi_core_score": 9000
   },
   {
     "name": "AMD Ryzen 5 7600",
@@ -187,7 +223,9 @@
     "boost_clock": 5.1,
     "tdp": 65,
     "graphics": "Radeon",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 10000
   },
   {
     "name": "AMD Ryzen 5 3600",
@@ -197,7 +235,9 @@
     "boost_clock": 4.2,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1400,
+    "multi_core_score": 8000
   },
   {
     "name": "AMD Ryzen 5 5600",
@@ -207,7 +247,9 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1500,
+    "multi_core_score": 8500
   },
   {
     "name": "AMD Ryzen 5 5500",
@@ -217,7 +259,9 @@
     "boost_clock": 4.2,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1500,
+    "multi_core_score": 8500
   },
   {
     "name": "AMD Ryzen 5 5600G",
@@ -227,7 +271,9 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": "Radeon Vega 7",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1550,
+    "multi_core_score": 9000
   },
   {
     "name": "AMD Ryzen 5 7500F",
@@ -237,7 +283,9 @@
     "boost_clock": 5,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 10000
   },
   {
     "name": "AMD Ryzen 5 8500G",
@@ -247,7 +295,9 @@
     "boost_clock": 5,
     "tdp": 65,
     "graphics": "Radeon 740M",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 11000
   },
   {
     "name": "AMD Ryzen 5 8600G",
@@ -257,7 +307,9 @@
     "boost_clock": 5,
     "tdp": 65,
     "graphics": "Radeon 760M",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1750,
+    "multi_core_score": 11500
   },
   {
     "name": "AMD Ryzen 5 7500F",
@@ -267,7 +319,9 @@
     "boost_clock": 5,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 10000
   },
   {
     "name": "AMD Ryzen 5 3600X",
@@ -277,7 +331,9 @@
     "boost_clock": 4.4,
     "tdp": 95,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1500,
+    "multi_core_score": 9500
   },
   {
     "name": "AMD Ryzen 5 3600",
@@ -287,7 +343,9 @@
     "boost_clock": 4.2,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1400,
+    "multi_core_score": 8000
   },
   {
     "name": "AMD Ryzen 5 5600X3D",
@@ -297,7 +355,9 @@
     "boost_clock": 4.4,
     "tdp": 105,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 11000
   },
   {
     "name": "AMD Ryzen 5 3600",
@@ -307,7 +367,9 @@
     "boost_clock": 4.2,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1400,
+    "multi_core_score": 8000
   },
   {
     "name": "AMD Ryzen 5 2600",
@@ -317,7 +379,9 @@
     "boost_clock": 3.9,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1300,
+    "multi_core_score": 7000
   },
   {
     "name": "Intel Core i9-14900K",
@@ -327,7 +391,9 @@
     "boost_clock": 6,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2200,
+    "multi_core_score": 32000
   },
   {
     "name": "Intel Core i9-13900K",
@@ -337,7 +403,9 @@
     "boost_clock": 5.8,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2200,
+    "multi_core_score": 32000
   },
   {
     "name": "Intel Core i9-12900K",
@@ -347,7 +415,9 @@
     "boost_clock": 5.2,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2000,
+    "multi_core_score": 27000
   },
   {
     "name": "Intel Core i9-14900KF",
@@ -357,7 +427,9 @@
     "boost_clock": 6,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 2200,
+    "multi_core_score": 32000
   },
   {
     "name": "Intel Core i9-13900KF",
@@ -367,7 +439,9 @@
     "boost_clock": 5.8,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 2200,
+    "multi_core_score": 32000
   },
   {
     "name": "Intel Core i9-12900KF",
@@ -377,7 +451,9 @@
     "boost_clock": 5.2,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 2000,
+    "multi_core_score": 27000
   },
   {
     "name": "Intel Core i9-11900K",
@@ -387,7 +463,9 @@
     "boost_clock": 5.3,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 750",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 15000
   },
   {
     "name": "Intel Core i9-10900K",
@@ -397,7 +475,9 @@
     "boost_clock": 5.3,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 14000
   },
   {
     "name": "Intel Core i9-10850K",
@@ -407,7 +487,9 @@
     "boost_clock": 5.2,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 13500
   },
   {
     "name": "Intel Core i9-11900KF",
@@ -417,7 +499,9 @@
     "boost_clock": 5.3,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 15000
   },
   {
     "name": "Intel Core i9-10900KF",
@@ -427,7 +511,9 @@
     "boost_clock": 5.3,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 14000
   },
   {
     "name": "Intel Core i7-14700K",
@@ -437,7 +523,9 @@
     "boost_clock": 5.6,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2000,
+    "multi_core_score": 28000
   },
   {
     "name": "Intel Core i7-12700K",
@@ -447,7 +535,9 @@
     "boost_clock": 5,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1850,
+    "multi_core_score": 23000
   },
   {
     "name": "Intel Core i7-13700K",
@@ -457,7 +547,9 @@
     "boost_clock": 5.4,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 2000,
+    "multi_core_score": 26000
   },
   {
     "name": "Intel Core i7-12700KF",
@@ -467,7 +559,9 @@
     "boost_clock": 5,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1850,
+    "multi_core_score": 23000
   },
   {
     "name": "Intel Core i7-14700KF",
@@ -477,7 +571,9 @@
     "boost_clock": 5.6,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 2000,
+    "multi_core_score": 28000
   },
   {
     "name": "Intel Core i7-13700KF",
@@ -487,7 +583,9 @@
     "boost_clock": 5.4,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 2000,
+    "multi_core_score": 26000
   },
   {
     "name": "Intel Core i7-14700F",
@@ -497,7 +595,9 @@
     "boost_clock": 5.4,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1900,
+    "multi_core_score": 27000
   },
   {
     "name": "Intel Core i7-10700K",
@@ -507,7 +607,9 @@
     "boost_clock": 5.1,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 14000
   },
   {
     "name": "Intel Core i7-12700F",
@@ -517,7 +619,9 @@
     "boost_clock": 4.9,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 22000
   },
   {
     "name": "Intel Core i7-13700F",
@@ -527,7 +631,9 @@
     "boost_clock": 5.2,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1900,
+    "multi_core_score": 25000
   },
   {
     "name": "Intel Core i7-11700K",
@@ -537,7 +643,9 @@
     "boost_clock": 5,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 750",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 13500
   },
   {
     "name": "Intel Core i7-10700F",
@@ -547,7 +655,9 @@
     "boost_clock": 4.8,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1600,
+    "multi_core_score": 12000
   },
   {
     "name": "Intel Core i7-12700",
@@ -557,7 +667,9 @@
     "boost_clock": 4.9,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 22000
   },
   {
     "name": "Intel Core i7-11700F",
@@ -567,7 +679,9 @@
     "boost_clock": 4.9,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 12500
   },
   {
     "name": "Intel Core i7-13700",
@@ -577,7 +691,9 @@
     "boost_clock": 5.2,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1900,
+    "multi_core_score": 25000
   },
   {
     "name": "Intel Core i7-10700",
@@ -587,7 +703,9 @@
     "boost_clock": 4.8,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1600,
+    "multi_core_score": 12000
   },
   {
     "name": "Intel Core i7-10700KF",
@@ -597,7 +715,9 @@
     "boost_clock": 5.1,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 14000
   },
   {
     "name": "Intel Core i5-12400F",
@@ -607,7 +727,9 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1500,
+    "multi_core_score": 9000
   },
   {
     "name": "Intel Core i5-12600KF",
@@ -617,7 +739,9 @@
     "boost_clock": 4.9,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 14000
   },
   {
     "name": "Intel Core i5-12600K",
@@ -627,7 +751,9 @@
     "boost_clock": 4.9,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 14000
   },
   {
     "name": "Intel Core i5-13600K",
@@ -637,7 +763,9 @@
     "boost_clock": 5.1,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 21000
   },
   {
     "name": "Intel Core i5-13600KF",
@@ -647,7 +775,9 @@
     "boost_clock": 5.1,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 21000
   },
   {
     "name": "Intel Core i5-13400F",
@@ -657,7 +787,9 @@
     "boost_clock": 4.6,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 13000
   },
   {
     "name": "Intel Core i5-14600K",
@@ -667,7 +799,9 @@
     "boost_clock": 5.3,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1850,
+    "multi_core_score": 22000
   },
   {
     "name": "Intel Core i5-14600KF",
@@ -677,7 +811,9 @@
     "boost_clock": 5.3,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1850,
+    "multi_core_score": 22000
   },
   {
     "name": "Intel Core i5-10400F",
@@ -687,7 +823,9 @@
     "boost_clock": 4.3,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1450,
+    "multi_core_score": 8500
   },
   {
     "name": "Intel Core i5-14400F",
@@ -697,7 +835,9 @@
     "boost_clock": 4.7,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 13000
   },
   {
     "name": "Intel Core i5-14500",
@@ -707,7 +847,9 @@
     "boost_clock": 5,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 21000
   },
   {
     "name": "Intel Core i5-12400",
@@ -717,7 +859,9 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 730",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1500,
+    "multi_core_score": 9000
   },
   {
     "name": "Intel Core i5-11400F",
@@ -727,7 +871,9 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1550,
+    "multi_core_score": 9500
   },
   {
     "name": "Intel Core i5-13500",
@@ -737,7 +883,9 @@
     "boost_clock": 4.8,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1800,
+    "multi_core_score": 21000
   },
   {
     "name": "Intel Core i5-10400",
@@ -747,7 +895,9 @@
     "boost_clock": 4.3,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1450,
+    "multi_core_score": 8500
   },
   {
     "name": "Intel Core i5-13400",
@@ -757,7 +907,9 @@
     "boost_clock": 4.6,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 730",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1650,
+    "multi_core_score": 13000
   },
   {
     "name": "Intel Core i5-10600K",
@@ -767,7 +919,9 @@
     "boost_clock": 4.8,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1600,
+    "multi_core_score": 10000
   },
   {
     "name": "Intel Core i5-14400",
@@ -777,7 +931,9 @@
     "boost_clock": 4.7,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 730",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 13000
   },
   {
     "name": "Intel Core i5-11600K",
@@ -787,7 +943,9 @@
     "boost_clock": 4.9,
     "tdp": 125,
     "graphics": "Intel UHD Graphics 750",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 11000
   },
   {
     "name": "Intel Core i5-12500",
@@ -797,7 +955,9 @@
     "boost_clock": 4.6,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 770",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1600,
+    "multi_core_score": 10000
   },
   {
     "name": "Intel Core i5-11600KF",
@@ -807,7 +967,9 @@
     "boost_clock": 4.9,
     "tdp": 125,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1700,
+    "multi_core_score": 11000
   },
   {
     "name": "Intel Core i3-12100F",
@@ -817,7 +979,9 @@
     "boost_clock": 4.3,
     "tdp": 58,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1400,
+    "multi_core_score": 5500
   },
   {
     "name": "Intel Core i3-10100F",
@@ -827,7 +991,9 @@
     "boost_clock": 4.3,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1400,
+    "multi_core_score": 5500
   },
   {
     "name": "Intel Core i3-14100F",
@@ -837,7 +1003,9 @@
     "boost_clock": 4.7,
     "tdp": 58,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1500,
+    "multi_core_score": 6000
   },
   {
     "name": "Intel Core i3-12100",
@@ -847,7 +1015,9 @@
     "boost_clock": 4.3,
     "tdp": 60,
     "graphics": "Intel UHD Graphics 730",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1400,
+    "multi_core_score": 5500
   },
   {
     "name": "Intel Core i3-13100F",
@@ -857,7 +1027,9 @@
     "boost_clock": 4.5,
     "tdp": 58,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1450,
+    "multi_core_score": 6000
   },
   {
     "name": "Intel Core i3-14100",
@@ -867,7 +1039,9 @@
     "boost_clock": 4.7,
     "tdp": 60,
     "graphics": "Intel UHD Graphics 730",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1500,
+    "multi_core_score": 6000
   },
   {
     "name": "Intel Core i3-10100",
@@ -877,7 +1051,9 @@
     "boost_clock": 4.3,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1400,
+    "multi_core_score": 5500
   },
   {
     "name": "Intel Core i3-10105F",
@@ -887,7 +1063,9 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": null,
-    "smt": true
+    "smt": true,
+    "single_core_score": 1450,
+    "multi_core_score": 6000
   },
   {
     "name": "Intel Core i3-13100",
@@ -897,7 +1075,9 @@
     "boost_clock": 4.5,
     "tdp": 60,
     "graphics": "Intel UHD Graphics 730",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1450,
+    "multi_core_score": 6000
   },
   {
     "name": "Intel Core i3-10105",
@@ -907,7 +1087,9 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1450,
+    "multi_core_score": 6000
   },
   {
     "name": "Intel Core i3-10300",
@@ -917,6 +1099,8 @@
     "boost_clock": 4.4,
     "tdp": 65,
     "graphics": "Intel UHD Graphics 630",
-    "smt": true
+    "smt": true,
+    "single_core_score": 1450,
+    "multi_core_score": 6000
   }
 ]
