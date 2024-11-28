@@ -19,13 +19,12 @@ class LoginViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
-    private val _offsetY = MutableStateFlow(1000f)
+    private val _offsetY = MutableStateFlow(800f)
     val offsetY: StateFlow<Float> get() = _offsetY
 
     private val _isArrowUp = MutableStateFlow(true)
     val isArrowUp: StateFlow<Boolean> get() = _isArrowUp
 
-    // Update functions for state values
     fun updateEmail(newEmail: String) {
         _email.value = newEmail
     }
@@ -43,7 +42,7 @@ class LoginViewModel : ViewModel() {
     }
 
     fun updateOffsetY(newOffset: Float) {
-        _offsetY.value = newOffset
+        _offsetY.value = newOffset.coerceIn(0f, 800f)
     }
 
     fun toggleArrowDirection() {

@@ -1,11 +1,7 @@
 package com.superbgoal.caritasrig.activity.auth.register
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.format.DateTimeFormatter
@@ -35,7 +31,6 @@ class RegisterViewModel : ViewModel() {
 
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-    // Update functions for each state value
     fun updateFirstname(newFirstname: String) {
         _firstname.value = newFirstname
     }
@@ -50,10 +45,6 @@ class RegisterViewModel : ViewModel() {
 
     fun updateDateOfBirth(newDateOfBirth: String) {
         _dateOfBirth.value = newDateOfBirth
-    }
-
-    fun updateImageUri(newUri: Uri?) {
-        _imageUri.value = newUri
     }
 
     fun setLoading(isLoading: Boolean) {

@@ -1,6 +1,6 @@
 package com.superbgoal.caritasrig.activity.homepage.buildtest
 
-import BuildViewModel
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.os.Handler
@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,26 +27,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.currentCompositionErrors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -56,6 +60,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,26 +71,36 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.data.getDatabaseReference
-import com.superbgoal.caritasrig.data.saveBuildTitle
+import com.superbgoal.caritasrig.functions.calculateTotalPrice
+import com.superbgoal.caritasrig.functions.editRamQuantity
+import com.superbgoal.caritasrig.functions.saveBuildTitle
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("SuspiciousIndentation")
 @Composable
-fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),navController: NavController? = null) {
-    getDatabaseReference()
-    val context = LocalContext.current
-    LaunchedEffect(title) {
-        buildViewModel.saveBuildTitle(title)
-        buildViewModel.fetchBuildByTitle(title)
-    }
+fun BuildScreen(
+    buildViewModel: BuildViewModel = viewModel(),
+    @SuppressLint("SuspiciousIndentation") navController: NavController? = null
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    val isNewBuild by buildViewModel.isNewBuild.collectAsState()
+        if (isNewBuild) {
+            buildViewModel.resetBuildTitle()
+            showDialog = true
+            buildViewModel.setNewBuildState(false)
+        }
 
+    val context = LocalContext.current
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
     val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
-    var showDialog by remember { mutableStateOf(buildTitle.isEmpty()) }
     var dialogText by remember { mutableStateOf(buildTitle) }
     val loading by buildViewModel.loading.observeAsState(false)
     val sharedPreferences = context.getSharedPreferences("ScrollPrefs", Context.MODE_PRIVATE)
+    val totalBuildPrice by buildViewModel.totalBuildPrice.observeAsState(0.0)
+    val sancreekFont = FontFamily(Font(R.font.sancreek))
+    val sairastencilone = FontFamily(Font(R.font.sairastencilone))
+
+    buildData?.components?.let { calculateTotalPrice(it) }?.let { buildViewModel.setBuildPrice(it) }
 
     // LazyListState untuk melacak posisi scroll
     val lazyListState = rememberLazyListState(
@@ -92,7 +108,14 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
         initialFirstVisibleItemScrollOffset = sharedPreferences.getInt("lastScrollOffset", 0)
     )
 
-// Menyimpan posisi scroll di SharedPreferences
+    LaunchedEffect (Unit) {
+        Log.d("BuildScreen", "Fetching build by title: $buildTitle")
+        buildViewModel.fetchBuildByTitle(buildTitle)
+    }
+
+
+
+    // Menyimpan posisi scroll di SharedPreferences
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
             .collect { (index, offset) ->
@@ -104,105 +127,65 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
             }
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background image
+        Image(
+            painter = painterResource(id = R.drawable.component_bg),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
 
-    if (loading) {
-        // Full-screen loading indicator
-        Box(
+        // Content area
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(60.dp)
+            // Title
+            Text(
+                text = buildTitle.ifEmpty { "" },
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color.White,
+                fontFamily = sairastencilone,
+                modifier = Modifier.padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
             )
-        }
-    } else {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Background image
-            Image(
-                painter = painterResource(id = R.drawable.bg_build),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            // TopAppBar with title and actions
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text(text = buildTitle.ifEmpty { "Build Name" }) },
-                        modifier = Modifier.height(145.dp),
-                        navigationIcon = {
-                            IconButton(
-                                onClick = {
-
-                                },
-                                modifier = Modifier
-                                    .padding(start = 30.dp, top = 60.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_home),
-                                    contentDescription = "Home",
-                                    modifier = Modifier.size(80.dp),
-                                    tint = Color.White
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(
-                                onClick = {
-                                    showDialog = true
-                                    dialogText = buildTitle // Load current title for editing
-                                },
-                                modifier = Modifier
-                                    .padding(end = 30.dp, top = 60.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_save),
-                                    contentDescription = "Edit Build Title",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(80.dp)
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                            navigationIconContentColor = Color.White,
-                            actionIconContentColor = Color.White
-                        )
+            if (loading) {
+                // Full-screen loading indicator
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(60.dp)
                     )
-                },
-                containerColor = Color.Transparent
-            ) { paddingValues ->
-
-                // Activity mapping for navigation
-                val routeMap = mapOf(
-                    "CPU" to "cpu_screen",
-                    "Case" to "casing_screen",
-                    "GPU" to "gpu_screen",
-                    "Motherboard" to "motherboard_screen",
-                    "RAM" to "memory_screen",
-                    "InternalHardDrive" to "internal_hard_drive_screen",
-                    "PowerSupply" to "power_supply_screen",
-                    "CPU Cooler" to "cpu_cooler_screen",
-                    "Headphone" to "headphone_screen",
-                    "Keyboard" to "keyboard_screen",
-                    "Mouse" to "mouse_screen"
-                )
-
-
+                }
+            } else {
                 LazyColumn(
-                    state = lazyListState, // Gunakan LazyListState di sini
+                    state = lazyListState,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 8.dp)
                 ) {
-                    // Iterate through selected components
-                    selectedComponents.forEach { (title, activityClass) ->
+                    // Activity mapping for navigation
+                    val routeMap = mapOf(
+                        "CPU" to "cpu_screen",
+                        "Case" to "casing_screen",
+                        "GPU" to "gpu_screen",
+                        "Motherboard" to "motherboard_screen",
+                        "RAM" to "memory_screen",
+                        "InternalHardDrive" to "internal_hard_drive_screen",
+                        "PowerSupply" to "power_supply_screen",
+                        "CPU Cooler" to "cpu_cooler_screen",
+                        "Headphone" to "headphone_screen",
+                        "Keyboard" to "keyboard_screen",
+                        "Mouse" to "mouse_screen"
+                    )
+
+                    selectedComponents.forEach { (title) ->
                         item {
                             val componentDetail = when (title) {
                                 "CPU" -> buildData?.components?.processor?.let {
@@ -246,67 +229,109 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                                 }
 
                                 "Mouse" -> buildData?.components?.mouse?.let {
-                                    "Mouse: ${it.name}\nType: ${it.maxDpi}"
+                                    "Mouse: ${it.name}\nDPI: ${it.maxDpi}"
                                 }
 
                                 else -> null
                             }
+                                ComponentCard(
+                                    initialQuantity = buildData?.components?.memory?.quantity,
+                                    title = title,
+                                    componentDetail = componentDetail,
+                                    totalPrice = buildData?.components?.memory?.totalPrice.toString(),
+                                    currentPrice = buildData?.components?.let {
+                                        when (title) {
+                                            "CPU" -> it.processor?.price?.toString()
+                                            "Case" -> it.casing?.price?.toString()
+                                            "GPU" -> it.videoCard?.price?.toString()
+                                            "Motherboard" -> it.motherboard?.price?.toString()
+                                            "RAM" -> it.memory?.price?.toString()
+                                            "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
+                                            "PowerSupply" -> it.powerSupply?.price?.toString()
+                                            "CPU Cooler" -> it.cpuCooler?.price?.toString()
+                                            "Headphone" -> it.headphone?.price?.toString()
+                                            "Keyboard" -> it.keyboard?.price?.toString()
+                                            "Mouse" -> it.mouse?.price?.toString()
+                                            else -> "0.0"
+                                        }
+                                    } ?: "0.0",
+                                    onClick = {
+                                        val route = routeMap[title]
+                                        if (route != null) {
+                                            navController?.navigate(route)
+                                        } else {
+                                            Log.e("NavigationError", "No route found for title: $title")
+                                        }
+                                    },
+                                    onRemove = {
+                                        buildViewModel.removeComponent(title)
+                                    },
+                                    onUpdatePrice = { newPrice ->
+                                        buildViewModel.updateBuildComponentWithViewModel(
+                                            category = title,
+                                            updatedData = mapOf("price" to newPrice.toDouble())
+                                        )
+                                        Log.d("BuildActivity", "Price updated for $title: $newPrice")
 
-                            // Render ComponentCard
-                            ComponentCard(
-                                title = title,
-                                componentDetail = componentDetail,
-                                currentPrice = buildData?.components?.let {
-                                    when (title) {
-                                        "CPU" -> it.processor?.price?.toString()
-                                        "Case" -> it.casing?.price?.toString()
-                                        "GPU" -> it.videoCard?.price?.toString()
-                                        "Motherboard" -> it.motherboard?.price?.toString()
-                                        "RAM" -> it.memory?.price?.toString()
-                                        "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
-                                        "PowerSupply" -> it.powerSupply?.price?.toString()
-                                        "CPU Cooler" -> it.cpuCooler?.price?.toString()
-                                        "Headphone" -> it.headphone?.price?.toString()
-                                        "Keyboard" -> it.keyboard?.price?.toString()
-                                        "Mouse" -> it.mouse?.price?.toString()
-                                        else -> "0.0"
+                                        // Tambahkan delay sebelum memanggil fetchBuildByTitle
+                                        Handler(Looper.getMainLooper()).postDelayed({
+                                            buildViewModel.fetchBuildByTitle(buildTitle)
+                                        }, 20) // Delay 2000ms (2 detik)
                                     }
-                                } ?: "0.0",
-                                onClick = {
-                                    val route = routeMap[title]
-                                    if (route != null) {
-                                        navController?.navigate(route)
-                                    } else {
-                                        Log.e("NavigationError", "No route found for title: $title")
+                                    ,
+                                    loading = loading,
+                                    onQuantityChange = { newQuantity ->
+                                        Log.d("BuildActivity", "Quantity: $newQuantity")
+
+                                        editRamQuantity(
+                                            buildTitle = buildTitle,
+                                            quantity = newQuantity,
+                                            onSuccess = {
+                                                buildViewModel.fetchBuildByTitle(buildTitle)
+                                                println("RAM quantity and total price updated successfully!")
+                                            },
+                                            onFailure = { errorMessage ->
+                                                println("Error: $errorMessage")
+                                            },
+                                            onLoading = { isLoading ->
+                                                if (isLoading) {
+                                                    println("Updating RAM quantity and total price...")
+                                                } else {
+                                                    println("Update process completed.")
+                                                }
+                                            }
+                                        )
                                     }
-                                },
-                                onRemove = {
-                                    buildViewModel.removeComponent(title)
-                                },
-                                onUpdatePrice = { newPrice ->
-                                    buildViewModel.updateBuildComponentWithViewModel(
-                                        category = title,
-                                        updatedData = mapOf("price" to newPrice.toDouble())
-                                    )
-                                    Log.d("BuildActivity", "Price updated for $title: $newPrice")
-                                },
-                                loading = loading
-                            )
+                                )
                         }
                     }
                 }
             }
         }
+
+        // Floating Action Button for reset
+        FloatingActionButton(
+            onClick = {
+                showDialog = true
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Reset",
+                tint = Color.White
+            )
+        }
     }
 
-
-    // Show dialog only if showDialog is true
+    // Dialog tetap ditampilkan jika diperlukan
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { /* Do nothing to prevent dismissing the dialog */ },
-            title = {
-                Text(text = "Enter Build Title")
-            },
+            title = { Text(text = "Enter Build Title") },
             text = {
                 Column {
                     Text(text = "Please enter a title for your build:")
@@ -326,6 +351,7 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                         if (dialogText.isNotEmpty()) {
                             saveBuildTitle(
                                 userId = Firebase.auth.currentUser?.uid ?: "",
+                                context = context,
                                 buildTitle = dialogText,
                                 onSuccess = {
                                     showDialog = false
@@ -346,9 +372,11 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
             dismissButton = {
                 TextButton(
                     onClick = {
-                        if(buildViewModel.buildTitle.value?.isNotEmpty() == true){
+                        if (buildViewModel.buildTitle.value?.isNotEmpty() == true) {
                             showDialog = false
                         } else {
+                            showDialog = false
+                            navController?.navigateUp()
                         }
                     }
                 ) {
@@ -356,7 +384,6 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
                 }
             }
         )
-
     }
 }
 
@@ -365,16 +392,30 @@ fun BuildScreen(title : String ,buildViewModel: BuildViewModel = viewModel(),nav
 @Composable
 fun ComponentCard(
     title: String,
+    totalPrice : String? = "nooo",
     componentDetail: String?,
     currentPrice: String,
+    initialQuantity: Int?, // Tambahkan parameter untuk inisialisasi quantity
     onClick: () -> Unit,
     onRemove: () -> Unit,
     onUpdatePrice: (String) -> Unit,
-    loading : Boolean = false
+    loading: Boolean = false,
+    onQuantityChange: ((Int) -> Unit)? = null
 ) {
-    // State untuk menampilkan dialog
+    // Inisialisasi quantity menggunakan initialQuantity
+    var quantity by rememberSaveable { mutableStateOf(initialQuantity) }
     var showDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    val displayText = if (title == "RAM") {
+        "Total Price: $$totalPrice"
+    } else {
+        "Current Price: $$currentPrice"
+    }
+
+
+    // Harga total berdasarkan quantity
+//    val totalPrice = remember(quantity, currentPrice) {
+//        (quantity?.times((currentPrice.toDoubleOrNull() ?: 0.0))).toString()
+//    }
 
     Card(
         modifier = Modifier
@@ -427,7 +468,7 @@ fun ComponentCard(
 
                         // Harga Komponen
                         Text(
-                            text = "Current Price: $$currentPrice",
+                            text = displayText,
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
                             color = Color.White,
                             modifier = Modifier.padding(8.dp)
@@ -448,13 +489,60 @@ fun ComponentCard(
 
                         // Tombol Configure
                         Button(
-                            onClick = {
-                                showDialog = true // Tampilkan dialog
-                            },
+                            onClick = { showDialog = true },
                             modifier = Modifier.background(Color.Transparent),
                             elevation = ButtonDefaults.buttonElevation(0.dp)
                         ) {
                             Text(text = "Configure Component")
+                        }
+
+                        // Tombol Plus-Minus khusus untuk RAM
+                        if (title.equals("RAM", ignoreCase = true)) {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                // Tombol Minus
+                                IconButton(
+                                    onClick = {
+                                        if (quantity!! > 1) {
+                                            quantity = quantity!! - 1 // Kurangi jumlah
+                                            onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Remove,
+                                        contentDescription = "Minus",
+                                        tint = Color.White
+                                    )
+                                }
+
+                                // Jumlah
+                                Text(
+                                    text = quantity.toString(),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+
+                                // Tombol Plus
+                                IconButton(
+                                    onClick = {
+                                        quantity = quantity!! + 1 // Tambah jumlah
+                                        onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Plus",
+                                        tint = Color.White
+                                    )
+                                }
+                            }
                         }
                     } else {
                         Text(
@@ -491,21 +579,18 @@ fun ComponentCard(
     if (showDialog) {
         PriceEditDialog(
             category = title,
-            currentPrice = currentPrice,
+            currentPrice = currentPrice, // Kirimkan harga total ke dialog
             onDismiss = { showDialog = false },
             onConfirm = { newPrice ->
                 showDialog = false
                 onUpdatePrice(newPrice)
-                Log.d("BuildActivity", "Price updated for $loading")
-                if (loading == false) {
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        (context as? Activity)?.recreate()
-                    }, 20)
-                }
+                Log.d("BuildActivity", "Price updated for $title: $newPrice")
             }
         )
     }
 }
+
+
 
 @Composable
 fun PriceEditDialog(
@@ -515,6 +600,7 @@ fun PriceEditDialog(
     onConfirm: (String) -> Unit
 ) {
     var newPrice by remember { mutableStateOf(currentPrice) }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,

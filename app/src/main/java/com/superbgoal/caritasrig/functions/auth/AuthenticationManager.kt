@@ -1,7 +1,6 @@
 package com.superbgoal.caritasrig.functions.auth
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -46,7 +45,9 @@ class AuthenticationManager(private val context: Context) {
                                 callback("home")  // Call the callback with "home" if provided
                             } else {
                                 // If no callback is provided, handle the redirection
-                               navController.navigate("home")
+                                navController.navigate("home") {
+                                    popUpTo(0) { inclusive = true } // Hapus semua stack sebelumnya
+                                }
                             }
                         }
                     } else {
@@ -55,16 +56,17 @@ class AuthenticationManager(private val context: Context) {
                         if (callback != null) {
                             callback("register")  // Call the callback with "register" if provided
                         } else {
-                            navController.navigate("register")
+                            navController.navigate("register") {
+                                popUpTo(0) { inclusive = true } // Hapus semua stack sebelumnya
+                            }
                         }
                     }
 
                 }.addOnFailureListener { exception ->
                     Log.e("checkUserInDatabase", "Error checking user in database: ${exception.message}")
                     if (callback != null) {
-                        callback("login")  // Call the callback with "login" in case of failure
+                        callback("login")
                     } else {
-                        // Default behavior (not using callback)
                         navController.navigate("login")
                     }
                 }
