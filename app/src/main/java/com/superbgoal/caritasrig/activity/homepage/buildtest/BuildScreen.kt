@@ -113,9 +113,6 @@ fun BuildScreen(
         buildViewModel.fetchBuildByTitle(buildTitle)
     }
 
-
-
-    // Menyimpan posisi scroll di SharedPreferences
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
             .collect { (index, offset) ->
@@ -189,7 +186,7 @@ fun BuildScreen(
                         item {
                             val componentDetail = when (title) {
                                 "CPU" -> buildData?.components?.processor?.let {
-                                    "Processor: ${it.name}\nCores: ${it.core_count}\nSpeed: ${it.core_clock} GHz"
+                                    "Processor: ${it.name}\nCores: ${it.coreCount}\nSpeed: ${it.performanceCoreBoostClock} GHz"
                                 }
 
                                 "Case" -> buildData?.components?.casing?.let {
@@ -303,6 +300,7 @@ fun BuildScreen(
                                         )
                                     }
                                 )
+                            Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
                         }
                     }
                 }

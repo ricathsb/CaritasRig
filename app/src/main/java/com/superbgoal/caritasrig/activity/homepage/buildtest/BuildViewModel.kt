@@ -14,6 +14,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Casing
 import com.superbgoal.caritasrig.data.model.component.CpuCooler
+import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
 import com.superbgoal.caritasrig.data.model.component.Keyboard
@@ -22,6 +23,7 @@ import com.superbgoal.caritasrig.data.model.component.Motherboard
 import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import com.superbgoal.caritasrig.functions.removeBuildComponent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -124,7 +126,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         // Perbarui komponen di UI
         val components = build.components?.let {
             mapOf(
-                "CPU" to it.processor?.let { "Processor: ${it.name}, Cores: ${it.core_count}, ${it.core_clock} GHz" },
+                "CPU" to it.processor?.let { "Processor: ${it.name}, Cores: ${it.coreCount}, ${it.performanceCoreClock} GHz" },
                 "Case" to it.casing?.let { "Case: ${it.name}, Type: ${it.type}" },
                 "GPU" to it.videoCard?.let { "GPU: ${it.name}, Memory: ${it.memory} GB" },
                 "Motherboard" to it.motherboard?.let { "Motherboard: ${it.name}, Chipset: ${it.formFactor}" },
@@ -150,7 +152,7 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         build.components?.let { components ->
             val detail = buildString {
                 components.processor?.let {
-                    append("CPU: ${it.name}, ${it.core_count} cores, ${it.core_clock} GHz\n")
+                    append("CPU: ${it.name}, ${it.coreCount} cores, ${it.performanceCoreClock} GHz\n")
                 }
                 components.casing?.let {
                     append("Case: ${it.name}, Type: ${it.type}\n")
@@ -335,9 +337,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 // Update data lokal setelah sukses
                 val components = currentBuildData.components ?: return@addOnSuccessListener
                 val updatedComponents = when (category) {
-                    "CPU" -> components.copy(processor = updatedData["processor"] as? Processor ?: components.processor)
+                    "CPU" -> components.copy(processor = updatedData["processor"] as? ProcessorTrial ?: components.processor)
                     "Case" -> components.copy(casing = updatedData["casing"] as? Casing ?: components.casing)
-                    "GPU" -> components.copy(videoCard = updatedData["videoCard"] as? VideoCard ?: components.videoCard)
+                    "GPU" -> components.copy(videoCard = updatedData["videoCard"] as? GpuBuild ?: components.videoCard)
                     "Motherboard" -> components.copy(motherboard = updatedData["motherboard"] as? Motherboard ?: components.motherboard)
                     "RAM" -> components.copy(memory = updatedData["memory"] as? Memory ?: components.memory)
                     "InternalHardDrive" -> components.copy(internalHardDrive = updatedData["internalHardDrive"] as? InternalHardDrive ?: components.internalHardDrive)

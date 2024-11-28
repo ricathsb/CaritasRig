@@ -18,6 +18,7 @@ import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import com.superbgoal.caritasrig.data.model.component.Casing
 import com.superbgoal.caritasrig.data.model.component.CpuCooler
+import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
 import com.superbgoal.caritasrig.data.model.component.Keyboard
@@ -26,6 +27,7 @@ import com.superbgoal.caritasrig.data.model.component.Motherboard
 import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.data.model.component.PowerSupply
 import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import java.util.UUID
 
@@ -284,9 +286,9 @@ fun fetchBuildsWithAuth(
                     val componentsSnapshot = snapshot.child("components")
                     val components = BuildComponents(
                         casing = componentsSnapshot.child("case").getValue(Casing::class.java),
-                        processor = componentsSnapshot.child("cpu").getValue(Processor::class.java),
+                        processor = componentsSnapshot.child("cpu").getValue(ProcessorTrial::class.java),
                         motherboard = componentsSnapshot.child("motherboard").getValue(Motherboard::class.java),
-                        videoCard = componentsSnapshot.child("gpu").getValue(VideoCard::class.java),
+                        videoCard = componentsSnapshot.child("gpu").getValue(GpuBuild::class.java),
                         headphone = componentsSnapshot.child("headphone").getValue(Headphones::class.java),
                         internalHardDrive = componentsSnapshot.child("internalharddrive").getValue(InternalHardDrive::class.java),
                         keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java),

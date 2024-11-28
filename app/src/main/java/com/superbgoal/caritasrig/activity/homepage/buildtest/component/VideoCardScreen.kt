@@ -43,6 +43,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
+import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.data.model.component.VideoCard
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
@@ -52,10 +53,10 @@ import com.superbgoal.caritasrig.functions.savedFavorite
 fun VideoCardScreen(navController: NavController) {
     // Load video cards from JSON resource
     val context = LocalContext.current
-    val videoCards: List<VideoCard> = remember {
+    val videoCards: List<GpuBuild> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.videocard // Ensure this JSON file exists
+            resourceId = R.raw.gpu_build// Ensure this JSON file exists
         )
     }
 
@@ -130,30 +131,30 @@ fun VideoCardScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                VideoCardList(filteredVideoCards,navController)
+                VideoCardList(videoCards,navController)
             }
         }
 
         // Filter dialog
-        if (showFilterDialog) {
-            FilterDialog(
-                onDismiss = { showFilterDialog = false },
-                onApply = { selectedBrands, selectedMemorySizes, selectedCoreClocks ->
-                    showFilterDialog = false
-                    filteredVideoCards = videoCards.filter { videoCard ->
-                        (selectedBrands.isEmpty() || selectedBrands.any { videoCard.name.contains(it, ignoreCase = true) }) &&
-                                (selectedMemorySizes.isEmpty() || videoCard.memory in selectedMemorySizes) &&
-                                (selectedCoreClocks.isEmpty() || videoCard.coreClock.toInt() in selectedCoreClocks)
-                    }
-                }
-            )
-        }
+//        if (showFilterDialog) {
+//            FilterDialog(
+//                onDismiss = { showFilterDialog = false },
+//                onApply = { selectedBrands, selectedMemorySizes, selectedCoreClocks ->
+//                    showFilterDialog = false
+//                    filteredVideoCards = videoCards.filter { videoCard ->
+//                        (selectedBrands.isEmpty() || selectedBrands.any { videoCard.name.contains(it, ignoreCase = true) }) &&
+//                                (selectedMemorySizes.isEmpty() || videoCard.memory in selectedMemorySizes) &&
+//                                (selectedCoreClocks.isEmpty() || videoCard.coreClock.toInt() in selectedCoreClocks)
+//                    }
+//                }
+//            )
+//        }
     }
 }
 
 
 @Composable
-fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
+fun VideoCardList(videoCards: List<GpuBuild>, navController: NavController) {
     val context = LocalContext.current
 
     LazyColumn(
@@ -168,8 +169,9 @@ fun VideoCardList(videoCards: List<VideoCard>, navController: NavController) {
                 details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
                 isLoading = isLoading.value,
                 onFavClick = {
-                    savedFavorite(videoCard = videoCard, context = context)
+//                    savedFavorite(videoCard = videoCard, context = context)
                 },
+                imageUrl = videoCard.imageUrl,
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -255,7 +257,6 @@ fun FilterDialog(
                         Text(text = "$size GB")
                     }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(text = "Core Clock: ${coreClockRange.value.start} MHz - ${coreClockRange.value.endInclusive} MHz")

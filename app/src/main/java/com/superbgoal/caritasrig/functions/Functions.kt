@@ -109,7 +109,7 @@ fun LoadingButton(
 
 @Composable
 fun ComponentCard(
-    title: String,
+    title: String? = "",
     details: String? = null,
     context: Context? = null,
     component: Any? = null,
@@ -152,11 +152,13 @@ fun ComponentCard(
 
             // Kolom untuk judul dan detail
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
-                )
+                if (title != null) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
+                    )
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = details ?: "",

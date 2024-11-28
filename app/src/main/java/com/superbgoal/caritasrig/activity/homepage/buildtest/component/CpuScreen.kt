@@ -44,9 +44,9 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Processor
+import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
-import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CpuScreen(navController: NavController) {
@@ -56,6 +56,13 @@ fun CpuScreen(navController: NavController) {
         loadItemsFromResources(
             context = context,
             resourceId = R.raw.processor
+        )
+    }
+
+    val processor_trial: List<ProcessorTrial> = remember {
+        loadItemsFromResources(
+            context = context,
+            resourceId = R.raw.processor_build
         )
     }
 
@@ -131,7 +138,7 @@ fun CpuScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                ProcessorList(processors = filteredProcessors,navController)
+                ProcessorList(processors = filteredProcessors,navController,processorTrial = processor_trial)
             }
         }
 
@@ -153,19 +160,20 @@ fun CpuScreen(navController: NavController) {
 }
 
 @Composable
-fun ProcessorList(processors: List<Processor>,navController: NavController) {
+fun ProcessorList(processors: List<Processor>,navController: NavController,processorTrial:List<ProcessorTrial>) {
     val context = LocalContext.current
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(processors) { processor ->
+        items(processorTrial) { processor ->
             val isLoading = remember { mutableStateOf(false) }
+            Log.d("test", processor.imageUrl)
             ComponentCard(
-                imageUrl = processor.image_url,
+                imageUrl = processor.imageUrl,
                 title = processor.name,
-                details = "${processor.price}$ | ${processor.core_count} cores | ${processor.core_clock} GHz",
+                details = "${processor.price}$ | ${processor.coreCount} cores | ${processor.l3Cache} GHz",
                 isLoading = isLoading.value,
                 onAddClick = {
                     isLoading.value = true
@@ -181,7 +189,6 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
                             onSuccess = {
                                 isLoading.value = false
                                 navController.navigateUp()
-                                Log.e("test", "ketriger")
                             },
                             onFailure = { errorMessage ->
                                 isLoading.value = false
@@ -196,7 +203,7 @@ fun ProcessorList(processors: List<Processor>,navController: NavController) {
                 },
                 navController = navController,
                 onFavClick = {
-                    savedFavorite(processor, context = context)
+//                    savedFavorite(processor, context = context)
                 }
             )
         }
