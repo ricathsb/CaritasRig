@@ -17,10 +17,15 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,9 +55,16 @@ fun MouseScreen(navController: NavController) {
         )
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    // State for search text
+    var searchText by remember { mutableStateOf("") }
+
+    // Filtered list based on search text
+    val filteredMice = remember(searchText, mice) {
+        if (searchText.isBlank()) mice
+        else mice.filter { it.name.contains(searchText, ignoreCase = true) }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         // Background Image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
@@ -91,9 +103,7 @@ fun MouseScreen(navController: NavController) {
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        },
+                        onClick = { navController.navigateUp() },
                         modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                     ) {
                         Icon(
@@ -101,19 +111,23 @@ fun MouseScreen(navController: NavController) {
                             contentDescription = "Back"
                         )
                     }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            // Action for filter button
-                        },
-                        modifier = Modifier.padding(end = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_filter),
-                            contentDescription = "Filter"
-                        )
-                    }
+                }
+            )
+
+            // Search Bar
+            TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                placeholder = { Text("Search Mouse") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search Icon"
+                    )
                 }
             )
 
@@ -121,12 +135,12 @@ fun MouseScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                MouseList(mice, navController)
+                // Pass filtered list to the MouseList
+                MouseList(filteredMice, navController)
             }
         }
     }
 }
-
 
 @Composable
 fun MouseList(mice: List<Mouse>, navController: NavController) {

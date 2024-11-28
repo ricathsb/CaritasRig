@@ -17,10 +17,15 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,13 +46,21 @@ import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun KeyboardScreen(navController: NavController) {
-    // Load keyboard data
     val context = LocalContext.current
     val keyboards: List<Keyboard> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.keyboard
+            resourceId = R.raw.keyboard // Make sure this resource exists
         )
+    }
+
+    // State for search text
+    var searchText by remember { mutableStateOf("") }
+
+    // Filtered list based on search text
+    val filteredKeyboards = remember(searchText, keyboards) {
+        if (searchText.isBlank()) keyboards
+        else keyboards.filter { it.name.contains(searchText, ignoreCase = true) }
     }
 
     Box(
@@ -61,7 +74,6 @@ fun KeyboardScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and KeyboardList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -101,27 +113,32 @@ fun KeyboardScreen(navController: NavController) {
                             contentDescription = "Back"
                         )
                     }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            // Action for filter button
-                        },
-                        modifier = Modifier.padding(end = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_filter),
-                            contentDescription = "Filter"
-                        )
-                    }
                 }
             )
 
+            // Search Bar
+            TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                placeholder = { Text("Search Keyboard") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search Icon"
+                    )
+                }
+            )
+
+            // Display the filtered list of keyboards
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                KeyboardList(keyboards, navController)
+                KeyboardList(filteredKeyboards, navController)
             }
         }
     }

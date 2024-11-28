@@ -19,8 +19,10 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,9 +52,16 @@ fun HeadphoneScreen(navController: NavController) {
         )
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    // State for search text
+    var searchText by remember { mutableStateOf("") }
+
+    // Filtered list based on search text
+    val filteredHeadphones = remember(searchText, headphones) {
+        if (searchText.isBlank()) headphones
+        else headphones.filter { it.name.contains(searchText, ignoreCase = true) }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         // Background Image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
@@ -91,9 +100,7 @@ fun HeadphoneScreen(navController: NavController) {
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        },
+                        onClick = { navController.navigateUp() },
                         modifier = Modifier.padding(start = 20.dp, top = 10.dp)
                     ) {
                         Icon(
@@ -101,19 +108,23 @@ fun HeadphoneScreen(navController: NavController) {
                             contentDescription = "Back"
                         )
                     }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            // Action for filter button
-                        },
-                        modifier = Modifier.padding(end = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_filter),
-                            contentDescription = "Filter"
-                        )
-                    }
+                }
+            )
+
+            // Search Bar
+            androidx.compose.material.TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                placeholder = { Text("Search Headphones") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search), // Replace with your search icon
+                        contentDescription = "Search Icon"
+                    )
                 }
             )
 
@@ -121,12 +132,12 @@ fun HeadphoneScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                HeadphoneList(headphones, navController)
+                // Pass the filtered list to HeadphoneList
+                HeadphoneList(filteredHeadphones, navController)
             }
         }
     }
 }
-
 
 @Composable
 fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {

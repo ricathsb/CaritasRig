@@ -42,6 +42,7 @@ runtimeLivedata = "1.7.5"
 appcompat = "1.6.1"
 ucrop = "2.2.8-native"
 ucropVersion = "2.2.8"
+navigationRuntimeKtx = "2.8.4"
 
 
 [libraries]
@@ -100,6 +101,7 @@ thechance101-chart = { module = "io.github.thechance101:chart", version.ref = "c
 ucrop-v228native = { module = "com.github.yalantis:ucrop", version.ref = "ucrop" }
 vanniktech-android-image-cropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropperVersion" }
 yalantis-ucrop = { module = "com.github.yalantis:ucrop", version.ref = "ucropVersion" }
+androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
