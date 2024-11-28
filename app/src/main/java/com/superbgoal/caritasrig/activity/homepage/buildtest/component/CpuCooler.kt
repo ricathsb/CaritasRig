@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,9 +19,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,19 +47,20 @@ import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CpuCoolerScreen(navController: NavController) {
-    // Load CPU coolers from JSON resource
     val context = LocalContext.current
     val cpuCoolers: List<CpuCooler> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.cpucooler // Pastikan file JSON ini ada
+            resourceId = R.raw.cpucooler
         )
     }
+
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var filteredCpuCoolers by remember { mutableStateOf(cpuCoolers) }
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Background Image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
@@ -61,7 +68,6 @@ fun CpuCoolerScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and CPU Cooler List
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -89,24 +95,9 @@ fun CpuCoolerScreen(navController: NavController) {
                         )
                     }
                 },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        },
-                        modifier = Modifier.padding(start = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Back"
-                        )
-                    }
-                },
                 actions = {
                     IconButton(
-                        onClick = {
-                            // Action for filter button (if needed)
-                        },
+                        onClick = { showFilterDialog = true },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
                         Icon(
@@ -117,17 +108,99 @@ fun CpuCoolerScreen(navController: NavController) {
                 }
             )
 
-            // CPU Cooler List content
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                CpuCoolerList(cpuCoolers,navController)
+                CpuCoolerList(filteredCpuCoolers, navController)
             }
+        }
+
+        if (showFilterDialog) {
+            CpuCoolerFilterDialog(
+                onDismiss = { showFilterDialog = false },
+                onApply = { selectedSize, selectedColor, maxNoiseLevel ->
+                    showFilterDialog = false
+                    filteredCpuCoolers = cpuCoolers.filter { cooler ->
+                        (selectedSize == "All" || cooler.size == selectedSize.toIntOrNull()) &&
+                                (selectedColor == "All" || cooler.color.equals(selectedColor, ignoreCase = true)) &&
+                                (maxNoiseLevel == "All" || cooler.noise_level <= maxNoiseLevel.toDoubleOrNull() ?: Double.MAX_VALUE)
+                    }
+                }
+            )
         }
     }
 }
 
+@Composable
+fun CpuCoolerFilterDialog(
+    onDismiss: () -> Unit,
+    onApply: (selectedSize: String, selectedColor: String, maxNoiseLevel: String) -> Unit
+) {
+    val sizes = listOf("All", "120", "240", "360")  // Common sizes for coolers
+    val colors = listOf("All", "Black", "White")
+    val noiseLevels = listOf("All", "20", "30", "40")  // Noise levels in dB
+
+    var selectedSize by remember { mutableStateOf("All") }
+    var selectedColor by remember { mutableStateOf("All") }
+    var maxNoiseLevel by remember { mutableStateOf("All") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Filter CPU Coolers") },
+        text = {
+            Column {
+                // Size selection
+                Text("Size (mm):")
+                sizes.forEach { size ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = selectedSize == size,
+                            onCheckedChange = { if (it) selectedSize = size }
+                        )
+                        Text(text = size)
+                    }
+                }
+
+                // Color selection
+                Text("Color:")
+                colors.forEach { color ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = selectedColor == color,
+                            onCheckedChange = { if (it) selectedColor = color }
+                        )
+                        Text(text = color)
+                    }
+                }
+
+                // Noise level selection
+                Text("Max Noise Level (dB):")
+                noiseLevels.forEach { noiseLevel ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = maxNoiseLevel == noiseLevel,
+                            onCheckedChange = { if (it) maxNoiseLevel = noiseLevel }
+                        )
+                        Text(text = noiseLevel)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onApply(selectedSize, selectedColor, maxNoiseLevel)
+            }) {
+                Text("Apply")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
 
 @Composable
 fun CpuCoolerList(cpuCoolers: List<CpuCooler>,navController: NavController) {
