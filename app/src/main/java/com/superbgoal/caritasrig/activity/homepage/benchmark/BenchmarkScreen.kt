@@ -1,24 +1,39 @@
 package com.superbgoal.caritasrig.activity.homepage.benchmark
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
-
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -29,12 +44,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.data.model.component.GpuBenchmark
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.VideoCard
-import kotlinx.coroutines.launch
-import com.superbgoal.caritasrig.activity.homepage.buildtest.component.ProcessorList
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
-import com.superbgoal.caritasrig.functions.savedFavorite
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -48,10 +62,10 @@ fun BenchmarkScreen(navController: NavController) {
             resourceId = R.raw.processor
         )
     }
-    val videoCards: List<VideoCard> = remember {
+    val videoCards: List<GpuBenchmark> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.videocard
+            resourceId = R.raw.gpu_benchmark
         )
     }
 
@@ -66,9 +80,18 @@ fun BenchmarkScreen(navController: NavController) {
         }
     }
     val sortedVideoCards = remember(sortOrder) {
-        if (sortOrder == "Descending") videoCards else videoCards.reversed()
+        if (sortOrder == "Descending") {
+            videoCards.sortedWith(
+                compareByDescending<GpuBenchmark> { it.G3Dmark }
+                    .thenByDescending { it.G2Dmark }
+            )
+        } else {
+            videoCards.sortedWith(
+                compareBy<GpuBenchmark> { it.G3Dmark }
+                    .thenBy { it.G2Dmark }
+            )
+        }
     }
-
 
     val pagerState = rememberPagerState(initialPage = 0){2}
     val coroutineScope = rememberCoroutineScope()
@@ -288,7 +311,7 @@ fun HorizontalBar(value: Int, maxValue: Int, color: Color) {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavController) {
+fun VideoCardListWithFavorite(videoCards: List<GpuBenchmark>, navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -301,26 +324,56 @@ fun VideoCardListWithFavorite(videoCards: List<VideoCard>, navController: NavCon
                 elevation = 4.dp,
                 shape = RoundedCornerShape(8.dp),
                 backgroundColor = colorResource(id = R.color.brown1),
-                onClick = { }
+                onClick = { /* Navigate to GPU detail */ }
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    // GPU Name
                     Text(
-                        text = videoCard.name,
+                        text = videoCard.gpuName,
                         style = MaterialTheme.typography.h6,
                         color = Color.Black
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+
+                    // GPU Details
                     Text(
-                        text = "${videoCard.memory} GB, ${videoCard.coreClock} MHz",
+                        text = "${videoCard.G2Dmark} G2D Score, ${videoCard.G3Dmark} G3D Score",
                         style = MaterialTheme.typography.body2,
                         color = Color.DarkGray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Horizontal Bar for G2D Score
+                    Text(
+                        text = "2D Performance: ${videoCard.G2Dmark}",
+                        style = MaterialTheme.typography.body2,
+                        color = Color.Black
+                    )
+                    HorizontalBar(
+                        value = videoCard.G2Dmark,
+                        maxValue = 1200, // Sesuaikan berdasarkan dataset
+                        color = Color.Blue
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Horizontal Bar for G3D Score
+                    Text(
+                        text = "3D Performance: ${videoCard.G3Dmark}",
+                        style = MaterialTheme.typography.body2,
+                        color = Color.Black
+                    )
+                    HorizontalBar(
+                        value = videoCard.G3Dmark,
+                        maxValue = 30000, // Sesuaikan berdasarkan dataset
+                        color = Color.Green
                     )
                 }
             }
         }
     }
 }
+
