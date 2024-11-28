@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -41,19 +44,20 @@ import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun InternalHardDriveScreen(navController: NavController) {
-    // Load internal hard drive data
     val context = LocalContext.current
-    val internalHardDrives: List<InternalHardDrive> = remember {
-        loadItemsFromResources(
-            context = context,
-            resourceId = R.raw.internalharddrive
-        )
+    val allHardDrives: List<InternalHardDrive> = remember {
+        loadItemsFromResources(context, R.raw.internalharddrive)
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Background Image
+    // Filter state
+    val (filterType, setFilterType) = remember { mutableStateOf("") } // Default filter
+
+    // Filter the list based on the selected type
+    val filteredHardDrives = allHardDrives.filter { drive ->
+        filterType.isEmpty() || drive.type.equals(filterType, ignoreCase = true)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
@@ -61,7 +65,6 @@ fun InternalHardDriveScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and InternalHardDriveList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -71,12 +74,10 @@ fun InternalHardDriveScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(100.dp),
                 title = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                    Column(horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 10.dp)
-                    ) {
+                            .padding(top = 16.dp, bottom = 10.dp)) {
                         Text(
                             text = "Part Pick",
                             style = MaterialTheme.typography.h4,
@@ -90,43 +91,49 @@ fun InternalHardDriveScreen(navController: NavController) {
                     }
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        },
-                        modifier = Modifier.padding(start = 20.dp, top = 10.dp)
-                    ) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Back"
                         )
                     }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            // Action for filter button (if needed)
-                        },
-                        modifier = Modifier.padding(end = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_filter),
-                            contentDescription = "Filter"
-                        )
-                    }
                 }
             )
 
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = Color.Transparent
-            ) {
-                InternalHardDriveList(internalHardDrives, navController)
+            // Simple filter dropdown or buttons
+            FilterOptions(setFilterType)
+
+            Surface(modifier = Modifier.fillMaxSize(), color = Color.Transparent) {
+                InternalHardDriveList(filteredHardDrives, navController)
             }
         }
     }
 }
 
+@Composable
+fun FilterOptions(setFilterType: (String) -> Unit) {
+    // Example filter options
+    val filterOptions = listOf("All", "SSD", "5000", "5400", "7200", "10000")
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Text("Filter by Type:", style = MaterialTheme.typography.subtitle1)
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(filterOptions) { option ->
+                Button(
+                    onClick = { setFilterType(if (option == "All") "" else option) },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
+                ) {
+                    Text(option, color = Color.White)
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun InternalHardDriveList(internalHardDrives: List<InternalHardDrive>, navController: NavController) {

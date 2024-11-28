@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,9 +19,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +55,9 @@ fun CasingScreen(navController: NavController) {
         )
     }
 
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var filteredCasings by remember { mutableStateOf(casings) }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -60,7 +69,6 @@ fun CasingScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and CasingList
         Column {
             TopAppBar(
                 backgroundColor = Color.Transparent,
@@ -103,9 +111,7 @@ fun CasingScreen(navController: NavController) {
                 },
                 actions = {
                     IconButton(
-                        onClick = {
-                            // Action for filter button (if needed)
-                        },
+                        onClick = { showFilterDialog = true },
                         modifier = Modifier.padding(end = 20.dp, top = 10.dp)
                     ) {
                         Icon(
@@ -120,11 +126,96 @@ fun CasingScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 color = Color.Transparent
             ) {
-                CasingList(casings,navController)
+                CasingList(filteredCasings, navController)
             }
+        }
+
+        if (showFilterDialog) {
+            CasingFilterDialog(
+                onDismiss = { showFilterDialog = false },
+                onApply = { selectedType, selectedColor, includePSU ->
+                    showFilterDialog = false
+                    filteredCasings = casings.filter { casing ->
+                        val casingTypeLower = casing.type.lowercase()
+                        val selectedTypeLower = selectedType.lowercase()
+
+                        // Check if the selectedType is "All" or a substring of casing.type
+                        (selectedType == "All" || casingTypeLower.contains(selectedTypeLower)) &&
+                                (selectedColor == "All" || casing.color.lowercase() == selectedColor.lowercase()) &&
+                                (!includePSU || casing.psu != null)
+                    }
+                }
+            )
         }
     }
 }
+
+@Composable
+fun CasingFilterDialog(
+    onDismiss: () -> Unit,
+    onApply: (selectedType: String, selectedColor: String, includePSU: Boolean) -> Unit
+) {
+    val types = listOf("All", "ATX", "MicroATX", "Mini ITX")
+    val colors = listOf("All", "Black", "White", "RGB")
+
+    var selectedType by remember { mutableStateOf("All") }
+    var selectedColor by remember { mutableStateOf("All") }
+    var includePSU by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Filter Casings") },
+        text = {
+            Column {
+                // Type selection
+                Text("Type:")
+                types.forEach { type ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = selectedType == type,
+                            onCheckedChange = { if (it) selectedType = type }
+                        )
+                        Text(text = type)
+                    }
+                }
+
+                // Color selection
+                Text("Color:")
+                colors.forEach { color ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = selectedColor == color,
+                            onCheckedChange = { if (it) selectedColor = color }
+                        )
+                        Text(text = color)
+                    }
+                }
+
+                // Include PSU checkbox
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = includePSU,
+                        onCheckedChange = { includePSU = it }
+                    )
+                    Text("Include only cases with PSU")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onApply(selectedType, selectedColor, includePSU)
+            }) {
+                Text("Apply")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
 
 
 @Composable
