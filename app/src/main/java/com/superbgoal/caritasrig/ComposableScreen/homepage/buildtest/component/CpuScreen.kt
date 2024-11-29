@@ -174,8 +174,25 @@ fun ProcessorList(processors: List<Processor>,navController: NavController,proce
             ComponentCard(
                 imageUrl = processor.imageUrl,
                 title = processor.name,
-                details = "${processor.price}$ | ${processor.coreCount} cores | ${processor.l3Cache} GHz",
-                isLoading = isLoading.value,
+                price = processor.price,
+                // details start
+                details = """
+                            Cores: ${processor.coreCount} cores
+                            L3 Cache: ${processor.l3Cache} GHz
+                            Core Clock: ${processor.performanceCoreClock} GHz
+                            Core Boost Clock: ${processor.performanceCoreBoostClock} GHz
+                            Efficiency Core Clock: ${processor.efficiencyCoreClock ?: "N/A"} GHz
+                            Efficiency Core Boost Clock: ${processor.efficiencyCoreBoostClock ?: "N/A"} GHz
+                            L2 Cache: ${processor.l2Cache}
+                            TDP: ${processor.tdp}
+                            Integrated Graphics: ${processor.integratedGraphics}
+                            Max Supported Memory: ${processor.maxSupportedMemory}
+                            ECC Support: ${processor.eccSupport}
+                            Includes CPU Cooler: ${processor.includesCpuCooler}
+                            Simultaneous Multithreading: ${if (processor.smt) "Yes" else "No"}
+                        """.trimIndent(),
+                        isLoading = isLoading.value,
+                // details end
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
