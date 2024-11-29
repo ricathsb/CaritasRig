@@ -28,7 +28,7 @@
         </provider>
 
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".MainActivity"
             android:noHistory="true"
             android:exported="true">
             <intent-filter>
@@ -41,7 +41,7 @@
             android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"
             />
-        <activity android:name=".activity.homepage.settings.profilesettings.ProfileSettingsActivity"/>
+        <activity android:name=".ComposableScreen.homepage.settings.profilesettings.ProfileSettingsActivity"/>
     </application>
 
 </manifest>

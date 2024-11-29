@@ -16,19 +16,18 @@ import com.google.gson.Gson
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
-import com.superbgoal.caritasrig.data.model.component.Casing
-import com.superbgoal.caritasrig.data.model.component.CpuCooler
+import com.superbgoal.caritasrig.data.model.component.CasingBuild
+import com.superbgoal.caritasrig.data.model.component.CpuCoolerBuild
 import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.data.model.component.Headphones
-import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.component.InternalHardDriveBuild
 import com.superbgoal.caritasrig.data.model.component.Keyboard
-import com.superbgoal.caritasrig.data.model.component.Memory
-import com.superbgoal.caritasrig.data.model.component.Motherboard
+import com.superbgoal.caritasrig.data.model.component.MemoryBuild
+import com.superbgoal.caritasrig.data.model.component.MotherboardBuild
 import com.superbgoal.caritasrig.data.model.component.Mouse
-import com.superbgoal.caritasrig.data.model.component.PowerSupply
+import com.superbgoal.caritasrig.data.model.component.PowerSupplyBuild
 import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
-import com.superbgoal.caritasrig.data.model.component.VideoCard
 import java.util.UUID
 
 fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
@@ -285,17 +284,17 @@ fun fetchBuildsWithAuth(
                     // Memetakan komponen ke BuildComponents
                     val componentsSnapshot = snapshot.child("components")
                     val components = BuildComponents(
-                        casing = componentsSnapshot.child("case").getValue(Casing::class.java),
+                        casing = componentsSnapshot.child("case").getValue(CasingBuild::class.java),
                         processor = componentsSnapshot.child("cpu").getValue(ProcessorTrial::class.java),
-                        motherboard = componentsSnapshot.child("motherboard").getValue(Motherboard::class.java),
+                        motherboard = componentsSnapshot.child("motherboard").getValue(MotherboardBuild::class.java),
                         videoCard = componentsSnapshot.child("gpu").getValue(GpuBuild::class.java),
                         headphone = componentsSnapshot.child("headphone").getValue(Headphones::class.java),
-                        internalHardDrive = componentsSnapshot.child("internalharddrive").getValue(InternalHardDrive::class.java),
+                        internalHardDrive = componentsSnapshot.child("internalharddrive").getValue(InternalHardDriveBuild::class.java),
                         keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java),
-                        powerSupply =componentsSnapshot.child("powersupply").getValue(PowerSupply::class.java),
+                        powerSupply =componentsSnapshot.child("powersupply").getValue(PowerSupplyBuild::class.java),
                         mouse = componentsSnapshot.child("mouse").getValue(Mouse::class.java),
-                        cpuCooler = componentsSnapshot.child("cpucooler").getValue(CpuCooler::class.java),
-                        memory = componentsSnapshot.child("memory").getValue(Memory::class.java)
+                        cpuCooler = componentsSnapshot.child("cpucooler").getValue(CpuCoolerBuild::class.java),
+                        memory = componentsSnapshot.child("memory").getValue(MemoryBuild::class.java)
                     )
 
                     // Buat objek Build
@@ -494,17 +493,17 @@ fun editRamQuantity(
 }
 
 fun savedFavorite(
-    processor: Processor? = null,
-    videoCard: VideoCard? = null,
-    casing: Casing? = null,
-    cpuCooler: CpuCooler? = null,
+    processor: ProcessorTrial? = null,
+    videoCard: GpuBuild? = null,
+    casing: CasingBuild? = null,
+    cpuCooler: CpuCoolerBuild? = null,
     headphones: Headphones? = null,
-    internalHardDrive: InternalHardDrive? = null,
+    internalHardDrive: InternalHardDriveBuild? = null,
     keyboard: Keyboard? = null,
-    memory: Memory? = null,
-    motherboard: Motherboard? = null,
+    memory: MemoryBuild? = null,
+    motherboard: MotherboardBuild? = null,
     mouse: Mouse? = null,
-    powerSupply: PowerSupply? = null,
+    powerSupply: PowerSupplyBuild? = null,
     context : Context? = null
 ) {
     val database = FirebaseDatabase.getInstance("https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app").reference
@@ -552,13 +551,12 @@ fun savedFavorite(
         processor?.let {
             saveComponent(it, "processors", { UUID.randomUUID().toString() }) { proc ->
                 mapOf(
-                    "id" to proc.id,
                     "name" to proc.name,
                     "price" to proc.price,
-                    "boost_clock" to proc.boost_clock,
-                    "core_clock" to proc.core_clock,
-                    "core_count" to proc.core_count,
-                    "graphics" to proc.graphics,
+                    "boost_clock" to proc.socket,
+                    "core_clock" to proc.tdp,
+                    "core_count" to proc.socket,
+                    "graphics" to proc.partNumber,
                     "smt" to proc.smt,
                     "tdp" to proc.tdp
                 )
@@ -568,7 +566,6 @@ fun savedFavorite(
         videoCard?.let {
             saveComponent(it, "videoCards", { UUID.randomUUID().toString() }) { vCard ->
                 mapOf(
-                    "id" to vCard.id,
                     "name" to vCard.name,
                     "price" to vCard.price,
                     "boostClock" to vCard.boostClock,
@@ -584,11 +581,10 @@ fun savedFavorite(
         casing?.let {
             saveComponent(it, "casings", { UUID.randomUUID().toString() }) { casing ->
                 mapOf(
-                    "id" to casing.id,
                     "name" to casing.name,
                     "price" to casing.price,
                     "sidePanel" to casing.sidePanel,
-                    "externalVolume" to casing.externalVolume,
+                    "externalVolume" to casing.dimensions,
                     "color" to casing.color
                 )
             }
@@ -599,10 +595,10 @@ fun savedFavorite(
                 mapOf(
                     "name" to cooler.name,
                     "price" to cooler.price,
-                    "rpm" to cooler.rpm,
-                    "noise_level" to cooler.noise_level,
+                    "rpm" to cooler.fanRpm,
+                    "noise_level" to cooler.noiseLevel,
                     "color" to cooler.color,
-                    "size" to cooler.size
+                    "size" to cooler.height
                 )
             }
         }
@@ -628,11 +624,11 @@ fun savedFavorite(
                     "name" to hdd.name,
                     "price" to hdd.price,
                     "capacity" to hdd.capacity,
-                    "pricePerGb" to hdd.pricePerGb,
+                    "pricePerGb" to hdd.pricePerGB,
                     "type" to hdd.type,
                     "cache" to hdd.cache,
                     "formFactor" to hdd.formFactor,
-                    "interfacee" to hdd.interfacee
+                    "interfacee" to hdd.interfaceType
                 )
             }
         }
@@ -664,9 +660,7 @@ fun savedFavorite(
                     "color" to mem.color,
                     "firstWordLatency" to mem.firstWordLatency,
                     "casLatency" to mem.casLatency,
-                    "socket" to mem.socket,
-                    "quantity" to mem.quantity,
-                    "totalPrice" to mem.totalPrice
+                    "socket" to mem.speed,
                 )
             }
         }
@@ -676,9 +670,9 @@ fun savedFavorite(
                 mapOf(
                     "name" to mb.name,
                     "price" to mb.price,
-                    "socket" to mb.socket,
+                    "socket" to mb.socketCpu,
                     "formFactor" to mb.formFactor,
-                    "maxMemory" to mb.maxMemory,
+                    "maxMemory" to mb.memoryMax,
                     "memorySlots" to mb.memorySlots,
                     "color" to mb.color,
                     "imageUrl" to mb.imageUrl
@@ -706,7 +700,7 @@ fun savedFavorite(
                     "name" to psu.name,
                     "price" to psu.price,
                     "type" to psu.type,
-                    "efficiency" to psu.efficiency,
+                    "efficiency" to psu.efficiencyRating,
                     "wattage" to psu.wattage,
                     "modular" to psu.modular,
                     "color" to psu.color
