@@ -22,7 +22,7 @@ data class GpuBuild(
     @SerializedName("Color") val color: String = "",
     @SerializedName("Frame Sync") val frameSync: String = "",
     @SerializedName("Length") val length: String = "",
-    @SerializedName("TDP") val tdp: Int = 0,
+    @SerializedName("TDP") val tdp: Double = 0.0,
     @SerializedName("Case Expansion Slot Width") val caseExpansionSlotWidth: Int = 0,
     @SerializedName("Total Slot Width") val totalSlotWidth: Int = 0,
     @SerializedName("Cooling") val cooling: String = "",

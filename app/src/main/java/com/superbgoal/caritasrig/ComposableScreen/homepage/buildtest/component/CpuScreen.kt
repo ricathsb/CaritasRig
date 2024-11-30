@@ -195,6 +195,7 @@ fun ProcessorList(
                     Efficiency Core Boost Clock: ${processor.efficiencyCoreBoostClock ?: "N/A"} GHz
                     L2 Cache: ${processor.l2Cache}
                     TDP: ${processor.tdp}
+                    Socket : ${processor.socket}
                     Integrated Graphics: ${processor.integratedGraphics}
                     Max Supported Memory: ${processor.maxSupportedMemory}
                     ECC Support: ${processor.eccSupport}

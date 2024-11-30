@@ -18,7 +18,8 @@ data class InternalHardDriveBuild(
     @SerializedName("Cache") val cache: String = "",
     @SerializedName("Form Factor") val formFactor: String = "",
     @SerializedName("Interface") val interfaceType: String = "",
-    @SerializedName("NVME") val nvme: String = ""
+    @SerializedName("NVME") val nvme: String = "",
+    @SerializedName("Arsitektur") val arsitektur: String = "",
 ) : Parcelable {
     val imageUrl: String
         get() = "https:${rawImageUrl.replace("https:", "")}"

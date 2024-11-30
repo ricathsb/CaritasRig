@@ -69,8 +69,11 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.functions.calculatePSU
 import com.superbgoal.caritasrig.functions.calculateTotalPrice
+import com.superbgoal.caritasrig.functions.calculateTotalWattage
 import com.superbgoal.caritasrig.functions.editRamQuantity
+import com.superbgoal.caritasrig.functions.isBuildComponentsValid
 import com.superbgoal.caritasrig.functions.saveBuildTitle
 
 @SuppressLint("SuspiciousIndentation")
@@ -97,8 +100,15 @@ fun BuildScreen(
     val totalBuildPrice by buildViewModel.totalBuildPrice.observeAsState(0.0)
     val sancreekFont = FontFamily(Font(R.font.sancreek))
     val sairastencilone = FontFamily(Font(R.font.sairastencilone))
-
+    val totalWattage by buildViewModel.totalWattage.observeAsState(0.0)
+    val estimatedWattage = calculatePSU(totalWattage)
+    val compatible = (buildData?.components?.let { isBuildComponentsValid(it,estimatedWattage) })
     buildData?.components?.let { calculateTotalPrice(it) }?.let { buildViewModel.setBuildPrice(it) }
+    buildData?.components?.let { calculateTotalWattage(it) }?.let { buildViewModel.setBuildWattage(it) }
+
+
+    Log.d("BuildScreen", "Build Data: $totalWattage")
+    Log.d("BuildScreen", "Estimated Wattage: $estimatedWattage")
 
     // LazyListState untuk melacak posisi scroll
     val lazyListState = rememberLazyListState(
@@ -145,6 +155,35 @@ fun BuildScreen(
                 fontFamily = sairastencilone,
                 modifier = Modifier.padding(bottom = 16.dp)
                 .align(Alignment.CenterHorizontally)
+            )
+
+            if (compatible != null) {
+                Text(
+                    text = compatible,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White,
+                    fontFamily = sairastencilone,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+            }
+
+            Text(
+                text = "Estimated Wattage: $totalWattage",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White,
+                fontFamily = sairastencilone,
+                modifier = Modifier.padding(bottom = 16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Text(
+                text = "Total Price: $totalBuildPrice",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White,
+                fontFamily = sairastencilone,
+                modifier = Modifier.padding(bottom = 16.dp)
+                    .align(Alignment.CenterHorizontally)
             )
             if (loading) {
                 // Full-screen loading indicator

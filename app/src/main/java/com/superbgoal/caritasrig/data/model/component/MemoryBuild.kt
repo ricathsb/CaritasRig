@@ -24,6 +24,7 @@ data class MemoryBuild(
     @SerializedName("ECC / Registered") val eccRegistered: String = "",
     @SerializedName("Heat Spreader") val heatSpreader: String = "",
     @SerializedName("Specs Number") val specsNumber: Int = 0,
+    @SerializedName("Arsitektur") val arsitektur: String = "",
     val quantity: Int = 1,
     val totalPrice: Double = 0.0
 ) : Parcelable {

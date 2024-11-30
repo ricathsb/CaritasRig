@@ -491,6 +491,48 @@ fun calculateTotalPrice(it: BuildComponents): Double {
     return ceil(totalPrice) // Membulatkan ke atas
 }
 
+fun isBuildComponentsValid(it: BuildComponents, estimatedWattage: Double): String {
+    // Memastikan PSU cukup untuk estimasi wattage
+    val powerSupplyWattage = parseWattage(it.powerSupply?.wattage)
+    if (powerSupplyWattage < estimatedWattage) {
+        return "PSU tidak cocok, wattage terlalu rendah"
+    }
+
+    // Memastikan motherboard dan processor kompatibel
+    val processorSocket = it.processor?.socket
+    val motherboardSocket = it.motherboard?.socketCpu
+    if (it.processor != null && it.motherboard != null && processorSocket != motherboardSocket) {
+        return "Socket CPU dan motherboard tidak kompatibel"
+    }
+
+    // Memastikan RAM kompatibel dengan motherboard
+    val ramType = it.memory?.let { it1 -> extractRamType(it1.speed) }
+    val motherboardRamType = it.motherboard?.memoryType
+    if (it.memory != null && it.motherboard != null && ramType != motherboardRamType) {
+        return "Jenis RAM tidak kompatibel dengan motherboard"
+    }
+
+    // Memastikan casing kompatibel dengan ukuran motherboard
+    val motherboardFormFactor = it.motherboard?.formFactor
+    val casingSupportedSizes = it.casing?.motherboardFormFactor
+    if (it.motherboard != null && it.casing != null && motherboardFormFactor.toString() !in casingSupportedSizes.orEmpty()) {
+        return "Casing tidak mendukung ukuran motherboard"
+    }
+
+    // Memastikan ada setidaknya motherboard dan processor untuk fungsi minimum
+    if (it.motherboard == null || it.processor == null) {
+        return "Komponen minimal belum terpenuhi: motherboard atau processor hilang"
+    }
+
+    // Semua komponen kompatibel
+    return "Semua komponen kompatibel"
+}
+
+
+
+
+
+
 @Composable
 fun <T> GenericCard(
     item: T,
@@ -562,6 +604,71 @@ fun SearchBarForComponent(
         }
     )
 }
+
+fun calculateTotalWattage(it: BuildComponents): Double {
+    // Menghitung total TDP dari prosesor dan kartu grafis
+    val estimatedWattage = listOfNotNull(
+        parseWattage(it.processor?.tdp),
+        it.videoCard?.tdp // Pastikan untuk memproses TDP kartu grafis
+    ).sum()
+
+    // Menambahkan estimasi wattage komponen lain jika ada
+    var additionalWattage = 0.0
+
+    // Menambahkan 50 watt jika motherboard ada
+    if (it.motherboard != null) {
+        additionalWattage += 50.0
+    }
+
+    // Menambahkan 8 watt jika RAM ada (diasumsikan 2 modul)
+    if (it.memory != null) {
+        additionalWattage += 8.0
+    }
+
+    // Menambahkan 3 watt jika SSD ada
+    if (it.internalHardDrive != null) {
+        additionalWattage += 3.0
+    }
+
+    // Menambahkan 12 watt jika cooling system ada (misalnya 2 kipas)
+    if (it.cpuCooler != null) {
+        additionalWattage += 12.0
+    }
+
+    // Menambahkan 5 watt untuk periferal jika ada (keyboard, mouse, dll.)
+    if (it.keyboard != null) {
+        additionalWattage += 1.0
+    }
+
+    // Menambahkan 3 watt untuk headphone jika ada
+    if (it.headphone != null) {
+        additionalWattage += 1.0
+    }
+
+    if (it.mouse != null) {
+        additionalWattage += 1.0
+    }
+
+    // Mengembalikan total wattage
+    return estimatedWattage + additionalWattage
+}
+
+
+fun parseWattage(wattString: String?): Double {
+    // Menghapus satuan "W" dan mengonversi string menjadi Double
+    return wattString?.replace(" W", "")?.toDoubleOrNull() ?: 0.0
+}
+fun calculatePSU(estimatedWattage: Double): Double {
+    // Menghitung kapasitas PSU dengan margin 30%
+    return estimatedWattage * 1.3
+}
+
+fun extractRamType(speed: String): String {
+    return speed.split("-")[0] // Mengambil bagian sebelum tanda "-"
+}
+
+
+
 
 
 

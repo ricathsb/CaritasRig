@@ -52,6 +52,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     private val _totalBuildPrice = MutableLiveData(0.0)
     val totalBuildPrice: LiveData<Double> get() = _totalBuildPrice
 
+    private val _totalWattage = MutableLiveData(0.0)
+    val totalWattage: LiveData<Double> get() = _totalWattage
+
     private val defaultCategories = mapOf(
         "CPU" to "No CPU Selected",
         "Case" to "No Case Selected",
@@ -78,6 +81,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setBuildPrice(price: Double) {
         _totalBuildPrice.value = price
+    }
+
+    fun setBuildWattage(wattage: Double) {
+        _totalWattage.value = wattage
     }
 
     fun resetBuildData() {
