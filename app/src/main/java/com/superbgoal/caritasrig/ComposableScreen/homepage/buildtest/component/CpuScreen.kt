@@ -19,13 +19,15 @@ import androidx.compose.material.Checkbox
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RangeSlider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.TopAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,44 +38,48 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
-import com.superbgoal.caritasrig.data.model.component.Processor
 import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
 fun CpuScreen(navController: NavController) {
-    // Load processors data
     val context = LocalContext.current
-    val processors: List<Processor> = remember {
-        loadItemsFromResources(
-            context = context,
-            resourceId = R.raw.processor
-        )
-    }
 
-    val processor_trial: List<ProcessorTrial> = remember {
+    val processorTrial: List<ProcessorTrial> = remember {
         loadItemsFromResources(
             context = context,
             resourceId = R.raw.processor_build
         )
     }
 
+    // Variables to handle filtered processors, search query, and pagination
     var showFilterDialog by remember { mutableStateOf(false) }
-    var filteredProcessors by remember { mutableStateOf(processors) }
+    var filteredProcessors by remember { mutableStateOf(processorTrial) }
+    var searchQuery by remember { mutableStateOf("") }
 
+    // Pagination state
+    val itemsPerPage = 15
+    val currentPage = remember { mutableStateOf(0) }
+    val totalPages = (filteredProcessors.size / itemsPerPage) + if (filteredProcessors.size % itemsPerPage == 0) 0 else 1
+
+    // Core and Clock Range filters
+    val coreCountRange = remember { mutableStateOf(0f..16f) }
+    val coreClockRange = remember { mutableStateOf(1.0f..5.0f) }
+    val boostClockRange = remember { mutableStateOf(1.0f..5.0f) }
+    val selectedBrands = remember { mutableStateOf(listOf("AMD", "Intel")) }
+
+    // Handle Search Bar and Filter Dialog
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Set background image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
@@ -81,77 +87,71 @@ fun CpuScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and ProcessorList
-        Column {
-            TopAppBar(
-                backgroundColor = Color.Transparent,
-                contentColor = Color.White,
-                elevation = 0.dp,
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Search Bar and Filter Icon
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
-                title = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 10.dp)
-                    ) {
-                        Text(
-                            text = "Part Pick",
-                            style = MaterialTheme.typography.h4,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "CPU",
-                            style = MaterialTheme.typography.subtitle1,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        },
-                        modifier = Modifier.padding(start = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { showFilterDialog = true },
-                        modifier = Modifier.padding(end = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_filter),
-                            contentDescription = "Filter"
-                        )
-                    }
-                }
-            )
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                SearchBar(
+                    query = searchQuery,
+                    onQueryChange = { query ->
+                        searchQuery = query
+                        // Apply search filter and update filtered processors
+                        filteredProcessors = processorTrial.filter { processor ->
+                            processor.name.contains(query, ignoreCase = true) &&
+                                    (selectedBrands.value.isEmpty() || selectedBrands.value.any { processor.name.contains(it, ignoreCase = true) })
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    onFilterClick = { showFilterDialog = true }
+                )
+            }
 
+            // List of processors
             Surface(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 color = Color.Transparent
             ) {
-                ProcessorList(processors = filteredProcessors,navController,processorTrial = processor_trial)
+                // Paginated list
+                val currentPageItems = filteredProcessors
+                    .drop(currentPage.value * itemsPerPage)
+                    .take(itemsPerPage)
+
+                ProcessorList(
+                    navController = navController,
+                    processorTrial = currentPageItems,
+                    currentPage = currentPage,
+                    totalPages = totalPages,
+                    onPreviousPage = { if (currentPage.value > 0) currentPage.value-- },
+                    onNextPage = { if (currentPage.value < totalPages - 1) currentPage.value++ }
+                )
             }
         }
 
+        // Show filter dialog
         if (showFilterDialog) {
             FilterDialog(
                 onDismiss = { showFilterDialog = false },
+                coreCountRange = coreCountRange,
+                coreClockRange = coreClockRange,
+                boostClockRange = boostClockRange,
+                selectedBrands = selectedBrands,
                 onApply = { coreCount, coreClock, boostClock, brands ->
                     showFilterDialog = false
-                    filteredProcessors = processors.filter { processor ->
-                        processor.core_count in coreCount &&
-                                processor.core_clock in coreClock &&
-                                processor.boost_clock in boostClock &&
+                    // Apply filters to the original processor list
+                    filteredProcessors = processorTrial.filter { processor ->
+                        processor.coreCount in coreCount &&
+                                processor.performanceCoreClock in coreClock &&
+                                processor.performanceCoreBoostClock in boostClock &&
                                 brands.any { processor.name.contains(it, ignoreCase = true) }
                     }
                 }
@@ -161,38 +161,77 @@ fun CpuScreen(navController: NavController) {
 }
 
 @Composable
-fun ProcessorList(processors: List<Processor>,navController: NavController,processorTrial:List<ProcessorTrial>) {
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onFilterClick: () -> Unit
+) {
+    TextField(
+        value = query,
+        onValueChange = onQueryChange,
+        label = { Text("Search CPU") },
+        placeholder = { Text("Search by name") },
+        singleLine = true,
+        modifier = modifier,
+        leadingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search"
+            )
+        },
+        trailingIcon = {
+            IconButton(onClick = onFilterClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_filter),
+                    contentDescription = "Filter"
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun ProcessorList(
+    navController: NavController,
+    processorTrial: List<ProcessorTrial>,
+    currentPage: MutableState<Int>,
+    totalPages: Int,
+    onPreviousPage: () -> Unit,
+    onNextPage: () -> Unit
+) {
     val context = LocalContext.current
 
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // Processor items
         items(processorTrial) { processor ->
             val isLoading = remember { mutableStateOf(false) }
-            Log.d("test", processor.imageUrl)
             ComponentCard(
                 imageUrl = processor.imageUrl,
                 title = processor.name,
                 price = processor.price,
-                // details start
                 details = """
-                            Cores: ${processor.coreCount} cores
-                            L3 Cache: ${processor.l3Cache} GHz
-                            Core Clock: ${processor.performanceCoreClock} GHz
-                            Core Boost Clock: ${processor.performanceCoreBoostClock} GHz
-                            Efficiency Core Clock: ${processor.efficiencyCoreClock ?: "N/A"} GHz
-                            Efficiency Core Boost Clock: ${processor.efficiencyCoreBoostClock ?: "N/A"} GHz
-                            L2 Cache: ${processor.l2Cache}
-                            TDP: ${processor.tdp}
-                            Integrated Graphics: ${processor.integratedGraphics}
-                            Max Supported Memory: ${processor.maxSupportedMemory}
-                            ECC Support: ${processor.eccSupport}
-                            Includes CPU Cooler: ${processor.includesCpuCooler}
-                            Simultaneous Multithreading: ${if (processor.smt) "Yes" else "No"}
-                        """.trimIndent(),
-                        isLoading = isLoading.value,
-                // details end
+                    Cores: ${processor.coreCount} cores
+                    L3 Cache: ${processor.l3Cache} GHz
+                    Core Clock: ${processor.performanceCoreClock} GHz
+                    Core Boost Clock: ${processor.performanceCoreBoostClock} GHz
+                    Efficiency Core Clock: ${processor.efficiencyCoreClock ?: "N/A"} GHz
+                    Efficiency Core Boost Clock: ${processor.efficiencyCoreBoostClock ?: "N/A"} GHz
+                    L2 Cache: ${processor.l2Cache}
+                    TDP: ${processor.tdp}
+                    Integrated Graphics: ${processor.integratedGraphics}
+                    Max Supported Memory: ${processor.maxSupportedMemory}
+                    ECC Support: ${processor.eccSupport}
+                    Includes CPU Cooler: ${processor.includesCpuCooler}
+                    Simultaneous Multithreading: ${if (processor.smt) "Yes" else "No"}
+                """.trimIndent(),
+                isLoading = isLoading.value,
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -210,7 +249,6 @@ fun ProcessorList(processors: List<Processor>,navController: NavController,proce
                             },
                             onFailure = { errorMessage ->
                                 isLoading.value = false
-
                             },
                             onLoading = { isLoading.value = it },
                         )
@@ -225,6 +263,39 @@ fun ProcessorList(processors: List<Processor>,navController: NavController,proce
                 }
             )
         }
+
+        // Pagination Buttons as the last item
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = onPreviousPage,
+                    enabled = currentPage.value > 0,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text("Previous", color = Color.White)
+                }
+
+                Text(
+                    text = "${currentPage.value + 1} / $totalPages",
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+
+                Button(
+                    onClick = onNextPage,
+                    enabled = currentPage.value < totalPages - 1,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text("Next", color = Color.White)
+                }
+            }
+        }
     }
 }
 
@@ -233,14 +304,12 @@ fun ProcessorList(processors: List<Processor>,navController: NavController,proce
 @Composable
 fun FilterDialog(
     onDismiss: () -> Unit,
+    coreCountRange: MutableState<ClosedFloatingPointRange<Float>>,
+    coreClockRange: MutableState<ClosedFloatingPointRange<Float>>,
+    boostClockRange: MutableState<ClosedFloatingPointRange<Float>>,
+    selectedBrands: MutableState<List<String>>,
     onApply: (coreCount: IntRange, coreClock: ClosedFloatingPointRange<Double>, boostClock: ClosedFloatingPointRange<Double>, selectedBrands: List<String>) -> Unit
 ) {
-    // States for filter criteria
-    val coreCountRange = remember { mutableStateOf(0f..16f) }
-    val coreClockRange = remember { mutableStateOf(1.0f..5.0f) }
-    val boostClockRange = remember { mutableStateOf(1.0f..5.0f) }
-    val selectedBrands = remember { mutableStateOf(listOf("AMD", "Intel")) }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -261,11 +330,13 @@ fun FilterDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Core clock slider
-                Text(text = "Core Clock: ${
-                    String.format("%.2f", coreClockRange.value.start)
-                } GHz - ${
-                    String.format("%.2f", coreClockRange.value.endInclusive)
-                } GHz")
+                Text(
+                    text = "Core Clock: ${
+                        String.format("%.2f", coreClockRange.value.start)
+                    } GHz - ${
+                        String.format("%.2f", coreClockRange.value.endInclusive)
+                    } GHz"
+                )
                 RangeSlider(
                     value = coreClockRange.value,
                     onValueChange = { range ->
@@ -277,11 +348,13 @@ fun FilterDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Boost clock slider
-                Text(text = "Boost Clock: ${
-                    String.format("%.2f", boostClockRange.value.start)
-                } GHz - ${
-                    String.format("%.2f", boostClockRange.value.endInclusive)
-                } GHz")
+                Text(
+                    text = "Boost Clock: ${
+                        String.format("%.2f", boostClockRange.value.start)
+                    } GHz - ${
+                        String.format("%.2f", boostClockRange.value.endInclusive)
+                    } GHz"
+                )
                 RangeSlider(
                     value = boostClockRange.value,
                     onValueChange = { range ->
