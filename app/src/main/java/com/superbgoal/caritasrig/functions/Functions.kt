@@ -48,6 +48,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -529,6 +530,37 @@ fun <T> GenericCard(
             }
         }
     }
+}
+
+@Composable
+fun SearchBarForComponent(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onFilterClick: () -> Unit
+) {
+    TextField(
+        value = query,
+        onValueChange = onQueryChange,
+        label = { androidx.compose.material.Text("Search CPU") },
+        placeholder = { androidx.compose.material.Text("Search by name") },
+        singleLine = true,
+        modifier = modifier,
+        leadingIcon = {
+            androidx.compose.material.Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search"
+            )
+        },
+        trailingIcon = {
+            androidx.compose.material.IconButton(onClick = onFilterClick) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.ic_filter),
+                    contentDescription = "Filter"
+                )
+            }
+        }
+    )
 }
 
 

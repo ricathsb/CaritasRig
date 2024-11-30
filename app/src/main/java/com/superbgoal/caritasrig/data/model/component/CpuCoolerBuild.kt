@@ -24,4 +24,20 @@ data class CpuCoolerBuild(
 ) : Parcelable {
     val imageUrl: String
         get() = "https:${rawImageUrl.replace("https:", "")}"
+
+    fun getMinNoiseLevel(): Double {
+        return if ("-" in noiseLevel) {
+            noiseLevel.split(" - ")[0].trim().toDoubleOrNull() ?: 0.0
+        } else {
+            noiseLevel.toDoubleOrNull() ?: 0.0
+        }
+    }
+
+    fun getMaxNoiseLevel(): Double {
+        return if ("-" in noiseLevel) {
+            noiseLevel.split(" - ")[1].trim().toDoubleOrNull() ?: 0.0
+        } else {
+            noiseLevel.toDoubleOrNull() ?: 0.0
+        }
+    }
 }

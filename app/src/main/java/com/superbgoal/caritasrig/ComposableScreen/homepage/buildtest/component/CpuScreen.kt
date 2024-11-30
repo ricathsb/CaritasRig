@@ -45,6 +45,7 @@ import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.SearchBarForComponent
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
@@ -97,7 +98,7 @@ fun CpuScreen(navController: NavController) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                SearchBar(
+                SearchBarForComponent(
                     query = searchQuery,
                     onQueryChange = { query ->
                         searchQuery = query
@@ -158,37 +159,6 @@ fun CpuScreen(navController: NavController) {
             )
         }
     }
-}
-
-@Composable
-fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    onFilterClick: () -> Unit
-) {
-    TextField(
-        value = query,
-        onValueChange = onQueryChange,
-        label = { Text("Search CPU") },
-        placeholder = { Text("Search by name") },
-        singleLine = true,
-        modifier = modifier,
-        leadingIcon = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "Search"
-            )
-        },
-        trailingIcon = {
-            IconButton(onClick = onFilterClick) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_filter),
-                    contentDescription = "Filter"
-                )
-            }
-        }
-    )
 }
 
 @Composable

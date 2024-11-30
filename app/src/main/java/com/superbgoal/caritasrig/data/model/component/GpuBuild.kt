@@ -13,7 +13,7 @@ data class GpuBuild(
     @SerializedName("Manufacturer") val manufacturer: String = "",
     @SerializedName("Part #") val partNumber: String = "",
     @SerializedName("Chipset") val chipset: String = "",
-    @SerializedName("Memory") val memory: String = "",
+    @SerializedName("Memory") val memory: Float = 0.0f,
     @SerializedName("Memory Type") val memoryType: String = "",
     @SerializedName("Core Clock") val coreClock: String = "",
     @SerializedName("Boost Clock") val boostClock: String = "",
