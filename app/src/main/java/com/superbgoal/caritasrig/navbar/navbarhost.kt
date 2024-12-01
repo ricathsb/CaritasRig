@@ -70,6 +70,7 @@ import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.NewsArticleS
 import com.superbgoal.caritasrig.ComposableScreen.homepage.profile.ProfileScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.AboutUsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.SettingsScreen
+import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsScreen
 import com.superbgoal.caritasrig.data.model.User
 
 @Composable
@@ -96,7 +97,7 @@ fun NavbarHost(
                 "home" -> "Home"
                 "settings" -> "Settings"
                 "about_us" -> "About Us"
-                "settings_profile" -> stringResource(id = R.string.profile_settings)
+                "profile_settings" -> stringResource(id = R.string.profile_settings)
                 "trending" -> "Trending"
                 "build" -> "Build"
                 "benchmark" -> "Benchmark"
@@ -187,6 +188,9 @@ fun NavbarHost(
             composable("mouse_screen") { MouseScreen(navController) }
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
+            composable("profile_settings"){
+                ProfileSettingsScreen ()
+            }
         }
     }
 }

@@ -28,11 +28,10 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsActivity
 import java.util.Locale
 
 @Composable
-fun SettingsScreen(navController: NavController? = null,appController: NavController) {
+fun SettingsScreen(navController: NavController,appController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -48,12 +47,12 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
             SettingOption(stringResource(id = R.string.change_language)) {
                 showDialog = true
             }
-            SettingOption(stringResource(id = R.string.profile_settings)) {
-                Intent(context, ProfileSettingsActivity::class.java)
-                startActivity(context, Intent(context, ProfileSettingsActivity::class.java), null)
+            SettingOption(stringResource(R.string.profile_settings)) {
+                navController.navigate("profile_settings")
             }
+
             SettingOption("AboutUs") {
-                navController?.navigate("about_us")
+                navController.navigate("about_us")
             }
             SettingOption(stringResource(id = R.string.logout)) {
                 FirebaseAuth.getInstance().signOut()
@@ -65,9 +64,6 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                     popUpTo(0) { inclusive = true }
                 }
 
-            }
-            SettingOption("Test") {
-                navController?.navigate("test")
             }
         }
     }
