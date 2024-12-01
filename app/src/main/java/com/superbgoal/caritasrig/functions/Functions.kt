@@ -491,41 +491,161 @@ fun calculateTotalPrice(it: BuildComponents): Double {
     return ceil(totalPrice) // Membulatkan ke atas
 }
 
-fun isBuildComponentsValid(it: BuildComponents, estimatedWattage: Double): String {
-    // Memastikan PSU cukup untuk estimasi wattage
-    val powerSupplyWattage = parseWattage(it.powerSupply?.wattage)
-    if (powerSupplyWattage < estimatedWattage) {
-        return "PSU tidak cocok, wattage terlalu rendah"
+@Composable
+fun BuildCompatibilityAccordion(
+    buildComponents: BuildComponents,
+    estimatedWattage: Double
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    // Menghitung status kompatibilitas
+    val compatibilityStatus = calculateCompatibilityStatus(buildComponents, estimatedWattage)
+
+    // Accordion Header
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { isExpanded = !isExpanded },
+        elevation = 4.dp
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Kompatibilitas Build",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (compatibilityStatus != null) {
+                Text(
+                    text = "${compatibilityStatus.compatibleCount}/${compatibilityStatus.totalCount} kompatibel",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 
-    // Memastikan motherboard dan processor kompatibel
-    val processorSocket = it.processor?.socket
-    val motherboardSocket = it.motherboard?.socketCpu
-    if (it.processor != null && it.motherboard != null && processorSocket != motherboardSocket) {
-        return "Socket CPU dan motherboard tidak kompatibel"
+    // Accordion Content
+    if (isExpanded) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            if (compatibilityStatus != null) {
+                compatibilityStatus.details.forEach { detail ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = detail.componentName)
+                        Text(
+                            text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
+                            color = if (detail.isCompatible) Color.Green else Color.Red
+                        )
+                    }
+                }
+            }
+
+            // Rekomendasi
+            if (compatibilityStatus != null) {
+                if (compatibilityStatus.recommendation.isNotEmpty()) {
+                    Text(
+                        text = "Rekomendasi:",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Text(
+                        text = compatibilityStatus.recommendation,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
+
+data class CompatibilityDetail(
+    val componentName: String,
+    val isCompatible: Boolean
+)
+
+data class CompatibilityStatus(
+    val compatibleCount: Int,
+    val totalCount: Int,
+    val details: List<CompatibilityDetail>,
+    val recommendation: String
+)
+
+fun calculateCompatibilityStatus(
+    buildComponents: BuildComponents,
+    estimatedWattage: Double
+): CompatibilityStatus? {
+    val details = mutableListOf<CompatibilityDetail>()
+    var recommendation = ""
+
+    // PSU Compatibility
+    val powerSupplyName = buildComponents.powerSupply?.name.orEmpty()
+    val powerSupplyWattage = parseWattage(buildComponents.powerSupply?.wattage)
+    val psuCompatible = buildComponents.powerSupply == null || powerSupplyWattage >= estimatedWattage
+    if (buildComponents.powerSupply != null) {
+        details.add(CompatibilityDetail(powerSupplyName.ifEmpty { "Powersupply" }, psuCompatible))
+        if (!psuCompatible) {
+            recommendation += "Ganti PSU dengan wattage lebih tinggi. "
+        }
     }
 
-    // Memastikan RAM kompatibel dengan motherboard
-    val ramType = it.memory?.let { it1 -> extractRamType(it1.speed) }
-    val motherboardRamType = it.motherboard?.memoryType
-    if (it.memory != null && it.motherboard != null && ramType != motherboardRamType) {
-        return "Jenis RAM tidak kompatibel dengan motherboard"
+    // Processor and Motherboard Socket Compatibility
+    val processorName = buildComponents.processor?.name.orEmpty()
+    val motherboardName = buildComponents.motherboard?.name.orEmpty()
+    val processorSocket = buildComponents.processor?.socket
+    val motherboardSocket = buildComponents.motherboard?.socketCpu
+    val socketCompatible = buildComponents.processor == null || buildComponents.motherboard == null || processorSocket == motherboardSocket
+    if (buildComponents.processor != null) {
+        details.add(CompatibilityDetail(processorName, socketCompatible))
+    }
+    if (buildComponents.motherboard != null) {
+        details.add(CompatibilityDetail(motherboardName, socketCompatible))
+    }
+    if (!socketCompatible && buildComponents.processor != null && buildComponents.motherboard != null) {
+        recommendation += "Ganti motherboard atau processor agar socket cocok. "
     }
 
-    // Memastikan casing kompatibel dengan ukuran motherboard
-    val motherboardFormFactor = it.motherboard?.formFactor
-    val casingSupportedSizes = it.casing?.motherboardFormFactor
-    if (it.motherboard != null && it.casing != null && motherboardFormFactor.toString() !in casingSupportedSizes.orEmpty()) {
-        return "Casing tidak mendukung ukuran motherboard"
+    // Memory Compatibility
+    val ramName = buildComponents.memory?.name.orEmpty()
+    val ramType = buildComponents.memory?.let { extractRamType(it.speed) }
+    val motherboardRamType = buildComponents.motherboard?.memoryType
+    val ramCompatible = buildComponents.memory == null || buildComponents.motherboard == null || ramType == motherboardRamType
+    if (buildComponents.memory != null) {
+        details.add(CompatibilityDetail(ramName, ramCompatible))
+        if (!ramCompatible) {
+            recommendation += "Ganti RAM agar cocok dengan motherboard. "
+        }
     }
 
-    // Memastikan ada setidaknya motherboard dan processor untuk fungsi minimum
-    if (it.motherboard == null || it.processor == null) {
-        return "Komponen minimal belum terpenuhi: motherboard atau processor hilang"
+    // Motherboard and Case Compatibility (Form Factor)
+    val casingName = buildComponents.casing?.name.orEmpty()
+    val motherboardFormFactor = buildComponents.motherboard?.formFactor
+    val casingSupportedSizes = buildComponents.casing?.motherboardFormFactor.orEmpty()
+    val casingCompatible = buildComponents.casing == null || buildComponents.motherboard == null || motherboardFormFactor.toString() in casingSupportedSizes
+    if (buildComponents.casing != null) {
+        details.add(CompatibilityDetail(casingName, casingCompatible))
+        if (!casingCompatible) {
+            recommendation += "Ganti casing agar mendukung form factor motherboard (${motherboardFormFactor}). "
+        }
     }
 
-    // Semua komponen kompatibel
-    return "Semua komponen kompatibel"
+    // Jika tidak ada komponen yang dipilih, kembalikan null
+    if (details.isEmpty()) {
+        return null
+    }
+
+    // Count Total and Compatible
+    val compatibleCount = details.count { it.isCompatible }
+    val totalCount = details.size
+
+    return CompatibilityStatus(
+        compatibleCount = compatibleCount,
+        totalCount = totalCount,
+        details = details,
+        recommendation = recommendation.trim()
+    )
 }
 
 

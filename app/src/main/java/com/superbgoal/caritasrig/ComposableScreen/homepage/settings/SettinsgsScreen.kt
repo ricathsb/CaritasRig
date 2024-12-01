@@ -66,6 +66,9 @@ fun SettingsScreen(navController: NavController? = null,appController: NavContro
                 }
 
             }
+            SettingOption("Test") {
+                navController?.navigate("test")
+            }
         }
     }
 

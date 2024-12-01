@@ -69,11 +69,11 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.functions.BuildCompatibilityAccordion
 import com.superbgoal.caritasrig.functions.calculatePSU
 import com.superbgoal.caritasrig.functions.calculateTotalPrice
 import com.superbgoal.caritasrig.functions.calculateTotalWattage
 import com.superbgoal.caritasrig.functions.editRamQuantity
-import com.superbgoal.caritasrig.functions.isBuildComponentsValid
 import com.superbgoal.caritasrig.functions.saveBuildTitle
 
 @SuppressLint("SuspiciousIndentation")
@@ -102,7 +102,6 @@ fun BuildScreen(
     val sairastencilone = FontFamily(Font(R.font.sairastencilone))
     val totalWattage by buildViewModel.totalWattage.observeAsState(0.0)
     val estimatedWattage = calculatePSU(totalWattage)
-    val compatible = (buildData?.components?.let { isBuildComponentsValid(it,estimatedWattage) })
     buildData?.components?.let { calculateTotalPrice(it) }?.let { buildViewModel.setBuildPrice(it) }
     buildData?.components?.let { calculateTotalWattage(it) }?.let { buildViewModel.setBuildWattage(it) }
 
@@ -157,16 +156,7 @@ fun BuildScreen(
                 .align(Alignment.CenterHorizontally)
             )
 
-            if (compatible != null) {
-                Text(
-                    text = compatible,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White,
-                    fontFamily = sairastencilone,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
-            }
+            buildData?.components?.let { BuildCompatibilityAccordion(buildComponents = it, estimatedWattage = estimatedWattage) }
 
             Text(
                 text = "Estimated Wattage: $totalWattage",
