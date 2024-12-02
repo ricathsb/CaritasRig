@@ -25,8 +25,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.material.icons.filled.VideoSettings
+import androidx.compose.material.icons.filled.VideoStable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -44,15 +47,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
@@ -93,6 +101,12 @@ fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewMo
                 )
             )
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.component_bg),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -226,6 +240,8 @@ fun BuildList(
     onDeleteBuild: (Build) -> Unit,
     onEditBuild: (Build) -> Unit
 ) {
+    val sancreekFont = FontFamily(Font(R.font.sancreek))
+    val sairastencilone = FontFamily(Font(R.font.sairastencilone))
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -242,47 +258,93 @@ fun BuildList(
                         .clickable { onBuildClick(buildItem) }
                         .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
                     shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 ) {
                     Column(
                         modifier = Modifier
                             .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.surface,
-                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-                                    )
-                                )
+                                color = Color(0xFF473947)
                             )
-                            .padding(16.dp)
                     ) {
                         // Build Title with more emphasis
                         Text(
-                            text = buildItem.title,
+                            text = buildItem.title.uppercase(),
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            ),
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
+                                color = Color.White,
+                                fontFamily = sancreekFont,
 
-                        // Components with icons and subtle styling
-                        BuildComponentRow(
-                            icon = Icons.Default.Memory,
-                            label = "Processor",
-                            value = buildItem.components?.processor?.name
+                            ),
+                            modifier = Modifier.padding(12.dp).align(Alignment.CenterHorizontally)
                         )
-                        BuildComponentRow(
-                            icon = Icons.Default.Computer,
-                            label = "Motherboard",
-                            value = buildItem.components?.motherboard?.name
-                        )
-                        BuildComponentRow(
-                            icon = Icons.Default.VideoSettings,
-                            label = "Video Card",
-                            value = buildItem.components?.videoCard?.name
-                        )
-                        // Add more components as needed
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                                .shadow(4.dp, shape = RoundedCornerShape(16.dp))
+                                .clip(shape = RoundedCornerShape(16.dp))
+                                .background(color = Color.White)
+                            ){
+                            Column (
+                                modifier = Modifier.fillMaxSize().padding(8.dp)
+                            ){
+                                BuildComponentRow(
+                                    icon = Icons.Default.Memory,
+                                    label = "Processor",
+                                    value = buildItem.components?.processor?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.VideoStable,
+                                    label = "Video Card",
+                                    value = buildItem.components?.videoCard?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.SettingsInputComponent,
+                                    label = "RAM",
+                                    value = buildItem.components?.memory?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.DeveloperMode,
+                                    label = "Motherboard",
+                                    value = buildItem.components?.motherboard?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Case",
+                                    value = buildItem.components?.casing?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Power Supply",
+                                    value = buildItem.components?.powerSupply?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Internal Hard Drive",
+                                    value = buildItem.components?.internalHardDrive?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Headphone",
+                                    value = buildItem.components?.headphone?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Keyboard",
+                                    value = buildItem.components?.keyboard?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Mouse",
+                                    value = buildItem.components?.mouse?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "CPU Cooler",
+                                    value = buildItem.components?.cpuCooler?.name
+                                )
+                            }
+
+                            // Add more components as needed
+                        }
                     }
                 }
             }
@@ -309,19 +371,22 @@ fun BuildComponentRow(
                 modifier = Modifier
                     .size(24.dp)
                     .alpha(0.7f),
-                tint = MaterialTheme.colorScheme.secondary
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
                     text = label,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+
                     )
                 )
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                 )
             }
         }
