@@ -37,6 +37,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Button
@@ -501,65 +503,115 @@ fun BuildCompatibilityAccordion(
     // Menghitung status kompatibilitas
     val compatibilityStatus = calculateCompatibilityStatus(buildComponents, estimatedWattage)
 
-    // Accordion Header
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .clip(shape = RoundedCornerShape(8.dp))
             .clickable { isExpanded = !isExpanded },
-        elevation = 4.dp
+        backgroundColor = Color(0xFF473947)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Kompatibilitas Build",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            if (compatibilityStatus != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "${compatibilityStatus.compatibleCount}/${compatibilityStatus.totalCount} kompatibel",
+                    text = "Kompatibilitas Build",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Icon(
+                    tint = Color.White,
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null
+                )
+            }
+
+            compatibilityStatus?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "${it.compatibleCount}/${it.totalCount} kompatibel",
+                    color = Color.White,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
     }
 
-    // Accordion Content
+    // Konten Accordion
     if (isExpanded) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            if (compatibilityStatus != null) {
-                compatibilityStatus.details.forEach { detail ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = detail.componentName)
-                        Text(
-                            text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
-                            color = if (detail.isCompatible) Color.Green else Color.Red
-                        )
-                    }
-                }
-            }
+        Box(
+            modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.25f)).clip(shape = RoundedCornerShape(8.dp))
 
-            // Rekomendasi
-            if (compatibilityStatus != null) {
-                if (compatibilityStatus.recommendation.isNotEmpty()) {
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                compatibilityStatus?.let { status ->
+                    // Daftar Komponen
                     Text(
-                        text = "Rekomendasi:",
+                        text = "Detail Komponen:",
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(top = 8.dp)
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    Text(
-                        text = compatibilityStatus.recommendation,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                    status.details.forEach { detail ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = detail.componentName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+
+                                )
+                            Text(
+                                text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
+                                color = if (detail.isCompatible) Color.Green else Color.Red,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                    // Rekomendasi
+                    if (status.recommendation.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Rekomendasi:",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            color = Color.Green,
+                            )
+                        Text(
+                            text = status.recommendation,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Red,
+                            )
+                    }
+                } ?: Text(
+                    text = "Tidak ada data kompatibilitas.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Red,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
+
     }
 }
+
 
 data class CompatibilityDetail(
     val componentName: String,
