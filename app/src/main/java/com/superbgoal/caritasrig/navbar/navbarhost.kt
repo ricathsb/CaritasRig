@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -100,7 +101,7 @@ fun NavbarHost(
                 "settings" -> "Settings"
                 "about_us" -> "About Us"
                 "profile_settings" -> stringResource(id = R.string.profile_settings)
-                "trending" -> "Trending"
+                "compare" -> "Compare"
                 "build" -> "Build"
                 "benchmark" -> "Benchmark"
                 "favorite" -> "Favorite Component"
@@ -160,9 +161,6 @@ fun NavbarHost(
             }
             composable("about_us") {
                 AboutUsScreen()
-            }
-            composable("trending") {
-                SharedBuildScreen()
             }
             composable("compare") {
                 ComparisonScreen()
@@ -347,7 +345,7 @@ fun currentRoute(navController: NavController): String? {
 
 sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
     data object Home : NavigationItem("home", Icons.Default.Home, "Home")
-    data object Trending : NavigationItem("trending", Icons.Default.TrendingUp, "Trending")
+    data object Trending : NavigationItem("compare", Icons.Default.Compare, "Compare")
     data object Build : NavigationItem("build", Icons.Default.DesktopWindows, "Build")
     data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
     data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")

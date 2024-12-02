@@ -144,19 +144,6 @@ fun BenchmarkScreen(navController: NavController) {
                 ) {
                     Text(text = "GPU", color = Color.White)
                 }
-                Button(
-                    onClick = {
-                        navController.navigate("compare")
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (pagerState.currentPage == 2) colorResource(id = R.color.brown) else Color.Gray
-                    ),
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .weight(1f)
-                ) {
-                    Text(text = "Compare", color = Color.White)
-                }
             }
 
             // Dropdown for sorting
