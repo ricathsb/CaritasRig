@@ -141,6 +141,12 @@ fun BuildScreen(
                 }
             }
     }
+    Image(
+        painter = painterResource(id = R.drawable.component_bg),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize()
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Background image
