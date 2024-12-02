@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,6 +31,7 @@ import coil3.compose.AsyncImage
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.BuildViewModel
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import com.superbgoal.caritasrig.data.model.buildmanager.SharedBuild
 import com.superbgoal.caritasrig.functions.getDatabaseReference
@@ -53,7 +55,12 @@ fun SharedBuildScreen() {
             loading.value = false
         }
     )
-
+    Image(
+        painter = painterResource(id = R.drawable.component_bg),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize()
+    )
     // Menampilkan layar berdasarkan status loading
     if (loading.value) {
         CircularProgressIndicator(modifier = Modifier.fillMaxSize())
@@ -65,6 +72,12 @@ fun SharedBuildScreen() {
         )
     } else {
         // Menampilkan daftar build yang telah dibagikan
+        Image(
+            painter = painterResource(id = R.drawable.component_bg),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

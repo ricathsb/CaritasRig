@@ -57,6 +57,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.MotherboardBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -343,7 +344,7 @@ fun MotherboardList(
             val isLoading = remember { mutableStateOf(false) }
 
             ComponentCard(
-                imageUrl = motherboard.imageUrl,
+                imageUrl = parseImageUrl(motherboard.imageUrl),
                 price = motherboard.price,
                 title = motherboard.name,
                 context = context,

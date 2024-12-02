@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class MotherboardBuild(
     @SerializedName("Name") val name: String = "",
-    @SerializedName("Image URL") private val rawImageUrl: String = "",
+    @SerializedName("Image URL")  val imageUrl: String = "",
     @SerializedName("Product URL") val productUrl: String = "",
     @SerializedName("Price") val price: Double = 0.0,
     @SerializedName("Manufacturer") val manufacturer: String = "",
@@ -42,6 +42,5 @@ data class MotherboardBuild(
     @SerializedName("Wireless Networking") val wirelessNetworking: String = "",
     @SerializedName("RAID Support") val raidSupport: String = ""
 ) : Parcelable {
-    val imageUrl: String
-        get() = "https:${rawImageUrl.replace("https:", "")}"
+
 }

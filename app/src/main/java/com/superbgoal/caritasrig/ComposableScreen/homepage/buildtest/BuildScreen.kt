@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
@@ -60,6 +62,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -74,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -83,7 +87,9 @@ import com.superbgoal.caritasrig.functions.calculatePSU
 import com.superbgoal.caritasrig.functions.calculateTotalPrice
 import com.superbgoal.caritasrig.functions.calculateTotalWattage
 import com.superbgoal.caritasrig.functions.editRamQuantity
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveBuildTitle
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -141,6 +147,12 @@ fun BuildScreen(
                 }
             }
     }
+    Image(
+        painter = painterResource(id = R.drawable.component_bg),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize()
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Background image
@@ -254,47 +266,47 @@ fun BuildScreen(
                         item {
                             val componentDetail = when (title) {
                                 "CPU" -> buildData?.components?.processor?.let {
-                                    "Processor: ${it.name}\nCores: ${it.coreCount}\nSpeed: ${it.performanceCoreBoostClock} GHz"
+                                    "${it.name}"
                                 }
 
                                 "Case" -> buildData?.components?.casing?.let {
-                                    "Case: ${it.name}\nType: ${it.type}"
+                                    "${it.name}"
                                 }
 
                                 "GPU" -> buildData?.components?.videoCard?.let {
-                                    "GPU: ${it.name}\nMemory: ${it.memory} GB"
+                                    "${it.name}"
                                 }
 
                                 "Motherboard" -> buildData?.components?.motherboard?.let {
-                                    "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
+                                    "${it.name}"
                                 }
 
                                 "RAM" -> buildData?.components?.memory?.let {
-                                    "Memory: ${it.name}\nSize: ${it.modules} GB\nSpeed: ${it.speed} MHz"
+                                    it.name
                                 }
 
                                 "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
-                                    "Internal Hard Drive: ${it.name}\nCapacity: ${it.capacity} GB"
+                                    it.name
                                 }
 
                                 "PowerSupply" -> buildData?.components?.powerSupply?.let {
-                                    "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
+                                    it.name
                                 }
 
                                 "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
-                                    "CPU Cooler: ${it.name}\nFan Speed: ${it.fanRpm} RPM"
+                                    it.name
                                 }
 
                                 "Headphone" -> buildData?.components?.headphone?.let {
-                                    "Headphone: ${it.name}\nType: ${it.type}"
+                                    it.name
                                 }
 
                                 "Keyboard" -> buildData?.components?.keyboard?.let {
-                                    "Keyboard: ${it.name}\nType: ${it.switches}"
+                                    it.name
                                 }
 
                                 "Mouse" -> buildData?.components?.mouse?.let {
-                                    "Mouse: ${it.name}\nDPI: ${it.maxDpi}"
+                                    it.name
                                 }
 
                                 else -> null
@@ -304,6 +316,19 @@ fun BuildScreen(
                                     title = title,
                                     componentDetail = componentDetail,
                                     totalPrice = buildData?.components?.memory?.totalPrice.toString(),
+                                    imageComponent = buildData?.components?.let {
+                                        when (title) {
+                                            "CPU" -> it.processor?.imageUrl
+                                            "Case" -> it.casing?.imageUrl
+                                            "GPU" -> it.videoCard?.imageUrl
+                                            "Motherboard" -> it.motherboard?.imageUrl
+                                            "RAM" -> it.memory?.imageUrl
+                                            "InternalHardDrive" -> it.internalHardDrive?.imageUrl
+                                            "PowerSupply" -> it.powerSupply?.imageUrl
+                                            "CPU Cooler" -> it.cpuCooler?.imageUrl
+                                            else -> ""
+                                        }
+                                    } ?: "0.0",
                                     currentPrice = buildData?.components?.let {
                                         when (title) {
                                             "CPU" -> it.processor?.price?.toString()
@@ -326,6 +351,7 @@ fun BuildScreen(
                                             navController?.navigate(route)
                                         } else {
                                             Log.e("NavigationError", "No route found for title: $title")
+
                                         }
                                     },
                                     onRemove = {
@@ -369,6 +395,8 @@ fun BuildScreen(
                                     }
                                 )
                             Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
+                            Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
+
                         }
                     }
                 }
@@ -466,7 +494,8 @@ fun ComponentCard(
     onRemove: () -> Unit,
     onUpdatePrice: (String) -> Unit,
     loading: Boolean = false,
-    onQuantityChange: ((Int) -> Unit)? = null
+    onQuantityChange: ((Int) -> Unit)? = null,
+    imageComponent: String
 ) {
     // Inisialisasi quantity menggunakan initialQuantity
     var quantity by rememberSaveable { mutableStateOf(initialQuantity) }
@@ -508,133 +537,153 @@ fun ComponentCard(
             // Detail Section
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
+                    .fillMaxSize()
                     .clip(RoundedCornerShape(10.dp))
                     .background(colorResource(id = R.color.brown)),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp)
-                ) {
+
+
                     Spacer(modifier = Modifier.height(5.dp))
+                    Row(
+                        modifier = Modifier.fillMaxHeight()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!componentDetail.isNullOrEmpty()) {
+                            AsyncImage(
+                                model = parseImageUrl(imageComponent),
+                                contentDescription = null,
+                                modifier = Modifier.size(75.dp)
+                                    .clip(shape = RoundedCornerShape(8.dp))
+                                    .align(Alignment.CenterVertically)
+                            )
 
-                    if (!componentDetail.isNullOrEmpty()) {
-                        Text(
-                            text = componentDetail,
-                            color = Color.White,
-                            modifier = Modifier.padding(8.dp),
-                            textAlign = TextAlign.Start
-                        )
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Harga Komponen
-                        Text(
-                            text = displayText,
-                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                            color = Color.White,
-                            modifier = Modifier.padding(8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Tombol Remove
-                        Button(
-                            onClick = onRemove,
-                            modifier = Modifier.background(Color.Transparent),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
-                        ) {
-                            Text(text = "Remove Component")
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Tombol Configure
-                        Button(
-                            onClick = { showDialog = true },
-                            modifier = Modifier.background(Color.Transparent),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
-                        ) {
-                            Text(text = "Configure Component")
-                        }
-
-                        // Tombol Plus-Minus khusus untuk RAM
-                        if (title.equals("RAM", ignoreCase = true)) {
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
+                            Column(
+                                modifier = Modifier.align(Alignment.CenterVertically),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
                             ) {
-                                // Tombol Minus
-                                IconButton(
-                                    onClick = {
-                                        if (quantity!! > 1) {
-                                            quantity = quantity!! - 1 // Kurangi jumlah
-                                            onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Remove,
-                                        contentDescription = "Minus",
-                                        tint = Color.White
+                                Text(
+                                    text = componentDetail,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(8.dp),
+                                    textAlign = TextAlign.Start,
+                                )
+                                Text(
+                                    text = displayText,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Start,
+                                    fontSize = 10.sp,
+                                    modifier = Modifier.padding(8.dp),
+
                                     )
+                            }
+
+
+                            // Tombol Remove
+                            Column (
+                                modifier = Modifier.align(Alignment.CenterVertically),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Button(
+                                    onClick = onRemove,
+                                    modifier = Modifier.background(Color.Transparent)
+                                ) {
+                                    Text(text = "Remove Component", fontSize = 8.sp)
                                 }
 
-                                // Jumlah
-                                Text(
-                                    text = quantity.toString(),
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
-                                    color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                )
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                                // Tombol Plus
-                                IconButton(
-                                    onClick = {
-                                        quantity = quantity!! + 1 // Tambah jumlah
-                                        onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
-                                    }
+                                // Tombol Configure
+                                Button(
+                                    onClick = { showDialog = true },
+                                    modifier = Modifier.background(Color.Transparent)
+                                        .fillMaxWidth()
+                                        .align(Alignment.CenterHorizontally),
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Plus",
-                                        tint = Color.White
-                                    )
+                                    Text(text = "Configure Component", fontSize = 8.sp)
                                 }
                             }
-                        }
-                    } else {
-                        Text(
-                            text = "No $title Selected",
-                            color = Color.Gray,
-                            modifier = Modifier.padding(8.dp),
-                            textAlign = TextAlign.Start
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
 
-                        // Tombol Add
-                        Button(
-                            onClick = onClick,
-                            modifier = Modifier.background(Color.Transparent),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.add_btn),
-                                contentDescription = "Add Icon",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(18.dp)
+
+                            // Tombol Plus-Minus khusus untuk RAM
+                            if (title.equals("RAM", ignoreCase = true)) {
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    // Tombol Minus
+                                    IconButton(
+                                        onClick = {
+                                            if (quantity!! > 1) {
+                                                quantity = quantity!! - 1 // Kurangi jumlah
+                                                onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Remove,
+                                            contentDescription = "Minus",
+                                            tint = Color.White
+                                        )
+                                    }
+
+                                    // Jumlah
+                                    Text(
+                                        text = quantity.toString(),
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
+                                        color = Color.White,
+                                        modifier = Modifier.padding(horizontal = 16.dp)
+                                    )
+
+                                    // Tombol Plus
+                                    IconButton(
+                                        onClick = {
+                                            quantity = quantity!! + 1 // Tambah jumlah
+                                            onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = "Plus",
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = "No $title Selected",
+                                color = Color.Gray,
+                                modifier = Modifier.padding(8.dp),
+                                textAlign = TextAlign.Start
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Add Component")
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Tombol Add
+                            Button(
+                                onClick = onClick,
+                                modifier = Modifier.background(Color.Transparent),
+                                elevation = ButtonDefaults.buttonElevation(0.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.add_btn),
+                                    contentDescription = "Add Icon",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = "Add Component")
+                            }
                         }
-                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
