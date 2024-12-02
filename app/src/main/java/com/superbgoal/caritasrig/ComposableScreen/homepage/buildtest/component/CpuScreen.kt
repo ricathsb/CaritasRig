@@ -212,7 +212,7 @@ fun ProcessorList(
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "cpu",
+                            componentType = "processor",
                             componentData = processor,
                             onSuccess = {
                                 isLoading.value = false

@@ -215,7 +215,7 @@ fun VideoCardList(
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "gpu",
+                            componentType = "videoCard",
                             componentData = videoCard,
                             onSuccess = {
                                 isLoading.value = false

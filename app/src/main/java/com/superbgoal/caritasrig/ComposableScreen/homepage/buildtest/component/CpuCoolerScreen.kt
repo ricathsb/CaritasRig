@@ -337,7 +337,7 @@ fun CpuCoolerList(
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "cpucooler",
+                            componentType = "cpuCooler",
                             componentData = cooler,
                             onSuccess = {
                                 // Stop loading on success

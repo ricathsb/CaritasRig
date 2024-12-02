@@ -284,7 +284,7 @@ fun CasingList(
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "case",
+                            componentType = "casing",
                             componentData = casing,
                             onSuccess = {
                                 // Stop loading on success

@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -355,8 +356,8 @@ fun ProfileSettingsScreen(
                     ) { success ->
                         viewModel.setLoading(false)
                         if (success) {
-                            Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                             homeViewModel.loadUserData(userId = user.userId)
+                            Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, context.getString(R.string.profile_updated_failed), Toast.LENGTH_SHORT).show()
                         }
@@ -416,6 +417,8 @@ fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
         }
     }
 }
+
+
 
 
 

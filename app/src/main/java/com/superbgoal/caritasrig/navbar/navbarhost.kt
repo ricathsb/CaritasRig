@@ -71,6 +71,8 @@ import com.superbgoal.caritasrig.ComposableScreen.homepage.profile.ProfileScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.AboutUsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsScreen
+import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.BuildListItem
+import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.SharedBuildScreen
 import com.superbgoal.caritasrig.data.model.User
 
 @Composable
@@ -160,6 +162,9 @@ fun NavbarHost(
                 AboutUsScreen()
             }
             composable("trending") {
+                SharedBuildScreen()
+            }
+            composable("compare") {
                 ComparisonScreen()
             }
             composable("build") {

@@ -2,9 +2,12 @@ package com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +24,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,10 +39,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -54,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -66,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
@@ -91,6 +100,8 @@ fun BuildScreen(
         }
 
     val context = LocalContext.current
+    var imagePickerDialog by remember { mutableStateOf(false) }
+    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
     val selectedComponents by buildViewModel.selectedComponents.observeAsState(emptyMap())
@@ -175,6 +186,36 @@ fun BuildScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
                     .align(Alignment.CenterHorizontally)
             )
+            if (imagePickerDialog) {
+                ImagePickerDialog(
+                    onDismiss = { imagePickerDialog = false }, // Menutup dialog jika dibatalkan
+                    onImagesSelected = { images ->
+                        selectedImages = images // Menyimpan gambar yang dipilih
+                        Log.d("BuildScreen", "Selected Images: $images")
+                        buildViewModel.shareBuildWithOthers(selectedImages)
+                        imagePickerDialog = false
+                    }
+                )
+            }
+            Button(
+                onClick = {
+                   imagePickerDialog = true
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(text = "Upload Build")
+            }
+
+            Button(
+                onClick = {
+                    if (navController != null) {
+                        navController.navigate("shared_build_screen")
+                    }
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(text = "Shared Build")
+            }
             if (loading) {
                 // Full-screen loading indicator
                 Box(
@@ -653,4 +694,96 @@ fun PriceEditDialog(
             }
         }
     )
+}
+
+@Composable
+fun ImagePickerDialog(
+    onDismiss: () -> Unit,
+    onImagesSelected: (List<Uri>) -> Unit
+) {
+    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var showDialog by remember { mutableStateOf(true) }
+
+    // Image picker launcher for selecting multiple images
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uris ->
+            selectedImages = uris // Store selected images
+        }
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            title = { Text(text = "Select Images") },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    // Button to launch the image picker
+                    Button(
+                        onClick = {
+                            imagePickerLauncher.launch("image/*") // Launch the image picker
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text("Select Images", color = Color.White)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Display selected images in a row
+                    if (selectedImages.isNotEmpty()) {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(selectedImages) { imageUri ->
+                                val painter: Painter = rememberAsyncImagePainter(model = imageUri)
+                                Image(
+                                    painter = painter,
+                                    contentDescription = "Selected image",
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = "No images selected.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onImagesSelected(selectedImages) // Pass selected images back
+                        showDialog = false
+                    },
+                    enabled = selectedImages.isNotEmpty(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Confirm", color = Color.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        showDialog = false
+                    },
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }

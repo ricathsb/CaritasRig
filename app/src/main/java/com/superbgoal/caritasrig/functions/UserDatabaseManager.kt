@@ -284,16 +284,16 @@ fun fetchBuildsWithAuth(
                     // Memetakan komponen ke BuildComponents
                     val componentsSnapshot = snapshot.child("components")
                     val components = BuildComponents(
-                        casing = componentsSnapshot.child("case").getValue(CasingBuild::class.java),
-                        processor = componentsSnapshot.child("cpu").getValue(ProcessorTrial::class.java),
+                        casing = componentsSnapshot.child("casing").getValue(CasingBuild::class.java),
+                        processor = componentsSnapshot.child("processor").getValue(ProcessorTrial::class.java),
                         motherboard = componentsSnapshot.child("motherboard").getValue(MotherboardBuild::class.java),
-                        videoCard = componentsSnapshot.child("gpu").getValue(GpuBuild::class.java),
+                        videoCard = componentsSnapshot.child("videoCard").getValue(GpuBuild::class.java),
                         headphone = componentsSnapshot.child("headphone").getValue(Headphones::class.java),
-                        internalHardDrive = componentsSnapshot.child("internalharddrive").getValue(InternalHardDriveBuild::class.java),
+                        internalHardDrive = componentsSnapshot.child("internalHardDrive").getValue(InternalHardDriveBuild::class.java),
                         keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java),
-                        powerSupply =componentsSnapshot.child("powersupply").getValue(PowerSupplyBuild::class.java),
+                        powerSupply =componentsSnapshot.child("powerSupply").getValue(PowerSupplyBuild::class.java),
                         mouse = componentsSnapshot.child("mouse").getValue(Mouse::class.java),
-                        cpuCooler = componentsSnapshot.child("cpucooler").getValue(CpuCoolerBuild::class.java),
+                        cpuCooler = componentsSnapshot.child("cpuCooler").getValue(CpuCoolerBuild::class.java),
                         memory = componentsSnapshot.child("memory").getValue(MemoryBuild::class.java)
                     )
 
@@ -322,6 +322,7 @@ fun removeBuildComponent(
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit
 ) {
+
     val path = "users/$userId/builds/$buildId/components/$componentCategory"
     Log.d("RemoveComponent", "Removing from path: $path")
 

@@ -232,7 +232,7 @@ fun InternalHardDriveList(
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "internalharddrive",
+                            componentType = "internalHardDrive",
                             componentData = hardDrive,
                             onSuccess = {
                                 isLoading.value = false

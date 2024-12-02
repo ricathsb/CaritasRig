@@ -330,7 +330,7 @@ fun PowerSupplyList(
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "powersupply",
+                            componentType = "powerSupply",
                             componentData = powerSupply,
                             onSuccess = {
                                 isLoading.value = false
