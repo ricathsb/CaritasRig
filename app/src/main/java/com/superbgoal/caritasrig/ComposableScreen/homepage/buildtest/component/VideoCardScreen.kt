@@ -11,21 +11,29 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Checkbox
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RangeSlider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,15 +44,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -55,12 +63,43 @@ fun VideoCardScreen(navController: NavController) {
     val videoCards: List<GpuBuild> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.gpu_build// Ensure this JSON file exists
+            resourceId = R.raw.gpu_build_updated
         )
     }
 
+    // State variables
+    var query by remember { mutableStateOf("") }
     var showFilterDialog by remember { mutableStateOf(false) }
+    var selectedManufacturers by remember { mutableStateOf<List<String>>(emptyList()) }
+    var tdpRange by remember { mutableStateOf(0f..500f) }
+    var memoryRange by remember { mutableStateOf(0f..24f) }
     var filteredVideoCards by remember { mutableStateOf(videoCards) }
+
+    // Pagination variables
+    val itemsPerPage = 10
+    val currentPage = remember { mutableStateOf(0) }
+    val totalPages = (filteredVideoCards.size / itemsPerPage) +
+            if (filteredVideoCards.size % itemsPerPage == 0) 0 else 1
+
+    // Available manufacturers
+    val availableManufacturers = listOf(
+        "AMD", "ASRock", "ATI", "Acer", "Asus", "Dell", "Diamond",
+        "EVGA", "GALAX", "Gainward", "Gigabyte", "HP", "Inno3D", "Intel",
+        "Lenovo", "MAXSUN", "MSI", "Matrox", "NVIDIA", "PNY", "Palit",
+        "PowerColor", "Sapphire", "Sparkle", "VisionTek", "XFX", "Zotac"
+    )
+
+    // Update filtered cards when query or filter states change
+    LaunchedEffect(query, selectedManufacturers, tdpRange, memoryRange) {
+        filteredVideoCards = videoCards.filter { gpu ->
+            (query.isBlank() || gpu.name.contains(query, ignoreCase = true)) &&
+                    (selectedManufacturers.isEmpty() || selectedManufacturers.contains(gpu.manufacturer)) &&
+                    (gpu.tdp.toFloat() in tdpRange) &&
+                    (gpu.memory in memoryRange)
+        }
+        // Reset to the first page if filters change
+        currentPage.value = 0
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -73,99 +112,94 @@ fun VideoCardScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Main content with TopAppBar and VideoCardList
-        Column {
-            TopAppBar(
-                backgroundColor = Color.Transparent,
-                contentColor = Color.White,
-                elevation = 0.dp,
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Search bar and filter button
+            SearchBarForComponent(
+                query = query,
+                onQueryChange = { query = it },
+                onFilterClick = { showFilterDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
-                title = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 10.dp)
-                    ) {
-                        Text(
-                            text = "Part Pick",
-                            style = MaterialTheme.typography.h4,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Video Card",
-                            style = MaterialTheme.typography.subtitle1,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.navigateUp() },
-                        modifier = Modifier.padding(start = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { showFilterDialog = true },
-                        modifier = Modifier.padding(end = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_filter),
-                            contentDescription = "Filter"
-                        )
-                    }
-                }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            // VideoCardList content
+            // Paginated video card list
             Surface(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 color = Color.Transparent
             ) {
-                VideoCardList(videoCards,navController)
+                val currentPageItems = filteredVideoCards
+                    .drop(currentPage.value * itemsPerPage)
+                    .take(itemsPerPage)
+
+                VideoCardList(
+                    videoCards = currentPageItems,
+                    navController = navController,
+                    currentPage = currentPage,
+                    totalPages = totalPages,
+                    onPreviousPage = { if (currentPage.value > 0) currentPage.value-- },
+                    onNextPage = { if (currentPage.value < totalPages - 1) currentPage.value++ }
+                )
             }
         }
 
         // Filter dialog
-//        if (showFilterDialog) {
-//            FilterDialog(
-//                onDismiss = { showFilterDialog = false },
-//                onApply = { selectedBrands, selectedMemorySizes, selectedCoreClocks ->
-//                    showFilterDialog = false
-//                    filteredVideoCards = videoCards.filter { videoCard ->
-//                        (selectedBrands.isEmpty() || selectedBrands.any { videoCard.name.contains(it, ignoreCase = true) }) &&
-//                                (selectedMemorySizes.isEmpty() || videoCard.memory in selectedMemorySizes) &&
-//                                (selectedCoreClocks.isEmpty() || videoCard.coreClock.toInt() in selectedCoreClocks)
-//                    }
-//                }
-//            )
-//        }
+        if (showFilterDialog) {
+            FilterDialog(
+                onDismiss = { showFilterDialog = false },
+                tdpRange = remember { mutableStateOf(tdpRange) }, // Maintain state
+                memoryRange = remember { mutableStateOf(memoryRange) }, // Maintain state
+                selectedManufacturers = remember { mutableStateOf(selectedManufacturers) }, // Maintain state
+                availableManufacturers = availableManufacturers,
+                onApply = { newTdpRange, newMemoryRange, newSelectedManufacturers ->
+                    tdpRange = newTdpRange
+                    memoryRange = newMemoryRange
+                    selectedManufacturers = newSelectedManufacturers
+                    showFilterDialog = false
+                }
+            )
+        }
     }
 }
 
 
 @Composable
-fun VideoCardList(videoCards: List<GpuBuild>, navController: NavController) {
+fun VideoCardList(
+    videoCards: List<GpuBuild>,
+    navController: NavController,
+    currentPage: MutableState<Int>,
+    totalPages: Int,
+    onPreviousPage: () -> Unit,
+    onNextPage: () -> Unit
+) {
     val context = LocalContext.current
 
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // Video card items
         items(videoCards) { videoCard ->
             val isLoading = remember { mutableStateOf(false) }
 
             ComponentCard(
                 title = videoCard.name,
-                details = "Chipset: ${videoCard.chipset} | ${videoCard.memory}GB | Core Clock: ${videoCard.coreClock}MHz | Boost Clock: ${videoCard.boostClock}MHz | Color: ${videoCard.color} | Length: ${videoCard.length}mm",
+                price = videoCard.price,
+                details = """
+                    Chipset: ${videoCard.chipset}
+                    Memory: ${videoCard.memory} GB
+                    Core Clock: ${videoCard.coreClock} MHz
+                    Boost Clock: ${videoCard.boostClock} MHz
+                    Color: ${videoCard.color}
+                    Length: ${videoCard.length} mm
+                """.trimIndent(),
                 isLoading = isLoading.value,
                 onFavClick = {
                     savedFavorite(videoCard = videoCard, context = context)
@@ -181,9 +215,10 @@ fun VideoCardList(videoCards: List<GpuBuild>, navController: NavController) {
                         saveComponent(
                             userId = userId,
                             buildTitle = title,
-                            componentType = "gpu",
+                            componentType = "videoCard",
                             componentData = videoCard,
                             onSuccess = {
+                                isLoading.value = false
                                 navController.navigateUp()
                             },
                             onFailure = { errorMessage ->
@@ -199,6 +234,39 @@ fun VideoCardList(videoCards: List<GpuBuild>, navController: NavController) {
                 }
             )
         }
+
+        // Pagination buttons as the last item
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = onPreviousPage,
+                    enabled = currentPage.value > 0,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text("Previous", color = Color.White)
+                }
+
+                Text(
+                    text = "${currentPage.value + 1} / $totalPages",
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+
+                Button(
+                    onClick = onNextPage,
+                    enabled = currentPage.value < totalPages - 1,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text("Next", color = Color.White)
+                }
+            }
+        }
     }
 }
 
@@ -206,75 +274,63 @@ fun VideoCardList(videoCards: List<GpuBuild>, navController: NavController) {
 @Composable
 fun FilterDialog(
     onDismiss: () -> Unit,
-    onApply: (
-        selectedBrands: List<String>,
-        selectedMemorySizes: List<Double>,
-        selectedCoreClocks: IntRange
-    ) -> Unit
+    tdpRange: MutableState<ClosedFloatingPointRange<Float>>,
+    memoryRange: MutableState<ClosedFloatingPointRange<Float>>,
+    selectedManufacturers: MutableState<List<String>>,
+    availableManufacturers: List<String>,
+    onApply: (tdpRange: ClosedFloatingPointRange<Float>, memoryRange: ClosedFloatingPointRange<Float>, selectedManufacturers: List<String>) -> Unit
 ) {
-    val availableBrands = listOf("AMD", "NVIDIA", "Intel")
-    val selectedBrands = remember { mutableStateOf(availableBrands.toMutableList()) }
-
-    val availableMemorySizes = listOf(4.0, 6.0, 8.0, 12.0, 16.0)
-    val selectedMemorySizes = remember { mutableStateOf(availableMemorySizes.toMutableList()) }
-
-    val coreClockRange = remember { mutableStateOf(500..3000) }
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Filter Video Cards") },
+        title = {
+            Text(text = "Filter Video Cards")
+        },
         text = {
             Column {
-                Text("Brand:")
-                availableBrands.forEach { brand ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = brand in selectedBrands.value,
-                            onCheckedChange = { isChecked ->
-                                val updatedList = selectedBrands.value.toMutableList()
-                                if (isChecked) updatedList.add(brand) else updatedList.remove(brand)
-                                selectedBrands.value = updatedList
-                            }
-                        )
-                        Text(text = brand)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Memory Size (GB):")
-                availableMemorySizes.forEach { size ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = size in selectedMemorySizes.value,
-                            onCheckedChange = { isChecked ->
-                                val updatedList = selectedMemorySizes.value.toMutableList()
-                                if (isChecked) updatedList.add(size) else updatedList.remove(size)
-                                selectedMemorySizes.value = updatedList
-                            }
-                        )
-                        Text(text = "$size GB")
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(text = "Core Clock: ${coreClockRange.value.start} MHz - ${coreClockRange.value.endInclusive} MHz")
+                // TDP range slider
+                Text(text = "TDP: ${tdpRange.value.start.toInt()}W - ${tdpRange.value.endInclusive.toInt()}W")
                 RangeSlider(
-                    value = coreClockRange.value.start.toFloat()..coreClockRange.value.endInclusive.toFloat(),
+                    value = tdpRange.value,
                     onValueChange = { range ->
-                        coreClockRange.value = range.start.toInt()..range.endInclusive.toInt()
+                        tdpRange.value = range
                     },
-                    valueRange = 500f..3000f,
-                    steps = 10
+                    valueRange = 0f..500f
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Memory range slider
+                Text(
+                    text = "Memory: ${
+                        String.format("%.0f", memoryRange.value.start)
+                    } GB - ${
+                        String.format("%.0f", memoryRange.value.endInclusive)
+                    } GB"
+                )
+                RangeSlider(
+                    value = memoryRange.value,
+                    onValueChange = { range ->
+                        memoryRange.value = range
+                    },
+                    valueRange = 0f..24f
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Manufacturer dropdown menu
+                Text(text = "Manufacturers")
+                ManufacturerDropdown(
+                    availableManufacturers = availableManufacturers,
+                    selectedManufacturers = selectedManufacturers
                 )
             }
         },
         confirmButton = {
             TextButton(onClick = {
                 onApply(
-                    selectedBrands.value,
-                    selectedMemorySizes.value,
-                    coreClockRange.value
+                    tdpRange.value,
+                    memoryRange.value,
+                    selectedManufacturers.value
                 )
             }) {
                 Text("Apply")
@@ -286,4 +342,54 @@ fun FilterDialog(
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ManufacturerDropdown(
+    availableManufacturers: List<String>,
+    selectedManufacturers: MutableState<List<String>>
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = if (selectedManufacturers.value.isEmpty()) "Select manufacturers" else selectedManufacturers.value.joinToString(", "),
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+                    contentDescription = null
+                )
+            }
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.heightIn(max = 200.dp) // Membatasi tinggi maksimum
+        ) {
+            availableManufacturers.forEach { manufacturer ->
+                DropdownMenuItem(onClick = {
+                    if (manufacturer in selectedManufacturers.value) {
+                        selectedManufacturers.value = selectedManufacturers.value - manufacturer
+                    } else {
+                        selectedManufacturers.value = selectedManufacturers.value + manufacturer
+                    }
+                }) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = manufacturer in selectedManufacturers.value,
+                            onCheckedChange = null // Handled by DropdownMenuItem
+                        )
+                        Text(text = manufacturer)
+                    }
+                }
+            }
+        }
+    }
 }

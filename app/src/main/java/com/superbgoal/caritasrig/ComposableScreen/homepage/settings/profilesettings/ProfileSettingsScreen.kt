@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -50,6 +51,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +66,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.transformations
@@ -72,9 +75,9 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.MainActivity
 import com.superbgoal.caritasrig.ComposableScreen.homepage.home.HomeViewModel
+import com.superbgoal.caritasrig.MainActivity
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.functions.updateUserProfileData
 import java.time.Instant
@@ -82,29 +85,12 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class ProfileSettingsActivity : ComponentActivity() {
-    private val viewModel: ProfileSettingsViewModel by viewModels()
-    private val homeViewModel: HomeViewModel by viewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            ProfileSettingsScreen(
-                viewModel = viewModel,
-                homeViewModel = homeViewModel,
-                onNavigateUp = { finish() }
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSettingsScreen(
-    viewModel: ProfileSettingsViewModel,
-    homeViewModel: HomeViewModel,
-    onNavigateUp: () -> Unit
 ) {
+    val viewModel : ProfileSettingsViewModel = viewModel()
+    val homeViewModel : HomeViewModel = viewModel()
     val firstname by viewModel.firstname.collectAsState()
     val lastname by viewModel.lastname.collectAsState()
     val username by viewModel.username.collectAsState()
@@ -370,12 +356,8 @@ fun ProfileSettingsScreen(
                     ) { success ->
                         viewModel.setLoading(false)
                         if (success) {
-                            Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                             homeViewModel.loadUserData(userId = user.userId)
-                            val intent = Intent(context, MainActivity::class.java)
-                            intent.flags =
-                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            context.startActivity(intent)  // Gunakan context.startActivity
+                            Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, context.getString(R.string.profile_updated_failed), Toast.LENGTH_SHORT).show()
                         }
@@ -392,17 +374,6 @@ fun ProfileSettingsScreen(
             } else {
                 Text(stringResource(id = R.string.save_changes))
             }
-        }
-        TextButton(
-            onClick = {
-                val intent = Intent(context, MainActivity::class.java)
-                intent.flags =
-                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                context.startActivity(intent)
-            },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(text = "Back To Home")
         }
     }
 }
@@ -446,3 +417,8 @@ fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
         }
     }
 }
+
+
+
+
+

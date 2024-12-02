@@ -48,6 +48,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -491,6 +492,168 @@ fun calculateTotalPrice(it: BuildComponents): Double {
 }
 
 @Composable
+fun BuildCompatibilityAccordion(
+    buildComponents: BuildComponents,
+    estimatedWattage: Double
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    // Menghitung status kompatibilitas
+    val compatibilityStatus = calculateCompatibilityStatus(buildComponents, estimatedWattage)
+
+    // Accordion Header
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { isExpanded = !isExpanded },
+        elevation = 4.dp
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Kompatibilitas Build",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (compatibilityStatus != null) {
+                Text(
+                    text = "${compatibilityStatus.compatibleCount}/${compatibilityStatus.totalCount} kompatibel",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+
+    // Accordion Content
+    if (isExpanded) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            if (compatibilityStatus != null) {
+                compatibilityStatus.details.forEach { detail ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = detail.componentName)
+                        Text(
+                            text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
+                            color = if (detail.isCompatible) Color.Green else Color.Red
+                        )
+                    }
+                }
+            }
+
+            // Rekomendasi
+            if (compatibilityStatus != null) {
+                if (compatibilityStatus.recommendation.isNotEmpty()) {
+                    Text(
+                        text = "Rekomendasi:",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Text(
+                        text = compatibilityStatus.recommendation,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
+
+data class CompatibilityDetail(
+    val componentName: String,
+    val isCompatible: Boolean
+)
+
+data class CompatibilityStatus(
+    val compatibleCount: Int,
+    val totalCount: Int,
+    val details: List<CompatibilityDetail>,
+    val recommendation: String
+)
+
+fun calculateCompatibilityStatus(
+    buildComponents: BuildComponents,
+    estimatedWattage: Double
+): CompatibilityStatus? {
+    val details = mutableListOf<CompatibilityDetail>()
+    var recommendation = ""
+
+    // PSU Compatibility
+    val powerSupplyName = buildComponents.powerSupply?.name.orEmpty()
+    val powerSupplyWattage = parseWattage(buildComponents.powerSupply?.wattage)
+    val psuCompatible = buildComponents.powerSupply == null || powerSupplyWattage >= estimatedWattage
+    if (buildComponents.powerSupply != null) {
+        details.add(CompatibilityDetail(powerSupplyName.ifEmpty { "Powersupply" }, psuCompatible))
+        if (!psuCompatible) {
+            recommendation += "Ganti PSU dengan wattage lebih tinggi. "
+        }
+    }
+
+    // Processor and Motherboard Socket Compatibility
+    val processorName = buildComponents.processor?.name.orEmpty()
+    val motherboardName = buildComponents.motherboard?.name.orEmpty()
+    val processorSocket = buildComponents.processor?.socket
+    val motherboardSocket = buildComponents.motherboard?.socketCpu
+    val socketCompatible = buildComponents.processor == null || buildComponents.motherboard == null || processorSocket == motherboardSocket
+    if (buildComponents.processor != null) {
+        details.add(CompatibilityDetail(processorName, socketCompatible))
+    }
+    if (buildComponents.motherboard != null) {
+        details.add(CompatibilityDetail(motherboardName, socketCompatible))
+    }
+    if (!socketCompatible && buildComponents.processor != null && buildComponents.motherboard != null) {
+        recommendation += "Ganti motherboard atau processor agar socket cocok. "
+    }
+
+    // Memory Compatibility
+    val ramName = buildComponents.memory?.name.orEmpty()
+    val ramType = buildComponents.memory?.let { extractRamType(it.speed) }
+    val motherboardRamType = buildComponents.motherboard?.memoryType
+    val ramCompatible = buildComponents.memory == null || buildComponents.motherboard == null || ramType == motherboardRamType
+    if (buildComponents.memory != null) {
+        details.add(CompatibilityDetail(ramName, ramCompatible))
+        if (!ramCompatible) {
+            recommendation += "Ganti RAM agar cocok dengan motherboard. "
+        }
+    }
+
+    // Motherboard and Case Compatibility (Form Factor)
+    val casingName = buildComponents.casing?.name.orEmpty()
+    val motherboardFormFactor = buildComponents.motherboard?.formFactor
+    val casingSupportedSizes = buildComponents.casing?.motherboardFormFactor.orEmpty()
+    val casingCompatible = buildComponents.casing == null || buildComponents.motherboard == null || motherboardFormFactor.toString() in casingSupportedSizes
+    if (buildComponents.casing != null) {
+        details.add(CompatibilityDetail(casingName, casingCompatible))
+        if (!casingCompatible) {
+            recommendation += "Ganti casing agar mendukung form factor motherboard (${motherboardFormFactor}). "
+        }
+    }
+
+    // Jika tidak ada komponen yang dipilih, kembalikan null
+    if (details.isEmpty()) {
+        return null
+    }
+
+    // Count Total and Compatible
+    val compatibleCount = details.count { it.isCompatible }
+    val totalCount = details.size
+
+    return CompatibilityStatus(
+        compatibleCount = compatibleCount,
+        totalCount = totalCount,
+        details = details,
+        recommendation = recommendation.trim()
+    )
+}
+
+
+
+
+
+
+@Composable
 fun <T> GenericCard(
     item: T,
     modifier: Modifier = Modifier,
@@ -530,6 +693,102 @@ fun <T> GenericCard(
         }
     }
 }
+
+@Composable
+fun SearchBarForComponent(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onFilterClick: () -> Unit
+) {
+    TextField(
+        value = query,
+        onValueChange = onQueryChange,
+        label = { androidx.compose.material.Text("Search CPU") },
+        placeholder = { androidx.compose.material.Text("Search by name") },
+        singleLine = true,
+        modifier = modifier,
+        leadingIcon = {
+            androidx.compose.material.Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search"
+            )
+        },
+        trailingIcon = {
+            androidx.compose.material.IconButton(onClick = onFilterClick) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.ic_filter),
+                    contentDescription = "Filter"
+                )
+            }
+        }
+    )
+}
+
+fun calculateTotalWattage(it: BuildComponents): Double {
+    // Menghitung total TDP dari prosesor dan kartu grafis
+    val estimatedWattage = listOfNotNull(
+        parseWattage(it.processor?.tdp),
+        it.videoCard?.tdp // Pastikan untuk memproses TDP kartu grafis
+    ).sum()
+
+    // Menambahkan estimasi wattage komponen lain jika ada
+    var additionalWattage = 0.0
+
+    // Menambahkan 50 watt jika motherboard ada
+    if (it.motherboard != null) {
+        additionalWattage += 50.0
+    }
+
+    // Menambahkan 8 watt jika RAM ada (diasumsikan 2 modul)
+    if (it.memory != null) {
+        additionalWattage += 8.0
+    }
+
+    // Menambahkan 3 watt jika SSD ada
+    if (it.internalHardDrive != null) {
+        additionalWattage += 3.0
+    }
+
+    // Menambahkan 12 watt jika cooling system ada (misalnya 2 kipas)
+    if (it.cpuCooler != null) {
+        additionalWattage += 12.0
+    }
+
+    // Menambahkan 5 watt untuk periferal jika ada (keyboard, mouse, dll.)
+    if (it.keyboard != null) {
+        additionalWattage += 1.0
+    }
+
+    // Menambahkan 3 watt untuk headphone jika ada
+    if (it.headphone != null) {
+        additionalWattage += 1.0
+    }
+
+    if (it.mouse != null) {
+        additionalWattage += 1.0
+    }
+
+    // Mengembalikan total wattage
+    return estimatedWattage + additionalWattage
+}
+
+
+fun parseWattage(wattString: String?): Double {
+    // Menghapus satuan "W" dan mengonversi string menjadi Double
+    return wattString?.replace(" W", "")?.toDoubleOrNull() ?: 0.0
+}
+fun calculatePSU(estimatedWattage: Double): Double {
+    // Menghitung kapasitas PSU dengan margin 30%
+    return estimatedWattage * 1.3
+}
+
+fun extractRamType(speed: String): String {
+    return speed.split("-")[0] // Mengambil bagian sebelum tanda "-"
+}
+
+
+
 
 
 

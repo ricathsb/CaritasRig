@@ -17,12 +17,6 @@ class HomeViewModel : ViewModel() {
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 
-    private val _searchText = MutableStateFlow("")
-    val searchText: StateFlow<String> = _searchText
-
-    private val _isProfileDialogVisible = MutableStateFlow(false)
-    val isProfileDialogVisible: StateFlow<Boolean> = _isProfileDialogVisible
-
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
@@ -62,13 +56,6 @@ class HomeViewModel : ViewModel() {
         return FirebaseAuth.getInstance().currentUser?.uid
     }
 
-    fun updateSearchText(newText: String) {
-        _searchText.value = newText
-    }
-
-    fun toggleProfileDialog() {
-        _isProfileDialogVisible.value = !_isProfileDialogVisible.value
-    }
 }
 
 

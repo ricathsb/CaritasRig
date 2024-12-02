@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:name=".CaritasRig"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -29,7 +28,6 @@
 
         <activity
             android:name=".MainActivity"
-            android:noHistory="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,9 +37,7 @@
 
         <activity
             android:name="com.canhub.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat"
-            />
-        <activity android:name=".ComposableScreen.homepage.settings.profilesettings.ProfileSettingsActivity"/>
+            android:theme="@style/Base.Theme.AppCompat" />
     </application>
 
 </manifest>

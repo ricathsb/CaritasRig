@@ -94,6 +94,7 @@ class ProfileSettingsViewModel : ViewModel() {
                     _imageUri.value = null
                     _imageUrl.value = ""
                 }
+
             } catch (e: Exception) {
                 Log.e("ProfileSettingsViewModel", "Invalid URI: ${e.message}")
                 _imageUri.value = null

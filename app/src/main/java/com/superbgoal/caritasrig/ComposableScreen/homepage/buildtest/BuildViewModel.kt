@@ -2,12 +2,14 @@ package com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.superbgoal.caritasrig.functions.fetchBuildsWithAuth
 import com.superbgoal.caritasrig.functions.getDatabaseReference
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
@@ -52,6 +54,9 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     private val _totalBuildPrice = MutableLiveData(0.0)
     val totalBuildPrice: LiveData<Double> get() = _totalBuildPrice
 
+    private val _totalWattage = MutableLiveData(0.0)
+    val totalWattage: LiveData<Double> get() = _totalWattage
+
     private val defaultCategories = mapOf(
         "CPU" to "No CPU Selected",
         "Case" to "No Case Selected",
@@ -78,6 +83,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setBuildPrice(price: Double) {
         _totalBuildPrice.value = price
+    }
+
+    fun setBuildWattage(wattage: Double) {
+        _totalWattage.value = wattage
     }
 
     fun resetBuildData() {
@@ -134,8 +143,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 "CPU Cooler" to it.cpuCooler?.let { "CPU Cooler: ${it.name}, Fan Speed: ${it.fanRpm} RPM" },
                 "Headphone" to it.headphone?.let { "Headphone: ${it.name}, Type: ${it.type}" },
                 "Keyboard" to it.keyboard?.let { "Keyboard: ${it.name}, Type: ${it.switches}" },
-                "Mouse" to it.mouse?.let { "Mouse: ${it.name}, Max DPI: ${it.maxDpi}" }
-            )
+                "Mouse" to it.mouse?.let { "Mouse: ${it.name}, Max DPI: ${it.maxDpi}" },
+
+
+                )
         } ?: emptyMap()
 
         // Gabungkan dengan kategori default
@@ -258,14 +269,14 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
             _selectedComponents.value = updatedComponents
 
             val targetPath = when (category) {
-                "CPU" -> "cpu"
-                "Case" -> "case"
-                "GPU" -> "gpu"
+                "CPU" -> "processor"
+                "Case" -> "casing"
+                "GPU" -> "videoCard"
                 "Motherboard" -> "motherboard"
                 "RAM" -> "memory"
-                "InternalHardDrive" -> "internalharddrive"
-                "PowerSupply" -> "powersupply"
-                "CPU Cooler" -> "cpucooler"
+                "InternalHardDrive" -> "internalHardDrive"
+                "PowerSupply" -> "powerSupply"
+                "CPU Cooler" -> "cpuCooler"
                 "Headphone" -> "headphone"
                 "Keyboard" -> "keyboard"
                 "Mouse" -> "mouse"
@@ -300,14 +311,14 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         _loading.value = true
 
         val targetPath = when (category) {
-            "CPU" -> "cpu"
-            "Case" -> "case"
-            "GPU" -> "gpu"
+            "CPU" -> "processor"
+            "Case" -> "casing"
+            "GPU" -> "videoCard"
             "Motherboard" -> "motherboard"
             "RAM" -> "memory"
-            "InternalHardDrive" -> "internalharddrive"
-            "PowerSupply" -> "powersupply"
-            "CPU Cooler" -> "cpucooler"
+            "InternalHardDrive" -> "internalHardDrive"
+            "PowerSupply" -> "powerSupply"
+            "CPU Cooler" -> "cpuCooler"
             "Headphone" -> "headphone"
             "Keyboard" -> "keyboard"
             "Mouse" -> "mouse"
@@ -369,6 +380,88 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
                 _loading.value = false
             }
     }
+
+    fun shareBuildWithOthers(imageUris: List<Uri>) {
+        val currentBuildData = _buildData.value  // Ambil data build saat ini
+
+        if (currentBuildData == null) {
+            Log.e("BuildViewModel", "No build data to share.")
+            return
+        }
+
+        // Ambil User ID saat ini dari Firebase Authentication
+        val userId = Firebase.auth.currentUser?.uid ?: return
+
+        // Lokasi tujuan di Firebase Realtime Database
+        val sharedBuildRef = getDatabaseReference().child("shared_build/$userId/${currentBuildData.buildId}")
+
+        // Jika ada gambar yang dipilih, upload ke Firebase Storage
+        if (imageUris.isNotEmpty()) {
+            uploadImagesToFirebaseStorage(imageUris) { imageUrls ->
+                if (imageUrls.isNotEmpty()) {
+                    // Simpan URL gambar yang sudah di-upload ke dalam database
+                    val updatedBuildData = currentBuildData.copy(imageuris = imageUrls)
+
+                    // Simpan data build ke node baru di Firebase Realtime Database
+                    sharedBuildRef.setValue(updatedBuildData)
+                        .addOnSuccessListener {
+                            Log.d("BuildViewModel", "Build data shared successfully.")
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("BuildViewModel", "Failed to share build: ${error.message}")
+                        }
+                } else {
+                    Log.e("BuildViewModel", "No images uploaded, build data not shared.")
+                }
+            }
+        } else {
+            // Simpan data build tanpa gambar
+            sharedBuildRef.setValue(currentBuildData)
+                .addOnSuccessListener {
+                    Log.d("BuildViewModel", "Build data shared successfully without images.")
+                }
+                .addOnFailureListener { error ->
+                    Log.e("BuildViewModel", "Failed to share build: ${error.message}")
+                }
+        }
+    }
+
+    fun uploadImagesToFirebaseStorage(imageUris: List<Uri>, onComplete: (List<String>) -> Unit) {
+        val uploadedImageUrls = mutableListOf<String>()
+        val storage = FirebaseStorage.getInstance()
+
+        // Loop untuk upload setiap gambar
+        val uploadTasks = imageUris.map { uri ->
+            val imageRef = storage.reference.child("build_images/${System.currentTimeMillis()}_${uri.lastPathSegment}")
+
+            imageRef.putFile(uri)
+                .addOnSuccessListener {
+                    imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                        uploadedImageUrls.add(downloadUri.toString())
+                        // Jika sudah semua gambar ter-upload, panggil callback
+                        if (uploadedImageUrls.size == imageUris.size) {
+                            onComplete(uploadedImageUrls)
+                        }
+                    }
+                        .addOnFailureListener { exception ->
+                            Log.e("UploadError", "Failed to get download URL: ${exception.message}")
+                            if (uploadedImageUrls.size == imageUris.size) {
+                                onComplete(uploadedImageUrls)
+                            }
+                        }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("UploadError", "Failed to upload image: ${exception.message}")
+                    if (uploadedImageUrls.size == imageUris.size) {
+                        onComplete(uploadedImageUrls)
+                    }
+                }
+        }
+
+        // Menunggu semua task selesai
+        uploadTasks.forEach { it.addOnFailureListener { exception -> Log.e("UploadError", exception.message.toString()) } }
+    }
+
 
 }
 
