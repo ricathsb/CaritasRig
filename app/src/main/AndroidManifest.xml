@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!-- Izin untuk akses internet -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:name=".CaritasRig"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,7 +14,7 @@
         android:supportsRtl="true"
         android:configChanges="locale|layoutDirection"
         android:theme="@style/Theme.CaritasRig"
-        >
+        android:networkSecurityConfig="@xml/network_security_config"> <!-- Tambahkan ini -->
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -28,20 +27,17 @@
         </provider>
 
         <activity
-            android:name=".activity.MainActivity"
-            android:noHistory="true"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.canhub.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat"
-            />
-        <activity android:name=".activity.homepage.settings.profilesettings.ProfileSettingsActivity"/>
-
+            android:theme="@style/Base.Theme.AppCompat" />
     </application>
 
 </manifest>

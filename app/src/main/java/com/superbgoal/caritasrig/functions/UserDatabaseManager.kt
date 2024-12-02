@@ -16,17 +16,18 @@ import com.google.gson.Gson
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.data.model.User
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
-import com.superbgoal.caritasrig.data.model.component.Casing
-import com.superbgoal.caritasrig.data.model.component.CpuCooler
+import com.superbgoal.caritasrig.data.model.component.CasingBuild
+import com.superbgoal.caritasrig.data.model.component.CpuCoolerBuild
+import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.data.model.component.Headphones
-import com.superbgoal.caritasrig.data.model.component.InternalHardDrive
+import com.superbgoal.caritasrig.data.model.component.InternalHardDriveBuild
 import com.superbgoal.caritasrig.data.model.component.Keyboard
-import com.superbgoal.caritasrig.data.model.component.Memory
-import com.superbgoal.caritasrig.data.model.component.Motherboard
+import com.superbgoal.caritasrig.data.model.component.MemoryBuild
+import com.superbgoal.caritasrig.data.model.component.MotherboardBuild
 import com.superbgoal.caritasrig.data.model.component.Mouse
-import com.superbgoal.caritasrig.data.model.component.PowerSupply
+import com.superbgoal.caritasrig.data.model.component.PowerSupplyBuild
 import com.superbgoal.caritasrig.data.model.component.Processor
-import com.superbgoal.caritasrig.data.model.component.VideoCard
+import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import java.util.UUID
 
 fun saveUserData(user: User, context: Context, callback: (Boolean) -> Unit) {
@@ -283,17 +284,17 @@ fun fetchBuildsWithAuth(
                     // Memetakan komponen ke BuildComponents
                     val componentsSnapshot = snapshot.child("components")
                     val components = BuildComponents(
-                        casing = componentsSnapshot.child("case").getValue(Casing::class.java),
-                        processor = componentsSnapshot.child("cpu").getValue(Processor::class.java),
-                        motherboard = componentsSnapshot.child("motherboard").getValue(Motherboard::class.java),
-                        videoCard = componentsSnapshot.child("gpu").getValue(VideoCard::class.java),
+                        casing = componentsSnapshot.child("casing").getValue(CasingBuild::class.java),
+                        processor = componentsSnapshot.child("processor").getValue(ProcessorTrial::class.java),
+                        motherboard = componentsSnapshot.child("motherboard").getValue(MotherboardBuild::class.java),
+                        videoCard = componentsSnapshot.child("videoCard").getValue(GpuBuild::class.java),
                         headphone = componentsSnapshot.child("headphone").getValue(Headphones::class.java),
-                        internalHardDrive = componentsSnapshot.child("internalharddrive").getValue(InternalHardDrive::class.java),
+                        internalHardDrive = componentsSnapshot.child("internalHardDrive").getValue(InternalHardDriveBuild::class.java),
                         keyboard = componentsSnapshot.child("keyboard").getValue(Keyboard::class.java),
-                        powerSupply =componentsSnapshot.child("powersupply").getValue(PowerSupply::class.java),
+                        powerSupply =componentsSnapshot.child("powerSupply").getValue(PowerSupplyBuild::class.java),
                         mouse = componentsSnapshot.child("mouse").getValue(Mouse::class.java),
-                        cpuCooler = componentsSnapshot.child("cpucooler").getValue(CpuCooler::class.java),
-                        memory = componentsSnapshot.child("memory").getValue(Memory::class.java)
+                        cpuCooler = componentsSnapshot.child("cpuCooler").getValue(CpuCoolerBuild::class.java),
+                        memory = componentsSnapshot.child("memory").getValue(MemoryBuild::class.java)
                     )
 
                     // Buat objek Build
@@ -321,6 +322,7 @@ fun removeBuildComponent(
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit
 ) {
+
     val path = "users/$userId/builds/$buildId/components/$componentCategory"
     Log.d("RemoveComponent", "Removing from path: $path")
 
@@ -492,79 +494,305 @@ fun editRamQuantity(
 }
 
 fun savedFavorite(
-    processor: Processor? = null,
-    videoCard: VideoCard? = null
+    processor: ProcessorTrial? = null,
+    videoCard: GpuBuild? = null,
+    casing: CasingBuild? = null,
+    cpuCooler: CpuCoolerBuild? = null,
+    headphones: Headphones? = null,
+    internalHardDrive: InternalHardDriveBuild? = null,
+    keyboard: Keyboard? = null,
+    memory: MemoryBuild? = null,
+    motherboard: MotherboardBuild? = null,
+    mouse: Mouse? = null,
+    powerSupply: PowerSupplyBuild? = null,
+    context : Context? = null
 ) {
-    val database = getDatabaseReference()
+    val database = FirebaseDatabase.getInstance("https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app").reference
     val userId = FirebaseAuth.getInstance().currentUser?.uid
+
 
     if (userId != null) {
         val favoriteRef = database.child("users").child(userId).child("favorites")
 
-        processor?.let { proc ->
-            favoriteRef.child("processors").get().addOnSuccessListener { snapshot ->
-                val exists = snapshot.children.any { it.child("name").value == proc.name }
+        fun <T> saveComponent(
+            component: T,
+            type: String,
+            idGenerator: () -> String,
+            dataMapper: (T) -> Map<String, Any>
+        ) {
+            favoriteRef.child(type).get().addOnSuccessListener { snapshot ->
+                val exists = snapshot.children.any { it.child("name").value == dataMapper(component)["name"] }
                 if (exists) {
-                    Log.d("savedFavorite", "Component is already on the favorite list.")
+                    Log.d("saveFavorite", "$type is already in the favorite list.")
+                    if (context != null){
+                    Toast.makeText(context, "$type is already in the favorite list.", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    val processorId = UUID.randomUUID().toString()
-                    val processorData = mapOf(
-                        "id" to proc.id,
-                        "name" to proc.name,
-                        "price" to proc.price,
-                        "boost_clock" to proc.boost_clock,
-                        "core_clock" to proc.core_clock,
-                        "core_count" to proc.core_count,
-                        "graphics" to proc.graphics,
-                        "smt" to proc.smt,
-                        "tdp" to proc.tdp
-                    )
-
-                    favoriteRef.child("processors").child(processorId).setValue(processorData)
+                    val id = idGenerator()
+                    favoriteRef.child(type).child(id).setValue(dataMapper(component))
                         .addOnSuccessListener {
+                            Log.d("saveFavorite", "$type added to favorites.")
+                            if (context != null){
+                            Toast.makeText(context, "$type added to favorites.", Toast.LENGTH_SHORT).show()
+                            }
                         }
                         .addOnFailureListener { error ->
-                            Log.e("savedFavorite", "Failed to add processor: ${error.message}")
+                            Log.e("saveFavorite", "Failed to add $type: ${error.message}")
+                            if (context != null){
+                            Toast.makeText(context, "Failed to add $type: ${error.message}", Toast.LENGTH_SHORT).show()
                         }
+                    }
                 }
             }.addOnFailureListener { error ->
-                Log.e("savedFavorite", "Failed to check processors: ${error.message}")
+                Log.e("saveFavorite", "Failed to check $type: ${error.message}")
+            }.addOnCompleteListener {
             }
         }
 
-        videoCard?.let { vCard ->
-            favoriteRef.child("videoCards").get().addOnSuccessListener { snapshot ->
-                val exists = snapshot.children.any { it.child("name").value == vCard.name }
-                if (exists) {
-                    Log.d("savedFavorite", "Component is already on the favorite list.")
-                } else {
-                    val videoCardId = UUID.randomUUID().toString()
-                    val videoCardData = mapOf(
-                        "id" to vCard.id,
-                        "name" to vCard.name,
-                        "price" to vCard.price,
-                        "boostClock" to vCard.boostClock,
-                        "coreClock" to vCard.coreClock,
-                        "memory" to vCard.memory,
-                        "chipset" to vCard.chipset,
-                        "color" to vCard.color,
-                        "length" to vCard.length
-                    )
+        processor?.let {
+            saveComponent(it, "processors", { UUID.randomUUID().toString() }) { proc ->
+                mapOf(
+                    "name" to proc.name,
+                    "price" to proc.price,
+                    "boost_clock" to proc.socket,
+                    "core_clock" to proc.tdp,
+                    "core_count" to proc.socket,
+                    "graphics" to proc.partNumber,
+                    "smt" to proc.smt,
+                    "tdp" to proc.tdp
+                )
+            }
+        }
 
-                    favoriteRef.child("videoCards").child(videoCardId).setValue(videoCardData)
-                        .addOnSuccessListener {
-                            Log.d("savedFavorite", "Video card added to favorites.")
-                        }
-                        .addOnFailureListener { error ->
-                            Log.e("savedFavorite", "Failed to add video card: ${error.message}")
-                        }
-                }
-            }.addOnFailureListener { error ->
-                Log.e("savedFavorite", "Failed to check video cards: ${error.message}")
+        videoCard?.let {
+            saveComponent(it, "videoCards", { UUID.randomUUID().toString() }) { vCard ->
+                mapOf(
+                    "name" to vCard.name,
+                    "price" to vCard.price,
+                    "boostClock" to vCard.boostClock,
+                    "coreClock" to vCard.coreClock,
+                    "memory" to vCard.memory,
+                    "chipset" to vCard.chipset,
+                    "color" to vCard.color,
+                    "length" to vCard.length
+                )
+            }
+        }
+
+        casing?.let {
+            saveComponent(it, "casings", { UUID.randomUUID().toString() }) { casing ->
+                mapOf(
+                    "name" to casing.name,
+                    "price" to casing.price,
+                    "sidePanel" to casing.sidePanel,
+                    "externalVolume" to casing.dimensions,
+                    "color" to casing.color
+                )
+            }
+        }
+
+        cpuCooler?.let {
+            saveComponent(it, "cpuCoolers", { UUID.randomUUID().toString() }) { cooler ->
+                mapOf(
+                    "name" to cooler.name,
+                    "price" to cooler.price,
+                    "rpm" to cooler.fanRpm,
+                    "noise_level" to cooler.noiseLevel,
+                    "color" to cooler.color,
+                    "size" to cooler.height
+                )
+            }
+        }
+
+        headphones?.let {
+            saveComponent(it, "headphones", { UUID.randomUUID().toString() }) { hp ->
+                mapOf(
+                    "name" to hp.name,
+                    "price" to hp.price,
+                    "type" to hp.type,
+                    "frequencyResponse" to hp.frequencyResponse,
+                    "microphone" to hp.microphone,
+                    "wireless" to hp.wireless,
+                    "enclosureType" to hp.enclosureType,
+                    "color" to hp.color
+                )
+            }
+        }
+
+        internalHardDrive?.let {
+            saveComponent(it, "internalHardDrives", { UUID.randomUUID().toString() }) { hdd ->
+                mapOf(
+                    "name" to hdd.name,
+                    "price" to hdd.price,
+                    "capacity" to hdd.capacity,
+                    "pricePerGb" to hdd.pricePerGB,
+                    "type" to hdd.type,
+                    "cache" to hdd.cache,
+                    "formFactor" to hdd.formFactor,
+                    "interfacee" to hdd.interfaceType
+                )
+            }
+        }
+
+        keyboard?.let {
+            saveComponent(it, "keyboards", { UUID.randomUUID().toString() }) { kb ->
+                mapOf<String, Any>(
+                    "name" to kb.name,
+                    "price" to kb.price,
+                    "style" to kb.style,
+                    "switches" to (kb.switches ?: ""), // Ensure null safety by providing a default empty string
+                    "backlit" to (kb.backlit ?: ""),   // Ensure null safety by providing a default empty string
+                    "tenkeyless" to kb.tenkeyless,
+                    "connectionType" to kb.connectionType,
+                    "color" to kb.color
+                )
+            }
+        }
+
+
+        memory?.let {
+            saveComponent(it, "memory", { UUID.randomUUID().toString() }) { mem ->
+                mapOf(
+                    "name" to mem.name,
+                    "price" to mem.price,
+                    "speed" to mem.speed,
+                    "modules" to mem.modules,
+                    "pricePerGb" to mem.pricePerGb,
+                    "color" to mem.color,
+                    "firstWordLatency" to mem.firstWordLatency,
+                    "casLatency" to mem.casLatency,
+                    "socket" to mem.speed,
+                )
+            }
+        }
+
+        motherboard?.let {
+            saveComponent(it, "motherboards", { UUID.randomUUID().toString() }) { mb ->
+                mapOf(
+                    "name" to mb.name,
+                    "price" to mb.price,
+                    "socket" to mb.socketCpu,
+                    "formFactor" to mb.formFactor,
+                    "maxMemory" to mb.memoryMax,
+                    "memorySlots" to mb.memorySlots,
+                    "color" to mb.color,
+                    "imageUrl" to mb.imageUrl
+                )
+            }
+        }
+
+        mouse?.let {
+            saveComponent(it, "mice", { UUID.randomUUID().toString() }) { ms ->
+                mapOf(
+                    "name" to ms.name,
+                    "price" to ms.price,
+                    "trackingMethod" to ms.trackingMethod,
+                    "connectionType" to ms.connectionType,
+                    "maxDpi" to ms.maxDpi,
+                    "handOrientation" to ms.handOrientation,
+                    "color" to ms.color
+                )
+            }
+        }
+
+        powerSupply?.let {
+            saveComponent(it, "powerSupplies", { UUID.randomUUID().toString() }) { psu ->
+                mapOf(
+                    "name" to psu.name,
+                    "price" to psu.price,
+                    "type" to psu.type,
+                    "efficiency" to psu.efficiencyRating,
+                    "wattage" to psu.wattage,
+                    "modular" to psu.modular,
+                    "color" to psu.color
+                )
             }
         }
     }
 }
+
+fun countUserFavorites(onComplete: (Map<String, Int>, Int) -> Unit) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId == null) {
+        Log.e("countUserFavorites", "User ID is null, exiting function.")
+        onComplete(emptyMap(), 0)
+        return
+    }
+
+    val database = getDatabaseReference()
+    val userFavoritesRef = database.child("users").child(userId).child("favorites")
+
+    userFavoritesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            if (!snapshot.exists()) {
+                Log.w("countUserFavorites", "No favorites found for user: $userId")
+                onComplete(emptyMap(), 0)
+                return
+            }
+
+            val categoryCounts = mutableMapOf<String, Int>()
+            var totalFavorites = 0
+
+            snapshot.children.forEach { category ->
+                // Setiap kategori memiliki children berupa item favorit
+                val categoryKey = category.key ?: "Unknown"
+                val count = category.childrenCount.toInt()
+
+                Log.d("countUserFavorites", "Category: $categoryKey, Count: $count")
+                categoryCounts[categoryKey] = count
+                totalFavorites += count
+            }
+
+            Log.d("countUserFavorites", "Final category counts: $categoryCounts")
+            Log.d("countUserFavorites", "Total favorites: $totalFavorites")
+
+            onComplete(categoryCounts, totalFavorites)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("countUserFavorites", "Error fetching data: ${error.message}")
+            onComplete(emptyMap(), 0)
+        }
+    })
+}
+
+fun countUserBuilds(onComplete: (Int) -> Unit) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId == null) {
+        Log.e("countUserBuilds", "User ID is null, exiting function.")
+        onComplete(0)
+        return
+    }
+
+    val database = getDatabaseReference()
+    val userBuildsRef = database.child("users").child(userId).child("builds")
+
+    userBuildsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            if (!snapshot.exists()) {
+                Log.w("countUserBuilds", "No builds found for user: $userId")
+                onComplete(0)
+                return
+            }
+
+            val totalBuilds = snapshot.childrenCount.toInt()
+            Log.d("countUserBuilds", "Total builds for user $userId: $totalBuilds")
+
+            onComplete(totalBuilds)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("countUserBuilds", "Error fetching builds: ${error.message}")
+            onComplete(0)
+        }
+    })
+}
+
+
+
+
+
+
 
 
 
