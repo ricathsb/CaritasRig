@@ -194,6 +194,9 @@ fun NavbarHost(
             composable("profile_settings"){
                 ProfileSettingsScreen ()
             }
+            composable("shared_build_screen"){
+                SharedBuildScreen()
+            }
         }
     }
 }

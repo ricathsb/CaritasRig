@@ -786,7 +786,9 @@ fun calculatePSU(estimatedWattage: Double): Double {
 fun extractRamType(speed: String): String {
     return speed.split("-")[0] // Mengambil bagian sebelum tanda "-"
 }
-
+fun parseImageUrl(imageUrl: String?): String {
+        return  "https:${imageUrl?.replace("https:", "")}"
+}
 
 
 

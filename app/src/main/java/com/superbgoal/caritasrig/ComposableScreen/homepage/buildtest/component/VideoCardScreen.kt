@@ -53,6 +53,7 @@ import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -204,7 +205,7 @@ fun VideoCardList(
                 onFavClick = {
                     savedFavorite(videoCard = videoCard, context = context)
                 },
-                imageUrl = videoCard.imageUrl,
+                imageUrl = parseImageUrl(videoCard.imageUrl),
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser

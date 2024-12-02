@@ -51,6 +51,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.CpuCoolerBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -317,7 +318,7 @@ fun CpuCoolerList(
 
             // Use ComponentCard for each cooler
             ComponentCard(
-                imageUrl = cooler.imageUrl,
+                imageUrl = parseImageUrl(cooler.imageUrl),
                 price = cooler.price,
                 title = cooler.name,
                 details = "Size: ${cooler.height}mm | RPM: ${cooler.fanRpm} | Noise Level: ${cooler.noiseLevel} dB | Color: ${cooler.color}",

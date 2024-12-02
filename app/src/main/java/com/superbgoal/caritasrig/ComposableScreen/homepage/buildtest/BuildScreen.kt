@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -83,6 +84,7 @@ import com.superbgoal.caritasrig.functions.calculatePSU
 import com.superbgoal.caritasrig.functions.calculateTotalPrice
 import com.superbgoal.caritasrig.functions.calculateTotalWattage
 import com.superbgoal.caritasrig.functions.editRamQuantity
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveBuildTitle
 
 @SuppressLint("SuspiciousIndentation")
@@ -260,47 +262,47 @@ fun BuildScreen(
                         item {
                             val componentDetail = when (title) {
                                 "CPU" -> buildData?.components?.processor?.let {
-                                    "Processor: ${it.name}\nCores: ${it.coreCount}\nSpeed: ${it.performanceCoreBoostClock} GHz"
+                                    "Processor: ${it.name}"
                                 }
 
                                 "Case" -> buildData?.components?.casing?.let {
-                                    "Case: ${it.name}\nType: ${it.type}"
+                                    "Case: ${it.name}"
                                 }
 
                                 "GPU" -> buildData?.components?.videoCard?.let {
-                                    "GPU: ${it.name}\nMemory: ${it.memory} GB"
+                                    "GPU: ${it.name}"
                                 }
 
                                 "Motherboard" -> buildData?.components?.motherboard?.let {
-                                    "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
+                                    "Motherboard: ${it.name}"
                                 }
 
                                 "RAM" -> buildData?.components?.memory?.let {
-                                    "Memory: ${it.name}\nSize: ${it.modules} GB\nSpeed: ${it.speed} MHz"
+                                    "Memory: ${it.name}"
                                 }
 
                                 "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
-                                    "Internal Hard Drive: ${it.name}\nCapacity: ${it.capacity} GB"
+                                    "Internal Hard Drive: ${it.name}"
                                 }
 
                                 "PowerSupply" -> buildData?.components?.powerSupply?.let {
-                                    "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
+                                    "Power Supply: ${it.name}"
                                 }
 
                                 "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
-                                    "CPU Cooler: ${it.name}\nFan Speed: ${it.fanRpm} RPM"
+                                    "CPU Cooler: ${it.name}"
                                 }
 
                                 "Headphone" -> buildData?.components?.headphone?.let {
-                                    "Headphone: ${it.name}\nType: ${it.type}"
+                                    "Headphone: ${it.name}"
                                 }
 
                                 "Keyboard" -> buildData?.components?.keyboard?.let {
-                                    "Keyboard: ${it.name}\nType: ${it.switches}"
+                                    "Keyboard: ${it.name}"
                                 }
 
                                 "Mouse" -> buildData?.components?.mouse?.let {
-                                    "Mouse: ${it.name}\nDPI: ${it.maxDpi}"
+                                    "Mouse: ${it.name}"
                                 }
 
                                 else -> null
@@ -310,6 +312,19 @@ fun BuildScreen(
                                     title = title,
                                     componentDetail = componentDetail,
                                     totalPrice = buildData?.components?.memory?.totalPrice.toString(),
+                                    imageComponent = buildData?.components?.let {
+                                        when (title) {
+                                            "CPU" -> it.processor?.imageUrl
+                                            "Case" -> it.casing?.imageUrl
+                                            "GPU" -> it.videoCard?.imageUrl
+                                            "Motherboard" -> it.motherboard?.imageUrl
+                                            "RAM" -> it.memory?.imageUrl
+                                            "InternalHardDrive" -> it.internalHardDrive?.imageUrl
+                                            "PowerSupply" -> it.powerSupply?.imageUrl
+                                            "CPU Cooler" -> it.cpuCooler?.imageUrl
+                                            else -> ""
+                                        }
+                                    } ?: "0.0",
                                     currentPrice = buildData?.components?.let {
                                         when (title) {
                                             "CPU" -> it.processor?.price?.toString()
@@ -332,6 +347,7 @@ fun BuildScreen(
                                             navController?.navigate(route)
                                         } else {
                                             Log.e("NavigationError", "No route found for title: $title")
+
                                         }
                                     },
                                     onRemove = {
@@ -375,6 +391,8 @@ fun BuildScreen(
                                     }
                                 )
                             Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
+                            Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
+
                         }
                     }
                 }
@@ -472,7 +490,8 @@ fun ComponentCard(
     onRemove: () -> Unit,
     onUpdatePrice: (String) -> Unit,
     loading: Boolean = false,
-    onQuantityChange: ((Int) -> Unit)? = null
+    onQuantityChange: ((Int) -> Unit)? = null,
+    imageComponent: String
 ) {
     // Inisialisasi quantity menggunakan initialQuantity
     var quantity by rememberSaveable { mutableStateOf(initialQuantity) }
@@ -520,17 +539,25 @@ fun ComponentCard(
                     .background(colorResource(id = R.color.brown)),
                 contentAlignment = Alignment.Center
             ) {
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp)
                 ) {
+
+
                     Spacer(modifier = Modifier.height(5.dp))
 
                     if (!componentDetail.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = parseImageUrl(imageComponent),
+                            contentDescription = null,
+                            modifier = Modifier.size(100.dp)
+                        )
                         Text(
-                            text = componentDetail,
+                            text = "$componentDetail\n$displayText",
                             color = Color.White,
                             modifier = Modifier.padding(8.dp),
                             textAlign = TextAlign.Start
@@ -539,12 +566,6 @@ fun ComponentCard(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Harga Komponen
-                        Text(
-                            text = displayText,
-                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                            color = Color.White,
-                            modifier = Modifier.padding(8.dp)
-                        )
 
                         Spacer(modifier = Modifier.height(8.dp))
 

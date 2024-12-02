@@ -51,6 +51,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.InternalHardDriveBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -211,7 +212,7 @@ fun InternalHardDriveList(
 
             ComponentCard(
                 price = hardDrive.price,
-                imageUrl = hardDrive.imageUrl,
+                imageUrl = parseImageUrl(hardDrive.imageUrl),
                 title = hardDrive.name,
                 details = "Capacity: ${hardDrive.capacity}GB | Price: \$${hardDrive.price} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfaceType}",
                 component = hardDrive,

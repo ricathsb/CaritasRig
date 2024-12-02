@@ -54,6 +54,7 @@ import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.data.model.component.MemoryBuild
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.savedFavorite
 
 @Composable
@@ -390,7 +391,7 @@ fun MemoryList(
             // Use ComponentCard for each memory item
             ComponentCard(
                 price = memoryItem.price,
-                imageUrl = memoryItem.imageUrl,
+                imageUrl = parseImageUrl(memoryItem.imageUrl),
                 title = memoryItem.name,
                 details = buildString {
                     append("Price: $${memoryItem.price}\n")

@@ -47,6 +47,7 @@ import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -183,7 +184,7 @@ fun ProcessorList(
         items(processorTrial) { processor ->
             val isLoading = remember { mutableStateOf(false) }
             ComponentCard(
-                imageUrl = processor.imageUrl,
+                imageUrl = parseImageUrl(processor.imageUrl),
                 title = processor.name,
                 price = processor.price,
                 details = """

@@ -46,6 +46,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.CasingBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -262,7 +263,7 @@ fun CasingList(
 
             // Use ComponentCard for each casing
             ComponentCard(
-                imageUrl = casing.imageUrl,
+                imageUrl = parseImageUrl(casing.imageUrl),
                 price = casing.price,
                 title = casing.name,
                 details = "${casing.type} | ${casing.color} | PSU: ${casing.powerSupplyShroud ?: "Not included"} | Volume: ${casing.type} L | 3.5\" Bays: ${casing.dimensions}",
@@ -306,6 +307,7 @@ fun CasingList(
                     }
                 },
                 onFavClick = {
+                    Log.d("CasingActivity", "Favorite button clicked for Casing: ${parseImageUrl(casing.imageUrl)}")
                     savedFavorite(casing = casing, context = context)
                 }
             )

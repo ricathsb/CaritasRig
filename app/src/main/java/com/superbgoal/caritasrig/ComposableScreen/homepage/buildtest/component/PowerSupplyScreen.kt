@@ -56,6 +56,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.PowerSupplyBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -315,7 +316,7 @@ fun PowerSupplyList(
 
             ComponentCard(
                 price = powerSupply.price,
-                imageUrl = powerSupply.imageUrl,
+                imageUrl = parseImageUrl(powerSupply.imageUrl),
                 title = powerSupply.name,
                 details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiencyRating} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
                 isLoading = isLoading.value,
