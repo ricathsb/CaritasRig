@@ -187,7 +187,7 @@ fun BuildScreen(
                             text = "Total: ",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                color = Color.White
                             )
                         )
                         Text(
