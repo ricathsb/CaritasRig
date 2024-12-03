@@ -174,7 +174,7 @@ fun BuildScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 0.dp),
                 shape = RoundedCornerShape(12.dp),
                 color = Color.White.copy(alpha = 0.0f),
             ) {
@@ -209,7 +209,7 @@ fun BuildScreen(
                             text = "$totalWattage W",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Red
+                                color = Color.Cyan
                             )
                         )
                     }
