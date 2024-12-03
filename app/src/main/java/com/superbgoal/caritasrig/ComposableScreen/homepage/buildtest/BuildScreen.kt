@@ -152,10 +152,10 @@ fun BuildScreen(
     }
 
     Box(modifier = Modifier
-        .fillMaxSize(),
+        .fillMaxSize()
+        .background(color = Color.Black.copy(alpha = 0.2f)),
     )
     {
-        // Background image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
@@ -163,244 +163,253 @@ fun BuildScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Content area
-        Column(
+        // Background image
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            buildData?.components?.let { BuildCompatibilityAccordion(buildComponents = it, estimatedWattage = estimatedWattage) }
+                .background(Color.Black.copy(alpha = 0.2f)) // Atur transparansi sesuai kebutuhan
+        ){
 
-            Surface(
+            // Content area
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = Color.White.copy(alpha = 0.0f),
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row {
-                        Text(
-                            text = "Total: ",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        )
-                        Text(
-                            text = "$${totalBuildPrice}",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Green
-                            )
-                        )
-                    }
-                    Row {
-                        Icon(
-                            imageVector = Icons.Default.ElectricBolt,
-                            contentDescription = "Estimated Wattage",
-                            tint = Color.White
-                        )
-                        Text(
-                            text = "$totalWattage W",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Cyan
-                            )
-                        )
-                    }
+                buildData?.components?.let { BuildCompatibilityAccordion(buildComponents = it, estimatedWattage = estimatedWattage) }
 
-                }
-            }
-            if (imagePickerDialog) {
-                ImagePickerDialog(
-                    onDismiss = { buildViewModel.setShareDialogState(false) }, // Menutup dialog jika dibatalkan
-                    onImagesSelected = { images ->
-                        selectedImages = images // Menyimpan gambar yang dipilih
-                        Log.d("BuildScreen", "Selected Images: $images")
-                        buildViewModel.shareBuildWithOthers(selectedImages)
-                        buildViewModel.setShareDialogState(false)
-                    }
-                )
-            }
-
-            if (loading) {
-                // Full-screen loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(60.dp)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    state = lazyListState,
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth()
+                        .padding(vertical = 1.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color.White.copy(alpha = 0.0f),
                 ) {
-                    // Activity mapping for navigation
-                    val routeMap = mapOf(
-                        "CPU" to "cpu_screen",
-                        "Case" to "casing_screen",
-                        "GPU" to "gpu_screen",
-                        "Motherboard" to "motherboard_screen",
-                        "RAM" to "memory_screen",
-                        "InternalHardDrive" to "internal_hard_drive_screen",
-                        "PowerSupply" to "power_supply_screen",
-                        "CPU Cooler" to "cpu_cooler_screen",
-                        "Headphone" to "headphone_screen",
-                        "Keyboard" to "keyboard_screen",
-                        "Mouse" to "mouse_screen"
-                    )
-
-                    selectedComponents.forEach { (title) ->
-                        item {
-                            val componentDetail = when (title) {
-                                "CPU" -> buildData?.components?.processor?.let {
-                                    "${it.name}"
-                                }
-
-                                "Case" -> buildData?.components?.casing?.let {
-                                    "${it.name}"
-                                }
-
-                                "GPU" -> buildData?.components?.videoCard?.let {
-                                    "${it.name}"
-                                }
-
-                                "Motherboard" -> buildData?.components?.motherboard?.let {
-                                    "${it.name}"
-                                }
-
-                                "RAM" -> buildData?.components?.memory?.let {
-                                    it.name
-                                }
-
-                                "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
-                                    it.name
-                                }
-
-                                "PowerSupply" -> buildData?.components?.powerSupply?.let {
-                                    it.name
-                                }
-
-                                "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
-                                    it.name
-                                }
-
-                                "Headphone" -> buildData?.components?.headphone?.let {
-                                    it.name
-                                }
-
-                                "Keyboard" -> buildData?.components?.keyboard?.let {
-                                    it.name
-                                }
-
-                                "Mouse" -> buildData?.components?.mouse?.let {
-                                    it.name
-                                }
-
-                                else -> null
-                            }
-                            ComponentCard(
-                                initialQuantity = buildData?.components?.memory?.quantity,
-                                title = title,
-                                componentDetail = componentDetail,
-                                totalPrice = buildData?.components?.memory?.totalPrice.toString(),
-                                imageComponent = buildData?.components?.let {
-                                    when (title) {
-                                        "CPU" -> it.processor?.imageUrl
-                                        "Case" -> it.casing?.imageUrl
-                                        "GPU" -> it.videoCard?.imageUrl
-                                        "Motherboard" -> it.motherboard?.imageUrl
-                                        "RAM" -> it.memory?.imageUrl
-                                        "InternalHardDrive" -> it.internalHardDrive?.imageUrl
-                                        "PowerSupply" -> it.powerSupply?.imageUrl
-                                        "CPU Cooler" -> it.cpuCooler?.imageUrl
-                                        else -> ""
-                                    }
-                                } ?: "0.0",
-                                currentPrice = buildData?.components?.let {
-                                    when (title) {
-                                        "CPU" -> it.processor?.price?.toString()
-                                        "Case" -> it.casing?.price?.toString()
-                                        "GPU" -> it.videoCard?.price?.toString()
-                                        "Motherboard" -> it.motherboard?.price?.toString()
-                                        "RAM" -> it.memory?.price?.toString()
-                                        "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
-                                        "PowerSupply" -> it.powerSupply?.price?.toString()
-                                        "CPU Cooler" -> it.cpuCooler?.price?.toString()
-                                        "Headphone" -> it.headphone?.price?.toString()
-                                        "Keyboard" -> it.keyboard?.price?.toString()
-                                        "Mouse" -> it.mouse?.price?.toString()
-                                        else -> "0.0"
-                                    }
-                                } ?: "0.0",
-                                onClick = {
-                                    val route = routeMap[title]
-                                    if (route != null) {
-                                        navController?.navigate(route)
-                                    } else {
-                                        Log.e("NavigationError", "No route found for title: $title")
-
-                                    }
-                                },
-                                onRemove = {
-                                    buildViewModel.removeComponent(title)
-                                },
-                                onUpdatePrice = { newPrice ->
-                                    buildViewModel.updateBuildComponentWithViewModel(
-                                        category = title,
-                                        updatedData = mapOf("price" to newPrice.toDouble())
-                                    )
-                                    Log.d("BuildActivity", "Price updated for $title: $newPrice")
-
-                                    // Tambahkan delay sebelum memanggil fetchBuildByTitle
-                                    Handler(Looper.getMainLooper()).postDelayed({
-                                        buildViewModel.fetchBuildByTitle(buildTitle)
-                                    }, 20) // Delay 2000ms (2 detik)
-                                }
-                                ,
-                                loading = loading,
-                                onQuantityChange = { newQuantity ->
-                                    Log.d("BuildActivity", "Quantity: $newQuantity")
-
-                                    editRamQuantity(
-                                        buildTitle = buildTitle,
-                                        quantity = newQuantity,
-                                        onSuccess = {
-                                            buildViewModel.fetchBuildByTitle(buildTitle)
-                                            println("RAM quantity and total price updated successfully!")
-                                        },
-                                        onFailure = { errorMessage ->
-                                            println("Error: $errorMessage")
-                                        },
-                                        onLoading = { isLoading ->
-                                            if (isLoading) {
-                                                println("Updating RAM quantity and total price...")
-                                            } else {
-                                                println("Update process completed.")
-                                            }
-                                        }
-                                    )
-                                }
+                    Row(
+                        modifier = Modifier.padding(1.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row {
+                            Text(
+                                text = "Total: ",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
                             )
-                            Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
-                            Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
+                            Text(
+                                text = "$${totalBuildPrice}",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Green
+                                )
+                            )
+                        }
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.ElectricBolt,
+                                contentDescription = "Estimated Wattage",
+                                tint = Color.White
+                            )
+                            Text(
+                                text = "$totalWattage W",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Cyan
+                                )
+                            )
+                        }
 
+                    }
+                }
+                if (imagePickerDialog) {
+                    ImagePickerDialog(
+                        onDismiss = { buildViewModel.setShareDialogState(false) }, // Menutup dialog jika dibatalkan
+                        onImagesSelected = { images ->
+                            selectedImages = images // Menyimpan gambar yang dipilih
+                            Log.d("BuildScreen", "Selected Images: $images")
+                            buildViewModel.shareBuildWithOthers(selectedImages)
+                            buildViewModel.setShareDialogState(false)
+                        }
+                    )
+                }
+
+                if (loading) {
+                    // Full-screen loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        state = lazyListState,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        // Activity mapping for navigation
+                        val routeMap = mapOf(
+                            "CPU" to "cpu_screen",
+                            "Case" to "casing_screen",
+                            "GPU" to "gpu_screen",
+                            "Motherboard" to "motherboard_screen",
+                            "RAM" to "memory_screen",
+                            "InternalHardDrive" to "internal_hard_drive_screen",
+                            "PowerSupply" to "power_supply_screen",
+                            "CPU Cooler" to "cpu_cooler_screen",
+                            "Headphone" to "headphone_screen",
+                            "Keyboard" to "keyboard_screen",
+                            "Mouse" to "mouse_screen"
+                        )
+
+                        selectedComponents.forEach { (title) ->
+                            item {
+                                val componentDetail = when (title) {
+                                    "CPU" -> buildData?.components?.processor?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "Case" -> buildData?.components?.casing?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "GPU" -> buildData?.components?.videoCard?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "Motherboard" -> buildData?.components?.motherboard?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "RAM" -> buildData?.components?.memory?.let {
+                                        it.name
+                                    }
+
+                                    "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
+                                        it.name
+                                    }
+
+                                    "PowerSupply" -> buildData?.components?.powerSupply?.let {
+                                        it.name
+                                    }
+
+                                    "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
+                                        it.name
+                                    }
+
+                                    "Headphone" -> buildData?.components?.headphone?.let {
+                                        it.name
+                                    }
+
+                                    "Keyboard" -> buildData?.components?.keyboard?.let {
+                                        it.name
+                                    }
+
+                                    "Mouse" -> buildData?.components?.mouse?.let {
+                                        it.name
+                                    }
+
+                                    else -> null
+                                }
+                                ComponentCard(
+                                    initialQuantity = buildData?.components?.memory?.quantity,
+                                    title = title,
+                                    componentDetail = componentDetail,
+                                    totalPrice = buildData?.components?.memory?.totalPrice.toString(),
+                                    imageComponent = buildData?.components?.let {
+                                        when (title) {
+                                            "CPU" -> it.processor?.imageUrl
+                                            "Case" -> it.casing?.imageUrl
+                                            "GPU" -> it.videoCard?.imageUrl
+                                            "Motherboard" -> it.motherboard?.imageUrl
+                                            "RAM" -> it.memory?.imageUrl
+                                            "InternalHardDrive" -> it.internalHardDrive?.imageUrl
+                                            "PowerSupply" -> it.powerSupply?.imageUrl
+                                            "CPU Cooler" -> it.cpuCooler?.imageUrl
+                                            else -> ""
+                                        }
+                                    } ?: "0.0",
+                                    currentPrice = buildData?.components?.let {
+                                        when (title) {
+                                            "CPU" -> it.processor?.price?.toString()
+                                            "Case" -> it.casing?.price?.toString()
+                                            "GPU" -> it.videoCard?.price?.toString()
+                                            "Motherboard" -> it.motherboard?.price?.toString()
+                                            "RAM" -> it.memory?.price?.toString()
+                                            "InternalHardDrive" -> it.internalHardDrive?.price?.toString()
+                                            "PowerSupply" -> it.powerSupply?.price?.toString()
+                                            "CPU Cooler" -> it.cpuCooler?.price?.toString()
+                                            "Headphone" -> it.headphone?.price?.toString()
+                                            "Keyboard" -> it.keyboard?.price?.toString()
+                                            "Mouse" -> it.mouse?.price?.toString()
+                                            else -> "0.0"
+                                        }
+                                    } ?: "0.0",
+                                    onClick = {
+                                        val route = routeMap[title]
+                                        if (route != null) {
+                                            navController?.navigate(route)
+                                        } else {
+                                            Log.e("NavigationError", "No route found for title: $title")
+
+                                        }
+                                    },
+                                    onRemove = {
+                                        buildViewModel.removeComponent(title)
+                                    },
+                                    onUpdatePrice = { newPrice ->
+                                        buildViewModel.updateBuildComponentWithViewModel(
+                                            category = title,
+                                            updatedData = mapOf("price" to newPrice.toDouble())
+                                        )
+                                        Log.d("BuildActivity", "Price updated for $title: $newPrice")
+
+                                        // Tambahkan delay sebelum memanggil fetchBuildByTitle
+                                        Handler(Looper.getMainLooper()).postDelayed({
+                                            buildViewModel.fetchBuildByTitle(buildTitle)
+                                        }, 20) // Delay 2000ms (2 detik)
+                                    }
+                                    ,
+                                    loading = loading,
+                                    onQuantityChange = { newQuantity ->
+                                        Log.d("BuildActivity", "Quantity: $newQuantity")
+
+                                        editRamQuantity(
+                                            buildTitle = buildTitle,
+                                            quantity = newQuantity,
+                                            onSuccess = {
+                                                buildViewModel.fetchBuildByTitle(buildTitle)
+                                                println("RAM quantity and total price updated successfully!")
+                                            },
+                                            onFailure = { errorMessage ->
+                                                println("Error: $errorMessage")
+                                            },
+                                            onLoading = { isLoading ->
+                                                if (isLoading) {
+                                                    println("Updating RAM quantity and total price...")
+                                                } else {
+                                                    println("Update process completed.")
+                                                }
+                                            }
+                                        )
+                                    }
+                                )
+                                Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
+                                Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
+
+                            }
                         }
                     }
                 }
             }
         }
+
 
     }
 
