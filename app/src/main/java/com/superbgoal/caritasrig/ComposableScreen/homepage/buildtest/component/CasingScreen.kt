@@ -268,7 +268,24 @@ fun CasingList(
                 imageUrl = parseImageUrl(casing.imageUrl),
                 price = casing.price,
                 title = casing.name,
-                details = "${casing.type} | ${casing.color} | PSU: ${casing.powerSupplyShroud ?: "Not included"} | Volume: ${casing.type} L | 3.5\" Bays: ${casing.dimensions}",
+                details = """
+                            Name: ${casing.name}
+                            Price: $${casing.price}
+                            Manufacturer: ${casing.manufacturer}
+                            Part #: ${casing.partNumber}
+                            Type: ${casing.type}
+                            Color: ${casing.color}
+                            Power Supply: ${casing.powerSupply.ifEmpty { "Not included" }}
+                            Side Panel: ${casing.sidePanel}
+                            Power Supply Shroud: ${casing.powerSupplyShroud.ifEmpty { "Not included" }}
+                            Front Panel USB: ${casing.frontPanelUsb}
+                            Motherboard Form Factor: ${casing.motherboardFormFactor}
+                            Maximum Video Card Length: ${casing.maxVideoCardLength}
+                            Drive Bays: ${casing.driveBays}
+                            Expansion Slots: ${casing.expansionSlots}
+                            Dimensions: ${casing.dimensions}
+                            Volume: ${casing.volume} L
+                        """.trimIndent(),
                 // Passing context from LocalContext
                 component = casing,
                 isLoading = isLoading.value, // Pass loading state to card

@@ -318,7 +318,30 @@ fun PowerSupplyList(
                 price = powerSupply.price,
                 imageUrl = parseImageUrl(powerSupply.imageUrl),
                 title = powerSupply.name,
-                details = "Type: ${powerSupply.type} | Efficiency: ${powerSupply.efficiencyRating} | Wattage: ${powerSupply.wattage}W | Modularity: ${powerSupply.modular} | Color: ${powerSupply.color}",
+                details = """
+                        Name: ${powerSupply.name}
+                        Price: $${powerSupply.price}
+                        Manufacturer: ${powerSupply.manufacturer}
+                        Model: ${powerSupply.model}
+                        Part #: ${powerSupply.partNumber}
+                        Type: ${powerSupply.type}
+                        Efficiency Rating: ${powerSupply.efficiencyRating}
+                        Wattage: ${powerSupply.wattage} W
+                        Length: ${powerSupply.length} mm
+                        Modular: ${powerSupply.modular}
+                        Color: ${powerSupply.color}
+                        Fanless: ${powerSupply.fanless}
+                        ATX 4-Pin Connectors: ${powerSupply.atx4PinConnectors}
+                        EPS 8-Pin Connectors: ${powerSupply.eps8PinConnectors}
+                        PCIe 12+4-Pin 12VHPWR Connectors: ${powerSupply.pcie12VhpwrConnectors}
+                        PCIe 12-Pin Connectors: ${powerSupply.pcie12PinConnectors}
+                        PCIe 8-Pin Connectors: ${powerSupply.pcie8PinConnectors}
+                        PCIe 6+2-Pin Connectors: ${powerSupply.pcie6Plus2PinConnectors}
+                        PCIe 6-Pin Connectors: ${powerSupply.pcie6PinConnectors}
+                        SATA Connectors: ${powerSupply.sataConnectors}
+                        Molex 4-Pin Connectors: ${powerSupply.molex4PinConnectors}
+                        Specs Number: ${powerSupply.specsNumber}
+                    """.trimIndent(),
                 isLoading = isLoading.value,
                 navController = navController,
                 onAddClick = {

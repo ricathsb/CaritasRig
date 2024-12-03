@@ -71,6 +71,7 @@ import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.NewsArticleS
 import com.superbgoal.caritasrig.ComposableScreen.homepage.profile.ProfileScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.AboutUsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsScreen
+import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsViewModel
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.BuildListItem
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.SharedBuildScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -79,6 +80,7 @@ import com.superbgoal.caritasrig.data.model.User
 fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
+    profileSettingsViewModel : ProfileSettingsViewModel = viewModel(),
     appController: NavController,
     ) {
     val navController = rememberNavController()
@@ -188,7 +190,10 @@ fun NavbarHost(
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
             composable("profile_settings"){
-                ProfileSettingsScreen ()
+                ProfileSettingsScreen (
+                    viewModel = profileSettingsViewModel,
+                    homeViewModel = homeViewModel
+                )
             }
             composable("shared_build_screen"){
                 SharedBuildScreen()

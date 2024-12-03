@@ -640,7 +640,7 @@ fun calculateCompatibilityStatus(
     if (buildComponents.powerSupply != null) {
         details.add(CompatibilityDetail(powerSupplyName.ifEmpty { "Powersupply" }, psuCompatible))
         if (!psuCompatible) {
-            recommendation += "Ganti PSU dengan wattage lebih tinggi. "
+            recommendation += "Ganti PSU dengan wattage >= ${estimatedWattage.toInt()} "
         }
     }
 
@@ -684,7 +684,19 @@ fun calculateCompatibilityStatus(
         }
     }
 
-    // Jika tidak ada komponen yang dipilih, kembalikan null
+    // GPU Compatibility with PCIe Slots (Added for GPU)
+    val gpuName = buildComponents.videoCard?.name.orEmpty()
+    val gpuRequiredSlots = 1 // Assume GPU requires 1 x16 slot
+    val motherboardPcieX16Slots = buildComponents.motherboard?.pcieX16Slots ?: 0
+    val gpuCompatible = buildComponents.videoCard == null || motherboardPcieX16Slots >= gpuRequiredSlots
+    if (buildComponents.videoCard != null) {
+        details.add(CompatibilityDetail(gpuName, gpuCompatible))
+        if (!gpuCompatible) {
+            recommendation += "Ganti motherboard agar mendukung slot PCIe x16 untuk GPU. "
+        }
+    }
+
+    // If no components are selected, return null
     if (details.isEmpty()) {
         return null
     }
@@ -700,6 +712,7 @@ fun calculateCompatibilityStatus(
         recommendation = recommendation.trim()
     )
 }
+
 
 
 

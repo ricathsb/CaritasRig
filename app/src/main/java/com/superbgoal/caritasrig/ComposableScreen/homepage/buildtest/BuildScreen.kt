@@ -600,9 +600,9 @@ fun ComponentCard(
                             Text(
                                 text = componentDetail,
                                 color = Color.White,
-                                maxLines = 1, // Batasi hanya satu baris
-                                overflow = TextOverflow.Ellipsis, // Tambahkan titik-titik
                                 style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2, // Batasi hingga dua baris
+                                overflow = TextOverflow.Ellipsis, // Tambahkan titik-titik jika teks terlalu panjang
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                             Text(
@@ -914,7 +914,6 @@ fun ImagePickerDialog(
                     onImagesSelected(selectedImages)
                     onDismiss()
                 },
-                enabled = selectedImages.isNotEmpty()
             ) {
                 Text("Confirm")
             }
