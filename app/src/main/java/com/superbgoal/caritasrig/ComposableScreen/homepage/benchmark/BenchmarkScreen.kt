@@ -121,7 +121,7 @@ fun BenchmarkScreen(navController: NavController) {
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (pagerState.currentPage == 0) colorResource(id = R.color.brown) else Color.Gray
+                        backgroundColor = if (pagerState.currentPage == 0) Color(0xFFBBB9B9) else Color(0xFF2C2B30)
                     ),
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
@@ -136,7 +136,7 @@ fun BenchmarkScreen(navController: NavController) {
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (pagerState.currentPage == 1) colorResource(id = R.color.brown) else Color.Gray
+                        backgroundColor = if (pagerState.currentPage == 1) Color(0xFFBBB9B9) else Color(0xFF2C2B30)
                     ),
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
