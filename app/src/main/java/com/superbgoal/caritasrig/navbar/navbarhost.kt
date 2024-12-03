@@ -162,7 +162,7 @@ fun NavbarHost(
                 ComparisonScreen()
             }
             composable("build") {
-                BuildListScreen(navController,buildViewModel)
+                BuildListScreen(navController, buildViewModel)
             }
             composable("benchmark") {
                 BenchmarkScreen(navController)

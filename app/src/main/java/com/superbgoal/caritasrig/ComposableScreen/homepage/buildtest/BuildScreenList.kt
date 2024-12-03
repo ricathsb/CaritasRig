@@ -148,8 +148,8 @@ fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewMo
         // Floating action button with more prominent design
         FloatingActionButton(
             onClick = {
-                navController?.navigate("build_details")
                 viewModel.setNewBuildState(isNew = true)
+                navController?.navigate("build_details")
             },
             shape = CircleShape,
             containerColor = MaterialTheme.colorScheme.primary,
