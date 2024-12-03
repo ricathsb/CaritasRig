@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.ComposableScreen.homepage.profile
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -71,7 +73,14 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
         modifier = Modifier
             .fillMaxSize()
             .background(overallBackgroundColor)
+            .padding(0.dp)
     ) {
+        Image(
+        painter = painterResource(id = R.drawable.component_bg),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize()
+    )
         // Use LazyColumn to make the entire screen scrollable
         LazyColumn(
             modifier = Modifier
@@ -125,7 +134,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                             Spacer(modifier = Modifier.width(16.dp))
 
                             // Full Name and Username
-                            Column {
+                            Column() {
                                 Text(
                                     text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
                                     style = MaterialTheme.typography.h5,
@@ -247,7 +256,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                 Column(
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                     horizontalAlignment = Alignment.Start,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().background(color = Color.Black.copy(alpha = 0.3f))
                 ) {
                     Divider(
                         color = Color.Gray, // Warna garis
@@ -320,12 +329,12 @@ fun SettingOption(text: String, onClick: () -> Unit) {
         Text(
             text = text,
             style = MaterialTheme.typography.body1,
-            color = Color.Black
+            color = Color.White
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_right),
             contentDescription = null,
-            tint = Color.Black
+            tint = Color.White
         )
     }
 }

@@ -110,6 +110,7 @@ fun AboutUsScreen() {
         // Judul
         Text(
             text = "About Us",
+            color = Color.White,
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )

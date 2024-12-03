@@ -90,127 +90,140 @@ fun GPUComparisonScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.brown2))
-    ) {
-        Column {
-            if (showSearchbar) {
-                OutlinedTextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    placeholder = { Text("Search GPU") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 13.dp, vertical = 15.dp)
-                        .background(
-                            color = colorResource(id = R.color.white),
-                            shape = RoundedCornerShape(50.dp)
-                        ),
-                    singleLine = true,
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search Icon",
-                            tint = Color.DarkGray
-                        )
-                    },
-                    shape = RoundedCornerShape(50.dp),
-                )
-            }
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
-                // Menampilkan GPU yang dipilih
-                if (selectedGPUs.isNotEmpty()) {
-                    items(selectedGPUs) { gpu ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.Gray,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = gpu.gpuName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black,
-                                modifier = Modifier.weight(1f)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.component_bg),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+        ){
+            Column {
+                if (showSearchbar) {
+                    OutlinedTextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        placeholder = { Text("Search GPU") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 13.dp, vertical = 15.dp)
+                            .background(
+                                color = colorResource(id = R.color.white),
+                                shape = RoundedCornerShape(50.dp)
+                            ),
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search Icon",
+                                tint = Color.DarkGray
                             )
-                            IconButton(
-                                onClick = { removeGPU(gpu) },
-                                modifier = Modifier.size(24.dp)
+                        },
+                        shape = RoundedCornerShape(50.dp),
+                    )
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    // Menampilkan GPU yang dipilih
+                    if (selectedGPUs.isNotEmpty()) {
+                        items(selectedGPUs) { gpu ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.Gray,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Remove GPU",
-                                    tint = Color.Red
+                                Text(
+                                    text = gpu.gpuName,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color.White,
+                                    modifier = Modifier.weight(1f)
                                 )
+                                IconButton(
+                                    onClick = { removeGPU(gpu) },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Remove GPU",
+                                        tint = Color.Red
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                // Menampilkan RadarChart dan PerformanceBar jika dua GPU dipilih
-                if (selectedGPUs.size == 2) {
-                    item {
-                        RadarChartGpu(
-                            gpu1 = selectedGPUs[0],
-                            gpu2 = selectedGPUs[1]
-                        )
+                    // Menampilkan RadarChart dan PerformanceBar jika dua GPU dipilih
+                    if (selectedGPUs.size == 2) {
+                        item {
+                            RadarChartGpu(
+                                gpu1 = selectedGPUs[0],
+                                gpu2 = selectedGPUs[1]
+                            )
 
-                        PerformanceBar(
-                            label = "G2D Mark",
-                            processor1Score = selectedGPUs[0].G2Dmark,
-                            processor2Score = selectedGPUs[1].G2Dmark
-                        )
+                            PerformanceBar(
+                                label = "G2D Mark",
+                                processor1Score = selectedGPUs[0].G2Dmark,
+                                processor2Score = selectedGPUs[1].G2Dmark
+                            )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                        PerformanceBar(
-                            label = "G3D Mark",
-                            processor1Score = selectedGPUs[0].G3Dmark,
-                            processor2Score = selectedGPUs[1].G3Dmark
-                        )
+                            PerformanceBar(
+                                label = "G3D Mark",
+                                processor1Score = selectedGPUs[0].G3Dmark,
+                                processor2Score = selectedGPUs[1].G3Dmark
+                            )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
-                }
 
-                // Menampilkan hasil pencarian GPU
-                if (filteredGPUs.isNotEmpty() && searchText.isNotBlank()) {
-                    items(filteredGPUs) { gpu ->
-                        val backgroundColor = colorResource(id = R.color.brown1)
+                    // Menampilkan hasil pencarian GPU
+                    if (filteredGPUs.isNotEmpty() && searchText.isNotBlank()) {
+                        items(filteredGPUs) { gpu ->
+                            val backgroundColor = colorResource(id = R.color.brown1)
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(backgroundColor)
-                                .clickable {
-                                    addGPU(gpu)
-                                    searchText = "" // Menghapus teks pencarian setelah memilih
-                                }
-                                .padding(horizontal = 8.dp, vertical = 10.dp)
-                        ) {
-                            Text(
-                                text = gpu.gpuName,
-                                style = MaterialTheme.typography.bodyLarge
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(backgroundColor)
+                                    .clickable {
+                                        addGPU(gpu)
+                                        searchText = "" // Menghapus teks pencarian setelah memilih
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = gpu.gpuName,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            Divider(
+                                color = colorResource(id = R.color.brown),
+                                thickness = 1.dp
                             )
                         }
-                        Divider(
-                            color = colorResource(id = R.color.brown),
-                            thickness = 1.dp
-                        )
                     }
                 }
             }
         }
+
     }
 }
 
@@ -259,7 +272,7 @@ fun RadarChartGpu(gpu1: GpuBenchmark, gpu2: GpuBenchmark) {
                 "G3DMark", "G2DMark", "Value", "TDP", "Power Performance"
             ),
             labelsStyle = TextStyle(
-                color = Color.Black,
+                color = Color.White,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Medium,
                 fontSize = 10.sp
@@ -272,7 +285,7 @@ fun RadarChartGpu(gpu1: GpuBenchmark, gpu2: GpuBenchmark) {
             scalarSteps = 5,
             scalarValue = scalarValue,
             scalarValuesStyle = TextStyle(
-                color = Color.Black,
+                color = Color.White,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Medium,
                 fontSize = 10.sp
@@ -325,72 +338,70 @@ fun RadarChartGpu(gpu1: GpuBenchmark, gpu2: GpuBenchmark) {
     }
 }
 
-@Composable
-fun GpuPerformanceBar(label: String, gpu1Score: Int, gpu2Score: Int) {
-    val maxScore = maxOf(gpu1Score.coerceAtLeast(0), gpu2Score.coerceAtLeast(0)).takeIf { it > 0 } ?: 1
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = label, style = MaterialTheme.typography.bodyLarge)
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Bar untuk GPU 1
-            Box(
-                modifier = Modifier
-                    .weight(
-                        (gpu1Score.coerceAtLeast(0) / maxScore.toFloat()).coerceAtLeast(0.01f)
-                    ) // Berat minimal 0.01 untuk memastikan nilai positif
-                    .fillMaxHeight()
-                    .background(Color(0xffc2ff86)) // Warna neon hijau untuk GPU 1
-                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)) // Border dengan bentuk rounded
-            )
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            // Bar untuk GPU 2
-            Box(
-                modifier = Modifier
-                    .weight(
-                        (gpu2Score.coerceAtLeast(0) / maxScore.toFloat()).coerceAtLeast(0.01f)
-                    ) // Berat minimal 0.01 untuk memastikan nilai positif
-                    .fillMaxHeight()
-                    .background(Color(0xffFFDBDE)) // Warna neon pink untuk GPU 2
-                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)) // Border dengan bentuk rounded
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Teks dengan Outline untuk GPU 1
-            Text(
-                text = "$gpu1Score",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    shadow = Shadow(
-                        color = Color.Black,
-                        blurRadius = 3f
-                    )
-                ),
-                color = Color(0xFFBEFF7E) // Warna hijau neon untuk teks GPU 1
-            )
-
-            // Teks dengan Outline untuk GPU 2
-            Text(
-                text = "$gpu2Score",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    shadow = Shadow(
-                        color = Color.Black,
-                        blurRadius = 3f
-                    )
-                ),
-                color = Color(0xFFFF6D86) // Warna pink neon untuk teks GPU 2
-            )
-        }
-    }
-}
+//@Composable
+//fun GpuPerformanceBar(label: String, gpu1Score: Int, gpu2Score: Int) {
+//    val maxScore = maxOf(gpu1Score.coerceAtLeast(0), gpu2Score.coerceAtLeast(0)).takeIf { it > 0 } ?: 1
+//
+//    Column(modifier = Modifier.fillMaxWidth()) {
+//        Text(text = label, style = MaterialTheme.typography.bodyLarge, color = Color.White)
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(24.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            // Bar untuk GPU 1
+//            Box(
+//                modifier = Modifier
+//                    .weight(
+//                        (gpu1Score.coerceAtLeast(0) / maxScore.toFloat()).coerceAtLeast(0.01f)
+//                    ) // Berat minimal 0.01 untuk memastikan nilai positif
+//                    .fillMaxHeight()
+//                    .background(Color(0xffc2ff86)) // Warna neon hijau untuk GPU 1
+//            )
+//
+//            Spacer(modifier = Modifier.width(4.dp))
+//
+//            // Bar untuk GPU 2
+//            Box(
+//                modifier = Modifier
+//                    .weight(
+//                        (gpu2Score.coerceAtLeast(0) / maxScore.toFloat()).coerceAtLeast(0.01f)
+//                    ) // Berat minimal 0.01 untuk memastikan nilai positif
+//                    .fillMaxHeight()
+//                    .background(Color(0xffFFDBDE)) // Warna neon pink untuk GPU 2
+//            )
+//        }
+//
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ) {
+//            // Teks dengan Outline untuk GPU 1
+//            Text(
+//                text = "$gpu1Score",
+//                style = MaterialTheme.typography.bodySmall.copy(
+//                    shadow = Shadow(
+//                        color = Color.Black,
+//                        blurRadius = 3f
+//                    )
+//                ),
+//                color = Color(0xFFBEFF7E) // Warna hijau neon untuk teks GPU 1
+//            )
+//
+//            // Teks dengan Outline untuk GPU 2
+//            Text(
+//                text = "$gpu2Score",
+//                style = MaterialTheme.typography.bodySmall.copy(
+//                    shadow = Shadow(
+//                        color = Color.Black,
+//                        blurRadius = 3f
+//                    )
+//                ),
+//                color = Color(0xFFFF6D86) // Warna pink neon untuk teks GPU 2
+//            )
+//        }
+//    }
+//}
 

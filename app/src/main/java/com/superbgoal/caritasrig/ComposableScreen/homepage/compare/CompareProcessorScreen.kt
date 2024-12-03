@@ -90,127 +90,142 @@ fun ProcessorComparisonScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.brown2))
-    ) {
-        Column {
-            if (showSearchbar) {
-                OutlinedTextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    placeholder = { Text("Search Processor") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 13.dp, vertical = 15.dp)
-                        .background(
-                            color = colorResource(id = R.color.white),
-                            shape = RoundedCornerShape(50.dp)
-                        ),
-                    singleLine = true,
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search Icon",
-                            tint = Color.DarkGray
-                        )
-                    },
-                    shape = RoundedCornerShape(50.dp),
-                )
-            }
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
-                // Menampilkan prosesor yang dipilih
-                if (selectedProcessors.isNotEmpty()) {
-                    items(selectedProcessors) { processor ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.Gray,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = processor.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black,
-                                modifier = Modifier.weight(1f)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.component_bg),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(
+            modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+        )// Atur transparansi sesuai kebutuhan)
+        {
+            Column {
+                if (showSearchbar) {
+                    OutlinedTextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        placeholder = { Text("Search Processor") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 13.dp, vertical = 15.dp)
+                            .background(
+                                color = colorResource(id = R.color.white),
+                                shape = RoundedCornerShape(50.dp)
+                            ),
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search Icon",
+                                tint = Color.DarkGray
                             )
-                            IconButton(
-                                onClick = { removeProcessor(processor) },
-                                modifier = Modifier.size(24.dp)
+                        },
+                        shape = RoundedCornerShape(50.dp),
+                    )
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    // Menampilkan prosesor yang dipilih
+                    if (selectedProcessors.isNotEmpty()) {
+                        items(selectedProcessors) { processor ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.Gray,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Remove Processor",
-                                    tint = Color.Red
+                                Text(
+                                    text = processor.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color.White
+                                    ,
+                                    modifier = Modifier.weight(1f)
                                 )
+                                IconButton(
+                                    onClick = { removeProcessor(processor) },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Remove Processor",
+                                        tint = Color.Red
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                // Menampilkan RadarChart dan PerformanceBar jika dua prosesor dipilih
-                if (selectedProcessors.size == 2) {
-                    item {
-                        RadarChartProcessor(
-                            processor1 = selectedProcessors[0],
-                            processor2 = selectedProcessors[1]
-                        )
+                    // Menampilkan RadarChart dan PerformanceBar jika dua prosesor dipilih
+                    if (selectedProcessors.size == 2) {
+                        item {
+                            RadarChartProcessor(
+                                processor1 = selectedProcessors[0],
+                                processor2 = selectedProcessors[1]
+                            )
 
-                        PerformanceBar(
-                            label = "Single-Core Score",
-                            processor1Score = selectedProcessors[0].single_core_score,
-                            processor2Score = selectedProcessors[1].single_core_score
-                        )
+                            PerformanceBar(
+                                label = "Single-Core Score",
+                                processor1Score = selectedProcessors[0].single_core_score,
+                                processor2Score = selectedProcessors[1].single_core_score
+                            )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                        PerformanceBar(
-                            label = "Multi-Core Score",
-                            processor1Score = selectedProcessors[0].multi_core_score,
-                            processor2Score = selectedProcessors[1].multi_core_score
-                        )
+                            PerformanceBar(
+                                label = "Multi-Core Score",
+                                processor1Score = selectedProcessors[0].multi_core_score,
+                                processor2Score = selectedProcessors[1].multi_core_score
+                            )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
-                }
 
-                // Menampilkan hasil pencarian prosesor
-                if (filteredProcessors.isNotEmpty() && searchText.isNotBlank()) {
-                    items(filteredProcessors) { processor ->
-                        val backgroundColor = colorResource(id = R.color.brown1)
+                    // Menampilkan hasil pencarian prosesor
+                    if (filteredProcessors.isNotEmpty() && searchText.isNotBlank()) {
+                        items(filteredProcessors) { processor ->
+                            val backgroundColor = colorResource(id = R.color.brown1)
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(backgroundColor)
-                                .clickable {
-                                    addProcessor(processor)
-                                    searchText = "" // Menghapus teks pencarian setelah memilih
-                                }
-                                .padding(horizontal = 8.dp, vertical = 10.dp)
-                        ) {
-                            Text(
-                                text = processor.name,
-                                style = MaterialTheme.typography.bodyLarge
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(backgroundColor)
+                                    .clickable {
+                                        addProcessor(processor)
+                                        searchText = "" // Menghapus teks pencarian setelah memilih
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = processor.name,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            Divider(
+                                color = colorResource(id = R.color.brown),
+                                thickness = 1.dp
                             )
                         }
-                        Divider(
-                            color = colorResource(id = R.color.brown),
-                            thickness = 1.dp
-                        )
                     }
                 }
             }
         }
+
     }
 }
 
@@ -260,7 +275,8 @@ fun RadarChartProcessor(processor1: Processor, processor2: Processor) {
                 "TDP", "Single Core Score", "Multi Core Score"
             ),
             labelsStyle = TextStyle(
-                color = Color.Black,
+                color = Color.White
+                ,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Medium,
                 fontSize = 10.sp
@@ -273,7 +289,8 @@ fun RadarChartProcessor(processor1: Processor, processor2: Processor) {
             scalarSteps = 5,
             scalarValue = scalarValue,
             scalarValuesStyle = TextStyle(
-                color = Color.Black,
+                color = Color.White
+                ,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Medium,
                 fontSize = 10.sp
@@ -336,7 +353,7 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
     val maxScore = maxOf(processor1Score.coerceAtLeast(0), processor2Score.coerceAtLeast(0)).takeIf { it > 0 } ?: 1
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+        Text(text = label, style = MaterialTheme.typography.bodyLarge, color = Color.White)
 
         Row(
             modifier = Modifier
@@ -352,7 +369,6 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
                     ) // Berat minimal 0.01 untuk memastikan nilai positif
                     .fillMaxHeight()
                     .background(Color(0xffc2ff86))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)) // Border dengan bentuk rounded
             )
 
             Spacer(modifier = Modifier.width(4.dp))
@@ -365,7 +381,6 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
                     ) // Berat minimal 0.01 untuk memastikan nilai positif
                     .fillMaxHeight()
                     .background(Color(0xffFFDBDE))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)) // Border dengan bentuk rounded
             )
         }
 
@@ -378,7 +393,8 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
                 text = "$processor1Score",
                 style = MaterialTheme.typography.bodySmall.copy(
                     shadow = Shadow(
-                        color = Color.Black,
+                        color = Color.Black
+                        ,
                         blurRadius = 3f
                     )
                 ),
@@ -390,7 +406,8 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
                 text = "$processor2Score",
                 style = MaterialTheme.typography.bodySmall.copy(
                     shadow = Shadow(
-                        color = Color.Black,
+                        color = Color.Black
+                        ,
                         blurRadius = 3f
                     )
                 ),

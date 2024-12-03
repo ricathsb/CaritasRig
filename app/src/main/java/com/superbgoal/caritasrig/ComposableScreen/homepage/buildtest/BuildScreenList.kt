@@ -24,9 +24,16 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Cases
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.DeveloperMode
+import androidx.compose.material.icons.filled.FlipCameraAndroid
+import androidx.compose.material.icons.filled.Headset
+import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Mouse
+import androidx.compose.material.icons.filled.Power
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.material.icons.filled.VideoSettings
 import androidx.compose.material.icons.filled.VideoStable
@@ -307,37 +314,37 @@ fun BuildList(
                                     value = buildItem.components?.motherboard?.name
                                 )
                                 BuildComponentRow(
-                                    icon = Icons.Default.Computer,
+                                    icon = Icons.Default.Cases,
                                     label = "Case",
                                     value = buildItem.components?.casing?.name
                                 )
                                 BuildComponentRow(
-                                    icon = Icons.Default.Computer,
+                                    icon = Icons.Default.Power,
                                     label = "Power Supply",
                                     value = buildItem.components?.powerSupply?.name
                                 )
                                 BuildComponentRow(
-                                    icon = Icons.Default.Computer,
+                                    icon = Icons.Default.Receipt,
                                     label = "Internal Hard Drive",
                                     value = buildItem.components?.internalHardDrive?.name
                                 )
                                 BuildComponentRow(
-                                    icon = Icons.Default.Computer,
+                                    icon = Icons.Default.Headset,
                                     label = "Headphone",
                                     value = buildItem.components?.headphone?.name
                                 )
                                 BuildComponentRow(
-                                    icon = Icons.Default.Computer,
+                                    icon = Icons.Default.Keyboard,
                                     label = "Keyboard",
                                     value = buildItem.components?.keyboard?.name
                                 )
                                 BuildComponentRow(
-                                    icon = Icons.Default.Computer,
+                                    icon = Icons.Default.Mouse,
                                     label = "Mouse",
                                     value = buildItem.components?.mouse?.name
                                 )
                                 BuildComponentRow(
-                                    icon = Icons.Default.Computer,
+                                    icon = Icons.Default.FlipCameraAndroid,
                                     label = "CPU Cooler",
                                     value = buildItem.components?.cpuCooler?.name
                                 )

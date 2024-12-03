@@ -127,7 +127,7 @@ fun BenchmarkScreen(navController: NavController) {
                         .padding(horizontal = 8.dp)
                         .weight(1f)
                 ) {
-                    Text(text = "Processor", color = Color.White)
+                    Text(text = "Processor", color = if (pagerState.currentPage == 0) Color(0xFF2C2B30) else Color.White)
                 }
                 Button(
                     onClick = {
@@ -142,7 +142,7 @@ fun BenchmarkScreen(navController: NavController) {
                         .padding(horizontal = 8.dp)
                         .weight(1f)
                 ) {
-                    Text(text = "GPU", color = Color.White)
+                    Text(text = "GPU", color = if (pagerState.currentPage == 1) Color(0xFF2C2B30) else Color.White)
                 }
             }
 
@@ -181,7 +181,7 @@ fun SortingDropdown(sortOrder: String, onOrderChange: (String) -> Unit) {
         Text(
             text = "Sort by:",
             style = MaterialTheme.typography.body1,
-            color = Color.Black // Warna teks bisa disesuaikan
+            color = Color.White // Warna teks bisa disesuaikan
         )
 
         // Tombol Dropdown di sebelah kanan
@@ -237,7 +237,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                 modifier = Modifier.fillMaxWidth(),
                 elevation = 4.dp,
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = colorResource(id = R.color.brown1),
+                backgroundColor = colorResource(id = R.color.brown),
                 onClick = { /* Navigate to processor detail */ }
             ) {
                 Column(
@@ -249,7 +249,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                     Text(
                         text = processor.name,
                         style = MaterialTheme.typography.h6,
-                        color = Color.Black
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
 
@@ -257,7 +257,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                     Text(
                         text = "${processor.core_count} cores, ${processor.core_clock} GHz",
                         style = MaterialTheme.typography.body2,
-                        color = Color.DarkGray
+                        color = Color(0xFFBBB9B9)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -265,7 +265,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                     Text(
                         text = "Single-Core Score: ${processor.single_core_score}",
                         style = MaterialTheme.typography.body2,
-                        color = Color.Black
+                        color = Color.White
                     )
                     HorizontalBar(
                         value = processor.single_core_score,
@@ -277,7 +277,7 @@ fun ProcessorListWithFavorite(processors: List<Processor>, navController: NavCon
                     Text(
                         text = "Multi-Core Score: ${processor.multi_core_score}",
                         style = MaterialTheme.typography.body2,
-                        color = Color.Black
+                        color = Color.White
                     )
                     HorizontalBar(
                         value = processor.multi_core_score,
@@ -322,7 +322,7 @@ fun VideoCardListWithFavorite(videoCards: List<GpuBenchmark>, navController: Nav
                 modifier = Modifier.fillMaxWidth(),
                 elevation = 4.dp,
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = colorResource(id = R.color.brown1),
+                backgroundColor = colorResource(id = R.color.brown),
                 onClick = { /* Navigate to GPU detail */ }
             ) {
                 Column(
@@ -334,7 +334,7 @@ fun VideoCardListWithFavorite(videoCards: List<GpuBenchmark>, navController: Nav
                     Text(
                         text = videoCard.gpuName,
                         style = MaterialTheme.typography.h6,
-                        color = Color.Black
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
 
@@ -342,7 +342,7 @@ fun VideoCardListWithFavorite(videoCards: List<GpuBenchmark>, navController: Nav
                     Text(
                         text = "${videoCard.G2Dmark} G2D Score, ${videoCard.G3Dmark} G3D Score",
                         style = MaterialTheme.typography.body2,
-                        color = Color.DarkGray
+                        color = Color(0xFFBBB9B9)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -350,7 +350,7 @@ fun VideoCardListWithFavorite(videoCards: List<GpuBenchmark>, navController: Nav
                     Text(
                         text = "2D Performance: ${videoCard.G2Dmark}",
                         style = MaterialTheme.typography.body2,
-                        color = Color.Black
+                        color = Color.White
                     )
                     HorizontalBar(
                         value = videoCard.G2Dmark,
@@ -363,7 +363,7 @@ fun VideoCardListWithFavorite(videoCards: List<GpuBenchmark>, navController: Nav
                     Text(
                         text = "3D Performance: ${videoCard.G3Dmark}",
                         style = MaterialTheme.typography.body2,
-                        color = Color.Black
+                        color = Color.White
                     )
                     HorizontalBar(
                         value = videoCard.G3Dmark,
