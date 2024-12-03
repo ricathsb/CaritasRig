@@ -36,6 +36,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.TextSnippet
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -186,7 +188,7 @@ fun BuildScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 2.dp),
+                    .padding(vertical = 12.dp),
                 shape = RoundedCornerShape(12.dp),
                 color = Color.Green,
                 shadowElevation = 6.dp
@@ -241,29 +243,6 @@ fun BuildScreen(
                         imagePickerDialog = false
                     }
                 )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        imagePickerDialog = true
-                    },
-                ) {
-                    Text(text = "Upload Build")
-                }
-
-                Button(
-                    onClick = {
-                        if (navController != null) {
-                            navController.navigate("shared_build_screen")
-                        }
-                    },
-                ) {
-                    Text(text = "Shared Build")
-                }
             }
 
             if (loading) {
@@ -452,8 +431,23 @@ fun BuildScreen(
                 .padding(16.dp)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_search),
+                imageVector = Icons.Default.TextSnippet,
                 contentDescription = "Reset",
+                tint = Color.White
+            )
+        }
+        FloatingActionButton(
+            onClick = {
+                imagePickerDialog = true
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = "Share",
                 tint = Color.White
             )
         }
