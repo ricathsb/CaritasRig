@@ -151,7 +151,7 @@ fun NavbarHost(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
-                HomeScreen2(navController = navController)
+                HomeScreen2(navController = navController,buildViewModel)
             }
             composable("profile/{username}") {
                 ProfileScreen(homeViewModel = homeViewModel)
