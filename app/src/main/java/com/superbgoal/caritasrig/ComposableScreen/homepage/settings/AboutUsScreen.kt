@@ -95,6 +95,12 @@ fun ProfileCard(
 
 @Composable
 fun AboutUsScreen() {
+    Image(
+        painter = painterResource(id = R.drawable.component_bg),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize()
+    )
     Column(
         modifier = Modifier
             .fillMaxSize()
