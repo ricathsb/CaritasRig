@@ -67,8 +67,9 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
-fun LoginScreen(navController : NavController) {
-    val loginViewModel: LoginViewModel = viewModel()
+fun LoginScreen(navController : NavController,
+                loginViewModel: LoginViewModel = viewModel()
+) {
     val offsetY by loginViewModel.offsetY.collectAsState()
     val animatedOffsetY by animateFloatAsState(
         targetValue = offsetY,

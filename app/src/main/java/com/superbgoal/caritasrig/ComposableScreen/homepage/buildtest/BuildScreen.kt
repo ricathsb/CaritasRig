@@ -37,8 +37,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.TextSnippet
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -102,7 +100,6 @@ fun BuildScreen(
 ) {
     val showDialog by buildViewModel.showNewDialog.collectAsState()
     val isNewBuild by buildViewModel.isNewBuild.collectAsState()
-    Log.d("BuildScreenn", "isNewBuild: $isNewBuild")
         if (isNewBuild) {
             buildViewModel.resetBuildTitle()
             buildViewModel.setNewDialogState(true)
@@ -175,6 +172,9 @@ fun BuildScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 0.dp),
+
+                    .padding(vertical = 2.dp),
+
                 shape = RoundedCornerShape(12.dp),
                 color = Color.White.copy(alpha = 0.0f),
             ) {
@@ -226,6 +226,29 @@ fun BuildScreen(
                         buildViewModel.setShareDialogState(false)
                     }
                 )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = {
+                        imagePickerDialog = true
+                    },
+                ) {
+                    Text(text = "Upload Build")
+                }
+
+                Button(
+                    onClick = {
+                        if (navController != null) {
+                            navController.navigate("shared_build_screen")
+                        }
+                    },
+                ) {
+                    Text(text = "Shared Build")
+                }
             }
 
             if (loading) {
@@ -403,6 +426,23 @@ fun BuildScreen(
             }
         }
 
+
+        // Floating Action Button for reset
+        FloatingActionButton(
+            onClick = {
+                showDialog = true
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Reset",
+                tint = Color.White
+            )
+        }
     }
 
     // Dialog tetap ditampilkan jika diperlukan
@@ -487,7 +527,7 @@ fun ComponentCard(
     val displayText = if (title == "RAM") {
         "Total Price: $$totalPrice"
     } else {
-        "Price: $$currentPrice"
+        "Current Price: $$currentPrice"
     }
 
     Card(
@@ -547,9 +587,9 @@ fun ComponentCard(
                             Text(
                                 text = componentDetail,
                                 color = Color.White,
-                                maxLines = 1, // Batasi hanya satu baris
-                                overflow = TextOverflow.Ellipsis, // Tambahkan titik-titik
                                 style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2, // Batasi hingga dua baris
+                                overflow = TextOverflow.Ellipsis, // Tambahkan titik-titik jika teks terlalu panjang
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                             Text(

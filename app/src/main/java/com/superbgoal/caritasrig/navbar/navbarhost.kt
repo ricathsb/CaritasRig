@@ -75,8 +75,8 @@ import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.HomeScreen2
 import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.NewsArticleScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.profile.ProfileScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.AboutUsScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsScreen
+import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsViewModel
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.BuildListItem
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.SharedBuildScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -85,6 +85,7 @@ import com.superbgoal.caritasrig.data.model.User
 fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
+    profileSettingsViewModel : ProfileSettingsViewModel = viewModel(),
     appController: NavController,
     ) {
     val navController = rememberNavController()
@@ -162,10 +163,7 @@ fun NavbarHost(
                 HomeScreen2(navController = navController,buildViewModel)
             }
             composable("profile/{username}") {
-                ProfileScreen(homeViewModel = homeViewModel)
-            }
-            composable("settings") {
-                SettingsScreen(navController,appController)
+                ProfileScreen(homeViewModel = homeViewModel,appController, navController)
             }
             composable("about_us") {
                 AboutUsScreen()
@@ -174,7 +172,7 @@ fun NavbarHost(
                 ComparisonScreen()
             }
             composable("build") {
-                BuildListScreen(navController,buildViewModel)
+                BuildListScreen(navController, buildViewModel)
             }
             composable("benchmark") {
                 BenchmarkScreen(navController)
@@ -200,7 +198,10 @@ fun NavbarHost(
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
             composable("profile_settings"){
-                ProfileSettingsScreen ()
+                ProfileSettingsScreen (
+                    viewModel = profileSettingsViewModel,
+                    homeViewModel = homeViewModel
+                )
             }
             composable("shared_build_screen"){
                 SharedBuildScreen()
@@ -337,6 +338,29 @@ fun AppTopBar(
                                 modifier = Modifier.size(35.dp)
                             )
                         }
+
+            if (isSpecificRoute) {
+                // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
+            } else if (isProfileScreen) {
+            } else {
+                // Jika bukan di halaman profil, tampilkan icon profil
+                IconButton(onClick = { navigateToProfile(user) }) {
+                    if (user?.profileImageUrl != null) {
+                        AsyncImage(
+                            model = user?.profileImageUrl,
+                            contentDescription = "Profile",
+                            modifier = Modifier
+                                .size(35.dp)
+                                .clip(CircleShape),
+                            placeholder = painterResource(id = R.drawable.baseline_person_24),
+                            error = painterResource(id = R.drawable.baseline_person_24)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Default Profile Icon",
+                            modifier = Modifier.size(35.dp)
+                        )
                     }
                 }
             }

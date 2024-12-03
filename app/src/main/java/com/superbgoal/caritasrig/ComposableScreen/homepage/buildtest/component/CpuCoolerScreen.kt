@@ -321,7 +321,21 @@ fun CpuCoolerList(
                 imageUrl = parseImageUrl(cooler.imageUrl),
                 price = cooler.price,
                 title = cooler.name,
-                details = "Size: ${cooler.height}mm | RPM: ${cooler.fanRpm} | Noise Level: ${cooler.noiseLevel} dB | Color: ${cooler.color}",
+                details = """
+    Name: ${cooler.name}
+    Price: $${cooler.price}
+    Manufacturer: ${cooler.manufacturer}
+    Model: ${cooler.model}
+    Part #: ${cooler.partNumber}
+    Fan RPM: ${cooler.fanRpm}
+    Noise Level: ${cooler.noiseLevel} dB
+    Color: ${cooler.color}
+    Height: ${cooler.height}mm
+    CPU Socket: ${cooler.cpuSocket}
+    Water Cooled: ${cooler.waterCooled}
+    Fanless: ${cooler.fanless}
+    Specs Number: ${cooler.specsNumber}
+""".trimIndent(),
                 component = cooler,
                 isLoading = isLoading.value,
                 navController = navController,

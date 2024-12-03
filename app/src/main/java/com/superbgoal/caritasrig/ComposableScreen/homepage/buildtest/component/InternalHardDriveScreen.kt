@@ -214,7 +214,20 @@ fun InternalHardDriveList(
                 price = hardDrive.price,
                 imageUrl = parseImageUrl(hardDrive.imageUrl),
                 title = hardDrive.name,
-                details = "Capacity: ${hardDrive.capacity}GB | Price: \$${hardDrive.price} | Type: ${hardDrive.type} | Cache: ${hardDrive.cache}MB | Form Factor: ${hardDrive.formFactor} | Interface: ${hardDrive.interfaceType}",
+                details = """
+    Name: ${hardDrive.name}
+    Price: $${hardDrive.price}
+    Manufacturer: ${hardDrive.manufacturer}
+    Part #: ${hardDrive.partNumber}
+    Capacity: ${hardDrive.capacity}
+    Price / GB: ${hardDrive.pricePerGB}
+    Type: ${hardDrive.type}
+    Cache: ${hardDrive.cache}
+    Form Factor: ${hardDrive.formFactor}
+    Interface: ${hardDrive.interfaceType}
+    NVME: ${hardDrive.nvme}
+    Architecture: ${hardDrive.arsitektur}
+""".trimIndent(),
                 component = hardDrive,
                 isLoading = isLoading.value,
                 onFavClick = {
