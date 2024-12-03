@@ -17,16 +17,30 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +49,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,13 +57,18 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.kwabenaberko.newsapilib.models.Article
+import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.BuildViewModel
+import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.SharedBuildScreen
+import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.ArticleUrlSingletons
 import com.superbgoal.caritasrig.R
 
 @Composable
 fun HomeScreen2(navController: NavController) {
+    val buildViewModel: BuildViewModel = viewModel()
     val viewModel = HomepageScreen()
     val articles by viewModel.articles.observeAsState(emptyList())
     var searchQuery by remember { mutableStateOf("") }
@@ -74,6 +94,7 @@ fun HomeScreen2(navController: NavController) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+
         // AnimatedVisibility untuk menampilkan atau menyembunyikan header
         AnimatedVisibility(visible = !hasFocus) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -85,6 +106,7 @@ fun HomeScreen2(navController: NavController) {
                     fontWeight = FontWeight.Bold,
                     fontFamily = sancreekFont
                 )
+
                 Text(
                     text = "Pick Parts.",
                     modifier = Modifier.padding(bottom = 4.dp),
@@ -120,6 +142,77 @@ fun HomeScreen2(navController: NavController) {
                 Divider(color = Color.LightGray, thickness = 1.dp)
             }
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()) // Tambahkan kemampuan scroll horizontal
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp) // Jarak antar tombol
+        ) {
+            val buttonBackgroundColor = Color(0xFF473947) // Warna latar tombol
+            val buttonContentColor = Color.White // Warna konten tombol (ikon dan teks)
+
+            // Tombol "Add Your Build"
+            Button(
+                onClick = {
+                    buildViewModel.setNewBuildState1(true)
+                    navController.navigate("build_details")
+                },
+                modifier = Modifier
+                    .size(width = 200.dp, height = 60.dp), // Ukuran tombol
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = buttonBackgroundColor
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Icon",
+                        tint = buttonContentColor
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Add Your Build",
+                        color = buttonContentColor
+                    )
+                }
+            }
+
+            // Tombol "Explore Other's Build"
+            Button(
+                onClick = {
+                    navController.navigate("shared_build_screen")
+                },
+                modifier = Modifier
+                    .size(width = 200.dp, height = 60.dp), // Ukuran tombol
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = buttonBackgroundColor
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Leaderboard,
+                        contentDescription = "Explore Other's Build",
+                        tint = buttonContentColor
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Explore Other's Build",
+                        color = buttonContentColor
+                    )
+                }
+            }
+
+
+
+
+        Spacer(modifier = Modifier.width(16.dp)) // Jarak antara dua tombol
+        }
+
+
 
         // Mulai Card TECH NEWS yang dapat mengisi layar saat search bar diaktifkan
         Card(
@@ -193,7 +286,7 @@ fun ArticleItem(article: Article,navController: NavController) {
             .fillMaxWidth()
             .clickable {
                 navController.navigate("news_article_screen")
-                ArticleUrlSingleton.setArticleUrl(article.url)
+                ArticleUrlSingletons.setArticleUrl(article.url)
             },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),

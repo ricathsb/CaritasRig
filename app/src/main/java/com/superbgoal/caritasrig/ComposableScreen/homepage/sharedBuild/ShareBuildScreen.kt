@@ -55,12 +55,6 @@ fun SharedBuildScreen() {
             loading.value = false
         }
     )
-    Image(
-        painter = painterResource(id = R.drawable.component_bg),
-        contentDescription = null,
-        contentScale = ContentScale.FillBounds,
-        modifier = Modifier.fillMaxSize()
-    )
     // Menampilkan layar berdasarkan status loading
     if (loading.value) {
         CircularProgressIndicator(modifier = Modifier.fillMaxSize())
@@ -72,12 +66,6 @@ fun SharedBuildScreen() {
         )
     } else {
         // Menampilkan daftar build yang telah dibagikan
-        Image(
-            painter = painterResource(id = R.drawable.component_bg),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.fillMaxSize()
-        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

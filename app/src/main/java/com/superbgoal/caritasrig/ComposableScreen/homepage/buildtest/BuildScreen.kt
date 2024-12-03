@@ -99,6 +99,7 @@ fun BuildScreen(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val isNewBuild by buildViewModel.isNewBuild.collectAsState()
+    Log.d("BuildScreenn", "isNewBuild: $isNewBuild")
         if (isNewBuild) {
             buildViewModel.resetBuildTitle()
             showDialog = true
@@ -540,7 +541,7 @@ fun ComponentCard(
     val displayText = if (title == "RAM") {
         "Total Price: $$totalPrice"
     } else {
-        "Current Price: $$currentPrice"
+        "Price: $$currentPrice"
     }
 
     Card(
