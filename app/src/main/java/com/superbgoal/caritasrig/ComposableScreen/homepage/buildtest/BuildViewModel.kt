@@ -42,7 +42,6 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _showNewDialog = MutableStateFlow(false)
     val showNewDialog: StateFlow<Boolean> get() = _showNewDialog
-
     private val _showShareDialog = MutableStateFlow(false)
     val showShareDialog: StateFlow<Boolean> get() = _showShareDialog
 
@@ -480,5 +479,3 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
 
 }
-
-

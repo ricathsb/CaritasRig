@@ -83,11 +83,11 @@ import com.superbgoal.caritasrig.data.model.User
 
 @Composable
 fun NavbarHost(
-    homeViewModel: HomeViewModel = viewModel(),
-    buildViewModel: BuildViewModel = viewModel(),
-    profileSettingsViewModel : ProfileSettingsViewModel = viewModel(),
     appController: NavController,
-    ) {
+) {
+    val homeViewModel: HomeViewModel = viewModel()
+    val buildViewModel: BuildViewModel = viewModel()
+    val profileViewModel: ProfileSettingsViewModel = viewModel()
     val navController = rememberNavController()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
     var selectedItem by remember { mutableIntStateOf(0) }
@@ -163,7 +163,7 @@ fun NavbarHost(
                 HomeScreen2(navController = navController,buildViewModel)
             }
             composable("profile/{username}") {
-                ProfileScreen(homeViewModel = homeViewModel,appController, navController)
+                ProfileScreen(homeViewModel = homeViewModel,appController=appController,navController=navController)
             }
             composable("about_us") {
                 AboutUsScreen()
@@ -172,7 +172,7 @@ fun NavbarHost(
                 ComparisonScreen()
             }
             composable("build") {
-                BuildListScreen(navController, buildViewModel)
+                BuildListScreen(navController,buildViewModel)
             }
             composable("benchmark") {
                 BenchmarkScreen(navController)
@@ -198,10 +198,7 @@ fun NavbarHost(
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
             composable("profile_settings"){
-                ProfileSettingsScreen (
-                    viewModel = profileSettingsViewModel,
-                    homeViewModel = homeViewModel
-                )
+                ProfileSettingsScreen (homeViewModel = homeViewModel, viewModel = profileViewModel)
             }
             composable("shared_build_screen"){
                 SharedBuildScreen()
@@ -338,29 +335,6 @@ fun AppTopBar(
                                 modifier = Modifier.size(35.dp)
                             )
                         }
-
-            if (isSpecificRoute) {
-                // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
-            } else if (isProfileScreen) {
-            } else {
-                // Jika bukan di halaman profil, tampilkan icon profil
-                IconButton(onClick = { navigateToProfile(user) }) {
-                    if (user?.profileImageUrl != null) {
-                        AsyncImage(
-                            model = user?.profileImageUrl,
-                            contentDescription = "Profile",
-                            modifier = Modifier
-                                .size(35.dp)
-                                .clip(CircleShape),
-                            placeholder = painterResource(id = R.drawable.baseline_person_24),
-                            error = painterResource(id = R.drawable.baseline_person_24)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Default Profile Icon",
-                            modifier = Modifier.size(35.dp)
-                        )
                     }
                 }
             }
@@ -370,8 +344,6 @@ fun AppTopBar(
         elevation = 4.dp
     )
 }
-
-
 
 @Composable
 fun BottomNavigationBar(
@@ -446,7 +418,4 @@ sealed class NavigationItem(val route: String, val icon: ImageVector, val title:
     data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
     data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")
 }
-
-
-
 
