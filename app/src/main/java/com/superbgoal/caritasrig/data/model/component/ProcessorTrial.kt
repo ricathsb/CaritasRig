@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class ProcessorTrial(
     @SerializedName("Name") val name: String = "",
-    @SerializedName("Image URL") private val rawImageUrl: String = "",
+    @SerializedName("Image URL")  val imageUrl: String = "",
     @SerializedName("Product URL") val productUrl: String = "",
     @SerializedName("Price") val price: Double = 0.0,
     @SerializedName("Manufacturer") val manufacturer: String = "",
@@ -32,9 +32,8 @@ data class ProcessorTrial(
     @SerializedName("Lithography") val lithography: String = "",
     @SerializedName("Includes CPU Cooler") val includesCpuCooler: String = "",
     @SerializedName("Simultaneous Multithreading") val smt: Boolean = false
-) : Parcelable {
-    val imageUrl: String
-        get() = "https:${rawImageUrl.replace("https:", "")}"
-}
+) : Parcelable
+
+
 
 

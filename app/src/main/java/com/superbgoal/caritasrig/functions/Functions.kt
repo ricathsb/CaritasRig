@@ -3,7 +3,6 @@
 package com.superbgoal.caritasrig.functions
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
@@ -25,7 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.DismissDirection
@@ -34,9 +32,10 @@ import androidx.compose.material.DismissValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Button
@@ -47,8 +46,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -501,65 +504,115 @@ fun BuildCompatibilityAccordion(
     // Menghitung status kompatibilitas
     val compatibilityStatus = calculateCompatibilityStatus(buildComponents, estimatedWattage)
 
-    // Accordion Header
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .clip(shape = RoundedCornerShape(8.dp))
             .clickable { isExpanded = !isExpanded },
-        elevation = 4.dp
+        backgroundColor = Color(0xFF473947)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Kompatibilitas Build",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            if (compatibilityStatus != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "${compatibilityStatus.compatibleCount}/${compatibilityStatus.totalCount} kompatibel",
+                    text = "Kompatibilitas Build",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Icon(
+                    tint = Color.White,
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null
+                )
+            }
+
+            compatibilityStatus?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "${it.compatibleCount}/${it.totalCount} kompatibel",
+                    color = Color.White,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
     }
 
-    // Accordion Content
+    // Konten Accordion
     if (isExpanded) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            if (compatibilityStatus != null) {
-                compatibilityStatus.details.forEach { detail ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = detail.componentName)
-                        Text(
-                            text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
-                            color = if (detail.isCompatible) Color.Green else Color.Red
-                        )
-                    }
-                }
-            }
+        Box(
+            modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.25f)).clip(shape = RoundedCornerShape(8.dp))
 
-            // Rekomendasi
-            if (compatibilityStatus != null) {
-                if (compatibilityStatus.recommendation.isNotEmpty()) {
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                compatibilityStatus?.let { status ->
+                    // Daftar Komponen
                     Text(
-                        text = "Rekomendasi:",
+                        text = "Detail Komponen:",
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(top = 8.dp)
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    Text(
-                        text = compatibilityStatus.recommendation,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                    status.details.forEach { detail ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = detail.componentName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+
+                                )
+                            Text(
+                                text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
+                                color = if (detail.isCompatible) Color.Green else Color.Red,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                    // Rekomendasi
+                    if (status.recommendation.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Rekomendasi:",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            color = Color.Green,
+                            )
+                        Text(
+                            text = status.recommendation,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Red,
+                            )
+                    }
+                } ?: Text(
+                    text = "Tidak ada data kompatibilitas.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Red,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
+
     }
 }
+
 
 data class CompatibilityDetail(
     val componentName: String,
@@ -587,7 +640,7 @@ fun calculateCompatibilityStatus(
     if (buildComponents.powerSupply != null) {
         details.add(CompatibilityDetail(powerSupplyName.ifEmpty { "Powersupply" }, psuCompatible))
         if (!psuCompatible) {
-            recommendation += "Ganti PSU dengan wattage lebih tinggi. "
+            recommendation += "Ganti PSU dengan wattage >= ${estimatedWattage.toInt()} "
         }
     }
 
@@ -631,7 +684,19 @@ fun calculateCompatibilityStatus(
         }
     }
 
-    // Jika tidak ada komponen yang dipilih, kembalikan null
+    // GPU Compatibility with PCIe Slots (Added for GPU)
+    val gpuName = buildComponents.videoCard?.name.orEmpty()
+    val gpuRequiredSlots = 1 // Assume GPU requires 1 x16 slot
+    val motherboardPcieX16Slots = buildComponents.motherboard?.pcieX16Slots ?: 0
+    val gpuCompatible = buildComponents.videoCard == null || motherboardPcieX16Slots >= gpuRequiredSlots
+    if (buildComponents.videoCard != null) {
+        details.add(CompatibilityDetail(gpuName, gpuCompatible))
+        if (!gpuCompatible) {
+            recommendation += "Ganti motherboard agar mendukung slot PCIe x16 untuk GPU. "
+        }
+    }
+
+    // If no components are selected, return null
     if (details.isEmpty()) {
         return null
     }
@@ -647,6 +712,7 @@ fun calculateCompatibilityStatus(
         recommendation = recommendation.trim()
     )
 }
+
 
 
 
@@ -701,28 +767,50 @@ fun SearchBarForComponent(
     modifier: Modifier = Modifier,
     onFilterClick: () -> Unit
 ) {
-    TextField(
+    OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        label = { androidx.compose.material.Text("Search CPU") },
-        placeholder = { androidx.compose.material.Text("Search by name") },
+        label = { Text("Search CPU") },
+        placeholder = { Text("Search by name") },
         singleLine = true,
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         leadingIcon = {
-            androidx.compose.material.Icon(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "Search"
+                contentDescription = "Search",
+                tint = MaterialTheme.colorScheme.onSurface
             )
         },
         trailingIcon = {
-            androidx.compose.material.IconButton(onClick = onFilterClick) {
-                androidx.compose.material.Icon(
+            IconButton(onClick = onFilterClick) {
+                Icon(
                     painter = painterResource(id = R.drawable.ic_filter),
-                    contentDescription = "Filter"
+                    contentDescription = "Filter",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-        }
+        },
+        shape = RoundedCornerShape(12.dp)
     )
+}
+@Composable
+fun DefaultSearchBar() {
+    var searchText by remember { mutableStateOf(TextFieldValue("")) }
+    var isSearchActive by remember { mutableStateOf(false) }
+
+    SearchBar(
+        query = searchText.text,
+        onQueryChange = { query -> searchText = TextFieldValue(query) },
+        onSearch = { /* Handle search action */ },
+        active = isSearchActive,
+        onActiveChange = { isSearchActive = it },
+        placeholder = { Text("Search") },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text("No suggestions yet!")
+    }
 }
 
 fun calculateTotalWattage(it: BuildComponents): Double {
@@ -786,7 +874,9 @@ fun calculatePSU(estimatedWattage: Double): Double {
 fun extractRamType(speed: String): String {
     return speed.split("-")[0] // Mengambil bagian sebelum tanda "-"
 }
-
+fun parseImageUrl(imageUrl: String?): String {
+        return  "https:${imageUrl?.replace("https:", "")}"
+}
 
 
 

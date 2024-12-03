@@ -23,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -45,7 +46,9 @@ import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.CasingBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.DefaultSearchBar
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -262,10 +265,27 @@ fun CasingList(
 
             // Use ComponentCard for each casing
             ComponentCard(
-                imageUrl = casing.imageUrl,
+                imageUrl = parseImageUrl(casing.imageUrl),
                 price = casing.price,
                 title = casing.name,
-                details = "${casing.type} | ${casing.color} | PSU: ${casing.powerSupplyShroud ?: "Not included"} | Volume: ${casing.type} L | 3.5\" Bays: ${casing.dimensions}",
+                details = """
+                            Name: ${casing.name}
+                            Price: $${casing.price}
+                            Manufacturer: ${casing.manufacturer}
+                            Part #: ${casing.partNumber}
+                            Type: ${casing.type}
+                            Color: ${casing.color}
+                            Power Supply: ${casing.powerSupply.ifEmpty { "Not included" }}
+                            Side Panel: ${casing.sidePanel}
+                            Power Supply Shroud: ${casing.powerSupplyShroud.ifEmpty { "Not included" }}
+                            Front Panel USB: ${casing.frontPanelUsb}
+                            Motherboard Form Factor: ${casing.motherboardFormFactor}
+                            Maximum Video Card Length: ${casing.maxVideoCardLength}
+                            Drive Bays: ${casing.driveBays}
+                            Expansion Slots: ${casing.expansionSlots}
+                            Dimensions: ${casing.dimensions}
+                            Volume: ${casing.volume} L
+                        """.trimIndent(),
                 // Passing context from LocalContext
                 component = casing,
                 isLoading = isLoading.value, // Pass loading state to card
@@ -306,6 +326,7 @@ fun CasingList(
                     }
                 },
                 onFavClick = {
+                    Log.d("CasingActivity", "Favorite button clicked for Casing: ${parseImageUrl(casing.imageUrl)}")
                     savedFavorite(casing = casing, context = context)
                 }
             )

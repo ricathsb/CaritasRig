@@ -51,6 +51,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.CpuCoolerBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -317,10 +318,24 @@ fun CpuCoolerList(
 
             // Use ComponentCard for each cooler
             ComponentCard(
-                imageUrl = cooler.imageUrl,
+                imageUrl = parseImageUrl(cooler.imageUrl),
                 price = cooler.price,
                 title = cooler.name,
-                details = "Size: ${cooler.height}mm | RPM: ${cooler.fanRpm} | Noise Level: ${cooler.noiseLevel} dB | Color: ${cooler.color}",
+                details = """
+    Name: ${cooler.name}
+    Price: $${cooler.price}
+    Manufacturer: ${cooler.manufacturer}
+    Model: ${cooler.model}
+    Part #: ${cooler.partNumber}
+    Fan RPM: ${cooler.fanRpm}
+    Noise Level: ${cooler.noiseLevel} dB
+    Color: ${cooler.color}
+    Height: ${cooler.height}mm
+    CPU Socket: ${cooler.cpuSocket}
+    Water Cooled: ${cooler.waterCooled}
+    Fanless: ${cooler.fanless}
+    Specs Number: ${cooler.specsNumber}
+""".trimIndent(),
                 component = cooler,
                 isLoading = isLoading.value,
                 navController = navController,

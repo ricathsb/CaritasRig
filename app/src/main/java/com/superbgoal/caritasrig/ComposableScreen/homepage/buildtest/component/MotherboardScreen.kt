@@ -57,6 +57,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.MotherboardBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -343,12 +344,47 @@ fun MotherboardList(
             val isLoading = remember { mutableStateOf(false) }
 
             ComponentCard(
-                imageUrl = motherboard.imageUrl,
+                imageUrl = parseImageUrl(motherboard.imageUrl),
                 price = motherboard.price,
                 title = motherboard.name,
                 context = context,
                 component = motherboard,
                 isLoading = isLoading.value,
+                details = """
+                        Name: ${motherboard.name}
+                        Price: $${motherboard.price}
+                        Manufacturer: ${motherboard.manufacturer}
+                        Part #: ${motherboard.partNumber}
+                        Socket/CPU: ${motherboard.socketCpu}
+                        Form Factor: ${motherboard.formFactor}
+                        Chipset: ${motherboard.chipset}
+                        Memory Max: ${motherboard.memoryMax}
+                        Memory Type: ${motherboard.memoryType}
+                        Memory Slots: ${motherboard.memorySlots}
+                        Memory Speed: ${motherboard.memorySpeed}
+                        Color: ${motherboard.color}
+                        PCIe x16 Slots: ${motherboard.pcieX16Slots}
+                        PCIe x8 Slots: ${motherboard.pcieX8Slots}
+                        PCIe x4 Slots: ${motherboard.pcieX4Slots}
+                        PCIe x1 Slots: ${motherboard.pcieX1Slots}
+                        PCI Slots: ${motherboard.pciSlots}
+                        M.2 Slots: ${motherboard.m2Slots}
+                        Mini-PCIe Slots: ${motherboard.miniPcieSlots}
+                        Half Mini-PCIe Slots: ${motherboard.halfMiniPcieSlots}
+                        Mini-PCIe / mSATA Slots: ${motherboard.miniPcieMsataSlots}
+                        mSATA Slots: ${motherboard.msataSlots}
+                        SATA 6.0 Gb/s: ${motherboard.sata6Gbps}
+                        Onboard Ethernet: ${motherboard.onboardEthernet}
+                        Onboard Video: ${motherboard.onboardVideo}
+                        USB 2.0 Headers: ${motherboard.usb20Headers}
+                        USB 2.0 Headers (Single Port): ${motherboard.usb20SingleHeaders}
+                        USB 3.2 Gen 1 Headers: ${motherboard.usb32Gen1Headers}
+                        USB 3.2 Gen 2 Headers: ${motherboard.usb32Gen2Headers}
+                        USB 3.2 Gen 2x2 Headers: ${motherboard.usb32Gen2x2Headers}
+                        Supports ECC: ${motherboard.supportsEcc}
+                        Wireless Networking: ${motherboard.wirelessNetworking}
+                        RAID Support: ${motherboard.raidSupport}
+                    """.trimIndent(),
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser

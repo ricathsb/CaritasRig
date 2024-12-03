@@ -1,6 +1,6 @@
 package com.superbgoal.caritasrig.ComposableScreen.homepage.homepage
 
-object ArticleUrlSingleton {
+object ArticleUrlSingletons {
     private var _articleUrl: String? = null
 
     // Getter untuk mendapatkan URL artikel

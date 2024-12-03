@@ -21,15 +21,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.BuildViewModel
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
 import com.superbgoal.caritasrig.data.model.buildmanager.SharedBuild
 import com.superbgoal.caritasrig.functions.getDatabaseReference
@@ -53,10 +59,14 @@ fun SharedBuildScreen() {
             loading.value = false
         }
     )
-
     // Menampilkan layar berdasarkan status loading
     if (loading.value) {
-        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ){
+            LinearProgressIndicator()
+        }
     } else if (errorMessage.value.isNotEmpty()) {
         Text(
             text = "Error: ${errorMessage.value}",
@@ -104,9 +114,10 @@ fun BuildListItem(build: SharedBuild,viewModel: SharedBuildViewModel) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(8.dp)
         ) {
-            // Menggunakan gambar profil dummy
+            val profileImageUrl = userProfile.value?.profileImageUrl
+            val defaultProfileImage = "https://firebasestorage.googleapis.com/v0/b/caritas-rig.appspot.com/o/images%2F8MneE2YJoJXt1D2oSdepZuYWrvm2?alt=media&token=dec480bb-7223-47c7-9d01-af5609bad8fe"
             AsyncImage(
-                model = userProfile.value?.profileImageUrl ?: "https://preview.redd.it/sorry-youre-not-a-sigma-v0-gd50wax6celd1.jpg?width=640&crop=smart&auto=webp&s=447b4b71985dcbf033cd29820a3fdbaa9ecb3932",
+                model = if(profileImageUrl.isNullOrEmpty()) defaultProfileImage else profileImageUrl,
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(40.dp)
@@ -119,6 +130,30 @@ fun BuildListItem(build: SharedBuild,viewModel: SharedBuildViewModel) {
             )
         }
         Log.d("BuildListItem", "Build Title: ${build.buildImages}")
+
+// Title build
+        Text(
+            text = build.title.uppercase(), // Ubah teks menjadi huruf kapital semua
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.ExtraBold, // Gunakan font lebih tebal
+                fontSize = 24.sp, // Tingkatkan ukuran teks
+                brush = Brush.linearGradient( // Tambahkan gradien warna
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
+                    )
+                ),
+                shadow = Shadow( // Tambahkan bayangan pada teks
+                    color = Color.Black.copy(alpha = 0.3f),
+                    offset = Offset(2f, 2f),
+                    blurRadius = 4f
+                )
+            ),
+            modifier = Modifier
+                .padding(vertical = 16.dp) // Tambahkan padding lebih besar
+                .align(Alignment.CenterHorizontally)
+        )
+
 
         // Gambar build yang bisa di-scroll ke samping
         LazyRow(
@@ -152,7 +187,7 @@ fun BuildListItem(build: SharedBuild,viewModel: SharedBuildViewModel) {
                     },
                     onFailure = { error ->
                         Log.e("BuildListItem", "Error saving build: $error")
-                })
+                    })
 
             },
             modifier = Modifier

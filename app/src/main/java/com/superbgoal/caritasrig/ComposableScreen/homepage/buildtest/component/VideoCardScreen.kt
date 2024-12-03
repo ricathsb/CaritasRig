@@ -53,6 +53,7 @@ import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -193,18 +194,39 @@ fun VideoCardList(
                 title = videoCard.name,
                 price = videoCard.price,
                 details = """
-                    Chipset: ${videoCard.chipset}
-                    Memory: ${videoCard.memory} GB
-                    Core Clock: ${videoCard.coreClock} MHz
-                    Boost Clock: ${videoCard.boostClock} MHz
-                    Color: ${videoCard.color}
-                    Length: ${videoCard.length} mm
-                """.trimIndent(),
+                        Name: ${videoCard.name}
+                        Price: $${videoCard.price}
+                        Manufacturer: ${videoCard.manufacturer}
+                        Part #: ${videoCard.partNumber}
+                        Chipset: ${videoCard.chipset}
+                        Memory: ${videoCard.memory} GB
+                        Memory Type: ${videoCard.memoryType}
+                        Core Clock: ${videoCard.coreClock}
+                        Boost Clock: ${videoCard.boostClock}
+                        Effective Memory Clock: ${videoCard.effectiveMemoryClock}
+                        Interface: ${videoCard.interfaceType}
+                        Color: ${videoCard.color}
+                        Frame Sync: ${videoCard.frameSync}
+                        Length: ${videoCard.length} mm
+                        TDP: ${videoCard.tdp} W
+                        Case Expansion Slot Width: ${videoCard.caseExpansionSlotWidth} slots
+                        Total Slot Width: ${videoCard.totalSlotWidth} slots
+                        Cooling: ${videoCard.cooling}
+                        External Power: ${videoCard.externalPower}
+                        HDMI Outputs: ${videoCard.hdmiOutputs}
+                        DisplayPort Outputs: ${videoCard.displayPortOutputs}
+                        DVI-D Dual Link Outputs: ${videoCard.dviDOutputs}
+                        HDMI 2.1a Outputs: ${videoCard.hdmi2Outputs}
+                        DisplayPort 1.4 Outputs: ${videoCard.displayPort14Outputs}
+                        DisplayPort 1.4a Outputs: ${videoCard.displayPort14aOutputs}
+                        DisplayPort 2.1 Outputs: ${videoCard.displayPort21Outputs}
+                        SLI/CrossFire: ${videoCard.sliCrossFire}
+                    """.trimIndent(),
                 isLoading = isLoading.value,
                 onFavClick = {
                     savedFavorite(videoCard = videoCard, context = context)
                 },
-                imageUrl = videoCard.imageUrl,
+                imageUrl = parseImageUrl(videoCard.imageUrl),
                 onAddClick = {
                     isLoading.value = true
                     val currentUser = FirebaseAuth.getInstance().currentUser

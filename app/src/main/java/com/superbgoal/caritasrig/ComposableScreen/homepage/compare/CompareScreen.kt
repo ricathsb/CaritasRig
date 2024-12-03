@@ -14,42 +14,68 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import com.superbgoal.caritasrig.R
+import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ComparisonScreen() {
-    var selectedTab by remember { mutableStateOf(0) } // 0 for Processor, 1 for GPU
+    val pagerState = rememberPagerState(initialPage = 0)
+    val coroutineScope = rememberCoroutineScope()
+
+    val tabTitles = listOf("Processor", "GPU")
+    val tabBackgroundColor = colorResource(id = R.color.brown1)
+    val tabSelectedColor = Color.Black
+    val tabUnselectedColor = Color.White
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // TabRow
         TabRow(
-            selectedTabIndex = selectedTab,
-            modifier = Modifier.fillMaxWidth()
+            selectedTabIndex = pagerState.currentPage,
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = tabBackgroundColor,
+            contentColor = tabSelectedColor
         ) {
-            Tab(
-                selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
-                text = { Text("Processor") }
-            )
-            Tab(
-                selected = selectedTab == 1,
-                onClick = { selectedTab = 1 },
-                text = { Text("GPU") }
-            )
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = {
+                        Text(
+                            title,
+                            color = if (pagerState.currentPage == index) tabSelectedColor else tabUnselectedColor
+                        )
+                    }
+                )
+            }
         }
 
-        when (selectedTab) {
-            0 -> ProcessorComparisonScreen()
-            1 -> GPUComparisonScreen()
+        // Pager Content
+        HorizontalPager(
+            count = tabTitles.size,
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            when (page) {
+                0 -> ProcessorComparisonScreen()
+                1 -> GPUComparisonScreen()
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.superbgoal.caritasrig.ComposableScreen.homepage.compare
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,17 +14,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +37,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -59,12 +69,10 @@ fun ProcessorComparisonScreen() {
     var searchText by remember { mutableStateOf("") }
     var selectedProcessors by remember { mutableStateOf<List<Processor>>(emptyList()) }
 
-    // Show search bar based on the number of selected processors
     val showSearchbar by remember(selectedProcessors) {
         mutableStateOf(selectedProcessors.size < 2)
     }
 
-    // Filtered list based on search text
     val filteredProcessors = remember(searchText, processors) {
         if (searchText.isBlank()) processors
         else processors.filter { it.name.contains(searchText, ignoreCase = true) }
@@ -78,99 +86,134 @@ fun ProcessorComparisonScreen() {
         selectedProcessors = selectedProcessors - processor
     }
 
-    LazyColumn(
+    // Background container
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(colorResource(id = R.color.brown2))
     ) {
-        if (showSearchbar) {
-            item {
-                TextField(
+        Column {
+            if (showSearchbar) {
+                OutlinedTextField(
                     value = searchText,
                     onValueChange = { searchText = it },
                     placeholder = { Text("Search Processor") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(horizontal = 13.dp, vertical = 15.dp)
+                        .background(
+                            color = colorResource(id = R.color.white),
+                            shape = RoundedCornerShape(50.dp)
+                        ),
                     singleLine = true,
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Search Icon"
+                            contentDescription = "Search Icon",
+                            tint = Color.DarkGray
                         )
-                    }
+                    },
+                    shape = RoundedCornerShape(50.dp),
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
-        }
 
-        if (selectedProcessors.isNotEmpty()) {
-            items(selectedProcessors) { processor ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = processor.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Black,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(onClick = { removeProcessor(processor) }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Remove Processor",
-                            tint = Color.Red
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
+                // Menampilkan prosesor yang dipilih
+                if (selectedProcessors.isNotEmpty()) {
+                    items(selectedProcessors) { processor ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.Gray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = processor.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { removeProcessor(processor) },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Remove Processor",
+                                    tint = Color.Red
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Menampilkan RadarChart dan PerformanceBar jika dua prosesor dipilih
+                if (selectedProcessors.size == 2) {
+                    item {
+                        RadarChartProcessor(
+                            processor1 = selectedProcessors[0],
+                            processor2 = selectedProcessors[1]
+                        )
+
+                        PerformanceBar(
+                            label = "Single-Core Score",
+                            processor1Score = selectedProcessors[0].single_core_score,
+                            processor2Score = selectedProcessors[1].single_core_score
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        PerformanceBar(
+                            label = "Multi-Core Score",
+                            processor1Score = selectedProcessors[0].multi_core_score,
+                            processor2Score = selectedProcessors[1].multi_core_score
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                // Menampilkan hasil pencarian prosesor
+                if (filteredProcessors.isNotEmpty() && searchText.isNotBlank()) {
+                    items(filteredProcessors) { processor ->
+                        val backgroundColor = colorResource(id = R.color.brown1)
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(backgroundColor)
+                                .clickable {
+                                    addProcessor(processor)
+                                    searchText = "" // Menghapus teks pencarian setelah memilih
+                                }
+                                .padding(horizontal = 8.dp, vertical = 10.dp)
+                        ) {
+                            Text(
+                                text = processor.name,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                        Divider(
+                            color = colorResource(id = R.color.brown),
+                            thickness = 1.dp
                         )
                     }
                 }
             }
         }
-
-        if (selectedProcessors.size == 2) {
-            item {
-                RadarChartProcessor(
-                    processor1 = selectedProcessors[0],
-                    processor2 = selectedProcessors[1]
-                )
-
-                PerformanceBar(
-                    label = "Single-Core Score",
-                    processor1Score = selectedProcessors[0].single_core_score,
-                    processor2Score = selectedProcessors[1].single_core_score
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                PerformanceBar(
-                    label = "Multi-Core Score",
-                    processor1Score = selectedProcessors[0].multi_core_score,
-                    processor2Score = selectedProcessors[1].multi_core_score
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-
-        if (filteredProcessors.isNotEmpty() && searchText.isNotBlank()) {
-            items(filteredProcessors) { processor ->
-                Text(
-                    text = processor.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
-                            addProcessor(processor)
-                            searchText = "" // Clear search after selection
-                        },
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
     }
 }
+
 
 @Composable
 fun RadarChartProcessor(processor1: Processor, processor2: Processor) {
@@ -309,6 +352,7 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
                     ) // Berat minimal 0.01 untuk memastikan nilai positif
                     .fillMaxHeight()
                     .background(Color(0xffc2ff86))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)) // Border dengan bentuk rounded
             )
 
             Spacer(modifier = Modifier.width(4.dp))
@@ -321,6 +365,7 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
                     ) // Berat minimal 0.01 untuk memastikan nilai positif
                     .fillMaxHeight()
                     .background(Color(0xffFFDBDE))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)) // Border dengan bentuk rounded
             )
         }
 
@@ -328,20 +373,29 @@ fun PerformanceBar(label: String, processor1Score: Int, processor2Score: Int) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Teks dengan Outline untuk Processor 1
             Text(
                 text = "$processor1Score",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xffc2ff86)
+                style = MaterialTheme.typography.bodySmall.copy(
+                    shadow = Shadow(
+                        color = Color.Black,
+                        blurRadius = 3f
+                    )
+                ),
+                color = Color(0xFFBEFF7E)
             )
+
+            // Teks dengan Outline untuk Processor 2
             Text(
                 text = "$processor2Score",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xffFFDBDE)
+                style = MaterialTheme.typography.bodySmall.copy(
+                    shadow = Shadow(
+                        color = Color.Black,
+                        blurRadius = 3f
+                    )
+                ),
+                color = Color(0xFFFF6D86)
             )
         }
     }
 }
-
-
-
-

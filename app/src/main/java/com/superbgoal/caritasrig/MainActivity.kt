@@ -4,17 +4,20 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.ComposableScreen.auth.login.LoginScreen
+import com.superbgoal.caritasrig.ComposableScreen.auth.login.LoginViewModel
 import com.superbgoal.caritasrig.ComposableScreen.auth.register.RegisterScreen
 import com.superbgoal.caritasrig.ComposableScreen.auth.register.RegisterViewModel
 import com.superbgoal.caritasrig.ComposableScreen.auth.signup.SignUpScreen
@@ -29,7 +32,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
-
         setContent {
             CaritasRigApp()
         }
@@ -57,6 +59,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun CaritasRigApp() {
+        val loginViewModel : LoginViewModel = viewModel()
         val navController = rememberNavController()
         val startDestination = remember { mutableStateOf<String?>(null) }
         val context = LocalContext.current
@@ -85,7 +88,9 @@ class MainActivity : ComponentActivity() {
             ) {
                 Log.d("CaritasRigApp", "Start Destination: ${startDestination.value}")
                 composable("login") {
-                    LoginScreen(navController)
+                    LoginScreen(navController,
+                        loginViewModel = loginViewModel
+                    )
                 }
                 composable("signup") {
                     SignUpScreen(viewModel = SignUpViewModel(), navController)

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -69,8 +70,8 @@ import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.HomeScreen2
 import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.NewsArticleScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.profile.ProfileScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.AboutUsScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsScreen
+import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsViewModel
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.BuildListItem
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.SharedBuildScreen
 import com.superbgoal.caritasrig.data.model.User
@@ -79,6 +80,7 @@ import com.superbgoal.caritasrig.data.model.User
 fun NavbarHost(
     homeViewModel: HomeViewModel = viewModel(),
     buildViewModel: BuildViewModel = viewModel(),
+    profileSettingsViewModel : ProfileSettingsViewModel = viewModel(),
     appController: NavController,
     ) {
     val navController = rememberNavController()
@@ -100,7 +102,7 @@ fun NavbarHost(
                 "settings" -> "Settings"
                 "about_us" -> "About Us"
                 "profile_settings" -> stringResource(id = R.string.profile_settings)
-                "trending" -> "Trending"
+                "compare" -> "Compare"
                 "build" -> "Build"
                 "benchmark" -> "Benchmark"
                 "favorite" -> "Favorite Component"
@@ -150,25 +152,19 @@ fun NavbarHost(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
-                HomeScreen2(navController = navController)
+                HomeScreen2(navController = navController,buildViewModel)
             }
             composable("profile/{username}") {
-                ProfileScreen(homeViewModel = homeViewModel)
-            }
-            composable("settings") {
-                SettingsScreen(navController,appController)
+                ProfileScreen(homeViewModel = homeViewModel,appController, navController)
             }
             composable("about_us") {
                 AboutUsScreen()
-            }
-            composable("trending") {
-                SharedBuildScreen()
             }
             composable("compare") {
                 ComparisonScreen()
             }
             composable("build") {
-                BuildListScreen(navController,buildViewModel)
+                BuildListScreen(navController, buildViewModel)
             }
             composable("benchmark") {
                 BenchmarkScreen(navController)
@@ -194,7 +190,13 @@ fun NavbarHost(
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
             composable("profile_settings"){
-                ProfileSettingsScreen ()
+                ProfileSettingsScreen (
+                    viewModel = profileSettingsViewModel,
+                    homeViewModel = homeViewModel
+                )
+            }
+            composable("shared_build_screen"){
+                SharedBuildScreen()
             }
         }
     }
@@ -237,19 +239,6 @@ fun AppTopBar(
             if (isSpecificRoute) {
                 // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
             } else if (isProfileScreen) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Icon Settings
-                    IconButton(onClick = { navigateToSettings() }) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings Icon",
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
             } else {
                 // Jika bukan di halaman profil, tampilkan icon profil
                 IconButton(onClick = { navigateToProfile(user) }) {
@@ -307,7 +296,7 @@ fun BottomNavigationBar(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (isSelected) Color.White else Color.Gray,
+                        tint = if (isSelected) Color.Black else Color.Gray,
                         modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
                 },
@@ -347,7 +336,7 @@ fun currentRoute(navController: NavController): String? {
 
 sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
     data object Home : NavigationItem("home", Icons.Default.Home, "Home")
-    data object Trending : NavigationItem("trending", Icons.Default.TrendingUp, "Trending")
+    data object Trending : NavigationItem("compare", Icons.Default.Compare, "Compare")
     data object Build : NavigationItem("build", Icons.Default.DesktopWindows, "Build")
     data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
     data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")

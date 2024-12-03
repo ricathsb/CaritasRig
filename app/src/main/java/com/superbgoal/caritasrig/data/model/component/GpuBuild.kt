@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class GpuBuild(
     @SerializedName("Name") val name: String = "",
-    @SerializedName("Image URL") private val rawImageUrl: String = "",
+    @SerializedName("Image URL")  val imageUrl: String = "",
     @SerializedName("Product URL") val productUrl: String = "",
     @SerializedName("Price") val price: Double = 0.0,
     @SerializedName("Manufacturer") val manufacturer: String = "",
@@ -36,6 +36,5 @@ data class GpuBuild(
     @SerializedName("DisplayPort 2.1 Outputs") val displayPort21Outputs: String = "N/A",
     @SerializedName("SLI/CrossFire") val sliCrossFire: String = "N/A"
 ) : Parcelable {
-    val imageUrl: String
-        get() = "https:${rawImageUrl.replace("https:", "")}"
+
 }

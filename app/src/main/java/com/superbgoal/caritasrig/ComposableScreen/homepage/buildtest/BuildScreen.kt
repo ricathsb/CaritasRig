@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,18 +33,19 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -60,21 +61,24 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil3.compose.rememberAsyncImagePainter
+import coil3.compose.AsyncImage
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.superbgoal.caritasrig.R
@@ -83,13 +87,15 @@ import com.superbgoal.caritasrig.functions.calculatePSU
 import com.superbgoal.caritasrig.functions.calculateTotalPrice
 import com.superbgoal.caritasrig.functions.calculateTotalWattage
 import com.superbgoal.caritasrig.functions.editRamQuantity
+import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveBuildTitle
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun BuildScreen(
     buildViewModel: BuildViewModel = viewModel(),
-    @SuppressLint("SuspiciousIndentation") navController: NavController? = null
+    @SuppressLint("SuspiciousIndentation")
+    navController: NavController? = null
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val isNewBuild by buildViewModel.isNewBuild.collectAsState()
@@ -98,7 +104,6 @@ fun BuildScreen(
             showDialog = true
             buildViewModel.setNewBuildState(false)
         }
-
     val context = LocalContext.current
     var imagePickerDialog by remember { mutableStateOf(false) }
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
@@ -142,7 +147,10 @@ fun BuildScreen(
             }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize(),
+    )
+    {
         // Background image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
@@ -159,33 +167,69 @@ fun BuildScreen(
         ) {
             // Title
             Text(
-                text = buildTitle.ifEmpty { "" },
-                style = MaterialTheme.typography.headlineLarge,
-                color = Color.White,
-                fontFamily = sairastencilone,
-                modifier = Modifier.padding(bottom = 16.dp)
-                .align(Alignment.CenterHorizontally)
+                text = buildTitle.ifEmpty { "New Build" },
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontFamily = sairastencilone
+                ),
+                modifier = Modifier
+                    .padding(vertical = 1.dp)
+                    .align(Alignment.CenterHorizontally)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             buildData?.components?.let { BuildCompatibilityAccordion(buildComponents = it, estimatedWattage = estimatedWattage) }
 
-            Text(
-                text = "Estimated Wattage: $totalWattage",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White,
-                fontFamily = sairastencilone,
-                modifier = Modifier.padding(bottom = 16.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = Color.Green,
+                shadowElevation = 6.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row {
+                        Text(
+                            text = "Estimated Wattage: ",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        )
+                        Text(
+                            text = "$totalWattage W",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Red
+                            )
+                        )
+                    }
+                    Row {
+                        Text(
+                            text = "Total Price: ",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        )
+                        Text(
+                            text = "$${totalBuildPrice}",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Red
+                            )
+                        )
+                    }
 
-            Text(
-                text = "Total Price: $totalBuildPrice",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White,
-                fontFamily = sairastencilone,
-                modifier = Modifier.padding(bottom = 16.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+                }
+            }
             if (imagePickerDialog) {
                 ImagePickerDialog(
                     onDismiss = { imagePickerDialog = false }, // Menutup dialog jika dibatalkan
@@ -197,25 +241,30 @@ fun BuildScreen(
                     }
                 )
             }
-            Button(
-                onClick = {
-                   imagePickerDialog = true
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+            Row(
+                modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Upload Build")
+                Button(
+                    onClick = {
+                        imagePickerDialog = true
+                    },
+                ) {
+                    Text(text = "Upload Build")
+                }
+
+                Button(
+                    onClick = {
+                        if (navController != null) {
+                            navController.navigate("shared_build_screen")
+                        }
+                    },
+                ) {
+                    Text(text = "Shared Build")
+                }
             }
 
-            Button(
-                onClick = {
-                    if (navController != null) {
-                        navController.navigate("shared_build_screen")
-                    }
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(text = "Shared Build")
-            }
             if (loading) {
                 // Full-screen loading indicator
                 Box(
@@ -254,47 +303,47 @@ fun BuildScreen(
                         item {
                             val componentDetail = when (title) {
                                 "CPU" -> buildData?.components?.processor?.let {
-                                    "Processor: ${it.name}\nCores: ${it.coreCount}\nSpeed: ${it.performanceCoreBoostClock} GHz"
+                                    "${it.name}"
                                 }
 
                                 "Case" -> buildData?.components?.casing?.let {
-                                    "Case: ${it.name}\nType: ${it.type}"
+                                    "${it.name}"
                                 }
 
                                 "GPU" -> buildData?.components?.videoCard?.let {
-                                    "GPU: ${it.name}\nMemory: ${it.memory} GB"
+                                    "${it.name}"
                                 }
 
                                 "Motherboard" -> buildData?.components?.motherboard?.let {
-                                    "Motherboard: ${it.name}\nChipset: ${it.formFactor}"
+                                    "${it.name}"
                                 }
 
                                 "RAM" -> buildData?.components?.memory?.let {
-                                    "Memory: ${it.name}\nSize: ${it.modules} GB\nSpeed: ${it.speed} MHz"
+                                    it.name
                                 }
 
                                 "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
-                                    "Internal Hard Drive: ${it.name}\nCapacity: ${it.capacity} GB"
+                                    it.name
                                 }
 
                                 "PowerSupply" -> buildData?.components?.powerSupply?.let {
-                                    "Power Supply: ${it.name}\nWattage: ${it.wattage} W"
+                                    it.name
                                 }
 
                                 "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
-                                    "CPU Cooler: ${it.name}\nFan Speed: ${it.fanRpm} RPM"
+                                    it.name
                                 }
 
                                 "Headphone" -> buildData?.components?.headphone?.let {
-                                    "Headphone: ${it.name}\nType: ${it.type}"
+                                    it.name
                                 }
 
                                 "Keyboard" -> buildData?.components?.keyboard?.let {
-                                    "Keyboard: ${it.name}\nType: ${it.switches}"
+                                    it.name
                                 }
 
                                 "Mouse" -> buildData?.components?.mouse?.let {
-                                    "Mouse: ${it.name}\nDPI: ${it.maxDpi}"
+                                    it.name
                                 }
 
                                 else -> null
@@ -304,6 +353,19 @@ fun BuildScreen(
                                     title = title,
                                     componentDetail = componentDetail,
                                     totalPrice = buildData?.components?.memory?.totalPrice.toString(),
+                                    imageComponent = buildData?.components?.let {
+                                        when (title) {
+                                            "CPU" -> it.processor?.imageUrl
+                                            "Case" -> it.casing?.imageUrl
+                                            "GPU" -> it.videoCard?.imageUrl
+                                            "Motherboard" -> it.motherboard?.imageUrl
+                                            "RAM" -> it.memory?.imageUrl
+                                            "InternalHardDrive" -> it.internalHardDrive?.imageUrl
+                                            "PowerSupply" -> it.powerSupply?.imageUrl
+                                            "CPU Cooler" -> it.cpuCooler?.imageUrl
+                                            else -> ""
+                                        }
+                                    } ?: "0.0",
                                     currentPrice = buildData?.components?.let {
                                         when (title) {
                                             "CPU" -> it.processor?.price?.toString()
@@ -326,6 +388,7 @@ fun BuildScreen(
                                             navController?.navigate(route)
                                         } else {
                                             Log.e("NavigationError", "No route found for title: $title")
+
                                         }
                                     },
                                     onRemove = {
@@ -369,6 +432,8 @@ fun BuildScreen(
                                     }
                                 )
                             Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
+                            Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
+
                         }
                     }
                 }
@@ -458,15 +523,16 @@ fun BuildScreen(
 @Composable
 fun ComponentCard(
     title: String,
-    totalPrice : String? = "nooo",
+    totalPrice: String? = "nooo",
     componentDetail: String?,
     currentPrice: String,
-    initialQuantity: Int?, // Tambahkan parameter untuk inisialisasi quantity
+    initialQuantity: Int?,
     onClick: () -> Unit,
     onRemove: () -> Unit,
     onUpdatePrice: (String) -> Unit,
     loading: Boolean = false,
-    onQuantityChange: ((Int) -> Unit)? = null
+    onQuantityChange: ((Int) -> Unit)? = null,
+    imageComponent: String
 ) {
     // Inisialisasi quantity menggunakan initialQuantity
     var quantity by rememberSaveable { mutableStateOf(initialQuantity) }
@@ -476,12 +542,6 @@ fun ComponentCard(
     } else {
         "Current Price: $$currentPrice"
     }
-
-
-    // Harga total berdasarkan quantity
-//    val totalPrice = remember(quantity, currentPrice) {
-//        (quantity?.times((currentPrice.toDoubleOrNull() ?: 0.0))).toString()
-//    }
 
     Card(
         modifier = Modifier
@@ -508,135 +568,194 @@ fun ComponentCard(
             // Detail Section
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
+                    .fillMaxSize()
                     .clip(RoundedCornerShape(10.dp))
                     .background(colorResource(id = R.color.brown)),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Spacer(modifier = Modifier.height(5.dp))
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 10.dp)
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.height(5.dp))
-
                     if (!componentDetail.isNullOrEmpty()) {
-                        Text(
-                            text = componentDetail,
-                            color = Color.White,
-                            modifier = Modifier.padding(8.dp),
-                            textAlign = TextAlign.Start
+                        // Gambar
+                        AsyncImage(
+                            model = parseImageUrl(imageComponent),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .size(75.dp)
+                                .clip(shape = RoundedCornerShape(8.dp))
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Harga Komponen
-                        Text(
-                            text = displayText,
-                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                            color = Color.White,
-                            modifier = Modifier.padding(8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Tombol Remove
-                        Button(
-                            onClick = onRemove,
-                            modifier = Modifier.background(Color.Transparent),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
+                    // Kolom Teks
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp)
                         ) {
-                            Text(text = "Remove Component")
-                        }
+                            Text(
+                                text = componentDetail,
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2, // Batasi hingga dua baris
+                                overflow = TextOverflow.Ellipsis, // Tambahkan titik-titik jika teks terlalu panjang
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            Text(
+                                text = displayText,
+                                color = Color.White,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 10.sp
+                            )
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Tombol Configure
-                        Button(
-                            onClick = { showDialog = true },
-                            modifier = Modifier.background(Color.Transparent),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
-                        ) {
-                            Text(text = "Configure Component")
-                        }
-
-                        // Tombol Plus-Minus khusus untuk RAM
-                        if (title.equals("RAM", ignoreCase = true)) {
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                // Tombol Minus
-                                IconButton(
-                                    onClick = {
-                                        if (quantity!! > 1) {
-                                            quantity = quantity!! - 1 // Kurangi jumlah
-                                            onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
-                                        }
-                                    }
+                            // Kontrol Plus-Minus untuk RAM
+                            if (title.equals("RAM", ignoreCase = true)) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
+                                    // Tombol Minus
+                                    IconButton(
+                                        onClick = {
+                                            if (quantity!! > 1) {
+                                                quantity = quantity!! - 1
+                                                onQuantityChange?.invoke(quantity!!)
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Remove,
+                                            contentDescription = "Minus",
+                                            tint = Color.White
+                                        )
+                                    }
+
+                                    // Jumlah
+                                    Text(
+                                        text = quantity.toString(),
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
+                                        color = Color.White,
+                                        modifier = Modifier.padding(horizontal = 16.dp)
+                                    )
+
+                                    // Tombol Plus
+                                    IconButton(
+                                        onClick = {
+                                            quantity = quantity!! + 1
+                                            onQuantityChange?.invoke(quantity!!)
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = "Plus",
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Kolom Tombol
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 1.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Tombol Configure
+                            Button(
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                                onClick = { showDialog = true },
+                                modifier = Modifier.fillMaxWidth().padding(1.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
-                                        imageVector = Icons.Default.Remove,
-                                        contentDescription = "Minus",
-                                        tint = Color.White
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = "Configure Icon",
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Configure",
+                                        color = Color.Black,
+                                        fontSize = 12.sp,
+                                        maxLines = 1, // Batasi teks hanya satu baris
                                     )
                                 }
-
-                                // Jumlah
-                                Text(
-                                    text = quantity.toString(),
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
-                                    color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                )
-
-                                // Tombol Plus
-                                IconButton(
-                                    onClick = {
-                                        quantity = quantity!! + 1 // Tambah jumlah
-                                        onQuantityChange?.invoke(quantity!!) // Callback untuk quantity
-                                    }
-                                ) {
+                            }
+                            Button(
+                                onClick = onRemove,
+                                modifier = Modifier.fillMaxWidth().padding(1.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Plus",
-                                        tint = Color.White
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Remove Icon",
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Remove",
+                                        color = Color.Black,
+                                        fontSize = 12.sp,
+                                        maxLines = 1, // Batasi teks hanya satu baris
                                     )
                                 }
                             }
                         }
                     } else {
-                        Text(
-                            text = "No $title Selected",
-                            color = Color.Gray,
-                            modifier = Modifier.padding(8.dp),
-                            textAlign = TextAlign.Start
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Tombol Add
-                        Button(
-                            onClick = onClick,
-                            modifier = Modifier.background(Color.Transparent),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
+                        // Ketika componentDetail kosong, tampilkan tombol Add Component
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.add_btn),
-                                contentDescription = "Add Icon",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(18.dp)
+                            Text(
+                                text = "No $title Selected",
+                                color = Color.Gray,
+                                modifier = Modifier.padding(8.dp),
+                                textAlign = TextAlign.Start
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Add Component")
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Button(
+                                onClick = onClick,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                elevation = ButtonDefaults.buttonElevation(0.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.add_btn),
+                                    contentDescription = "Add Icon",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Add Component",
+                                    color = Color.Black,
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    )
+                            }
                         }
+
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     }
@@ -645,7 +764,7 @@ fun ComponentCard(
     if (showDialog) {
         PriceEditDialog(
             category = title,
-            currentPrice = currentPrice, // Kirimkan harga total ke dialog
+            currentPrice = currentPrice,
             onDismiss = { showDialog = false },
             onConfirm = { newPrice ->
                 showDialog = false
@@ -667,29 +786,54 @@ fun PriceEditDialog(
 ) {
     var newPrice by remember { mutableStateOf(currentPrice) }
 
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Price for $category") },
+        title = {
+            Text(
+                text = "Edit Price for $category",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        },
         text = {
-            Column {
-                Text(text = "Current Price: $currentPrice")
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Current Price: $currentPrice",
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 TextField(
                     value = newPrice,
-                    onValueChange = { newPrice = it },
+                    onValueChange = {
+                        // Hanya izinkan input angka dan titik desimal
+                        newPrice = it.filter { char -> char.isDigit() || char == '.' }
+                    },
                     label = { Text("New Price") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(newPrice) }) {
+            TextButton(
+                onClick = {
+                    // Validasi harga sebelum konfirmasi
+                    if (newPrice.isNotBlank() && newPrice.toDoubleOrNull() != null) {
+                        onConfirm(newPrice)
+                    }
+                }
+            ) {
                 Text("Update")
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }
@@ -702,88 +846,82 @@ fun ImagePickerDialog(
     onImagesSelected: (List<Uri>) -> Unit
 ) {
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
-    var showDialog by remember { mutableStateOf(true) }
 
-    // Image picker launcher for selecting multiple images
+    // Image picker launcher untuk memilih beberapa gambar
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uris ->
-            selectedImages = uris // Store selected images
+            selectedImages = uris
         }
     )
 
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { onDismiss() },
-            title = { Text(text = "Select Images") },
-            text = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    // Button to launch the image picker
-                    Button(
-                        onClick = {
-                            imagePickerLauncher.launch("image/*") // Launch the image picker
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text("Select Images", color = Color.White)
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Display selected images in a row
-                    if (selectedImages.isNotEmpty()) {
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(selectedImages) { imageUri ->
-                                val painter: Painter = rememberAsyncImagePainter(model = imageUri)
-                                Image(
-                                    painter = painter,
-                                    contentDescription = "Selected image",
-                                    modifier = Modifier
-                                        .size(100.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                )
-                            }
-                        }
-                    } else {
-                        Text(
-                            text = "No images selected.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            },
-            confirmButton = {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Select Images",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Button(
-                    onClick = {
-                        onImagesSelected(selectedImages) // Pass selected images back
-                        showDialog = false
-                    },
-                    enabled = selectedImages.isNotEmpty(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Confirm", color = Color.White)
+                    Text("Choose Images")
                 }
-            },
-            dismissButton = {
-                OutlinedButton(
-                    onClick = {
-                        showDialog = false
-                    },
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
-                    Text("Cancel")
+
+                // Tampilan preview gambar yang dipilih
+                if (selectedImages.isNotEmpty()) {
+                    Text(
+                        text = "Selected Images:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(selectedImages) { imageUri ->
+                            AsyncImage(
+                                model = imageUri,
+                                contentDescription = "Selected image",
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = "No images selected",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
                 }
             }
-        )
-    }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onImagesSelected(selectedImages)
+                    onDismiss()
+                },
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

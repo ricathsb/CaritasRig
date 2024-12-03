@@ -1,25 +1,38 @@
 package com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest
 
 import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.DeveloperMode
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.SettingsInputComponent
+import androidx.compose.material.icons.filled.VideoSettings
+import androidx.compose.material.icons.filled.VideoStable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,11 +46,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.data.model.buildmanager.Build
 import com.superbgoal.caritasrig.functions.SwipeToDeleteContainer
 import com.superbgoal.caritasrig.functions.deleteBuild
@@ -49,12 +75,12 @@ import com.superbgoal.caritasrig.functions.fetchBuildsWithAuth
 fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewModel) {
     val context = LocalContext.current
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-    val builds = remember { mutableStateOf<List<Build>>(emptyList()) } // Gunakan state
+    val builds = remember { mutableStateOf<List<Build>>(emptyList()) }
 
     var showDialog by remember { mutableStateOf(false) }
     var editedBuildTitle by remember { mutableStateOf("") }
 
-    // Fetch builds menggunakan efek samping
+    // Fetch builds
     LaunchedEffect(Unit) {
         fetchBuildsWithAuth(
             onSuccess = { builds.value = it },
@@ -62,63 +88,82 @@ fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewMo
         )
     }
 
+    // Use a gradient background instead of a static image
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        if (builds.value.isEmpty()) {
-            Text(
-                text = "No builds available",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp),
-                color = Color.Gray
-            )
-        } else {
-            val onBuildClick: (Build) -> Unit = { build ->
-                navController?.navigate("build_details")
-                viewModel.saveBuildTitle(build.title)
-            }
-            BuildList(
-                builds = builds.value,
-                onBuildClick = onBuildClick,
-                onDeleteBuild = { deletedBuild ->
-                    deleteBuild(
-                        userId = userId,
-                        buildId = deletedBuild.buildId,
-                        onSuccess = {
-                            Log.d("DeleteBuild", "Build deleted successfully")
-                            builds.value = builds.value.filter { it.buildId != deletedBuild.buildId }
-                        },
-                        onFailure = { error ->
-                            Log.e("DeleteBuild", error)
-                        }
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        MaterialTheme.colorScheme.background
                     )
-                },
-                onEditBuild = { editedBuild ->
-                    editedBuildTitle = editedBuild.title
-                    showDialog = true
-                }
+                )
             )
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.component_bg),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+
+            if (builds.value.isEmpty()) {
+                EmptyStateComposable()
+            } else {
+                val onBuildClick: (Build) -> Unit = { build ->
+                    navController?.navigate("build_details")
+                    viewModel.saveBuildTitle(build.title)
+                }
+
+                BuildList(
+                    builds = builds.value,
+                    onBuildClick = onBuildClick,
+                    onDeleteBuild = { deletedBuild ->
+                        deleteBuild(
+                            userId = userId,
+                            buildId = deletedBuild.buildId,
+                            onSuccess = {
+                                builds.value = builds.value.filter { it.buildId != deletedBuild.buildId }
+                            },
+                            onFailure = { error ->
+                                // Consider using a SnackBar for error messaging
+                                Log.e("DeleteBuild", error)
+                            }
+                        )
+                    },
+                    onEditBuild = { editedBuild ->
+                        editedBuildTitle = editedBuild.title
+                        showDialog = true
+                    }
+                )
+            }
         }
+
+        // Floating action button with more prominent design
         FloatingActionButton(
             onClick = {
-                navController?.navigate("build_details")
                 viewModel.setNewBuildState(isNew = true)
+                navController?.navigate("build_details")
             },
-            shape = RoundedCornerShape(8.dp),
+            shape = CircleShape,
             containerColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .size(48.dp)
+                .padding(24.dp)
+                .size(56.dp)
+                .shadow(8.dp, shape = CircleShape)
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add Build",
-                tint = Color.White
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
             )
         }
 
@@ -128,15 +173,14 @@ fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewMo
                 onDismissRequest = { showDialog = false },
                 onSave = { newTitle ->
                     val buildToEdit = builds.value.find { it.title == editedBuildTitle }
-                    if (buildToEdit != null) {
+                    buildToEdit?.let { build ->
                         editBuildTitle(
                             userId = userId,
-                            buildId = buildToEdit.buildId,
+                            buildId = build.buildId,
                             newTitle = newTitle,
                             onSuccess = {
-                                Log.d("EditBuild", "Title updated successfully to: $newTitle")
                                 builds.value = builds.value.map {
-                                    if (it.buildId == buildToEdit.buildId) it.copy(title = newTitle) else it
+                                    if (it.buildId == build.buildId) it.copy(title = newTitle) else it
                                 }
                                 showDialog = false
                             },
@@ -145,11 +189,45 @@ fun BuildListScreen(navController: NavController? = null, viewModel: BuildViewMo
                             },
                             context = context
                         )
-                    } else {
-                        Log.e("EditBuild", "Build not found for title: $editedBuildTitle")
-                        showDialog = false
                     }
                 }
+            )
+        }
+    }
+}
+
+
+@Composable
+fun EmptyStateComposable() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Build,
+                contentDescription = "No Builds",
+                modifier = Modifier.size(80.dp),
+                tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "No builds available",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Start by creating your first PC build",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                )
             )
         }
     }
@@ -162,109 +240,110 @@ fun BuildList(
     onDeleteBuild: (Build) -> Unit,
     onEditBuild: (Build) -> Unit
 ) {
+    val sancreekFont = FontFamily(Font(R.font.sancreek))
+    val sairastencilone = FontFamily(Font(R.font.sairastencilone))
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(builds, key = { it.buildId }) { build ->
             SwipeToDeleteContainer(
                 item = build,
                 onDelete = { onDeleteBuild(it) },
-                onEdit = {onEditBuild(it)}
+                onEdit = { onEditBuild(it) }
             ) { buildItem ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            onBuildClick(buildItem)
-                        },
+                        .clickable { onBuildClick(buildItem) }
+                        .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        // Display build title
+                    Column(
+                        modifier = Modifier
+                            .background(
+                                color = Color(0xFF473947)
+                            )
+                    ) {
+                        // Build Title with more emphasis
                         Text(
-                            text = buildItem.title,
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            text = buildItem.title.uppercase(),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontFamily = sancreekFont,
+
+                            ),
+                            modifier = Modifier.padding(12.dp).align(Alignment.CenterHorizontally)
                         )
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                                .shadow(4.dp, shape = RoundedCornerShape(16.dp))
+                                .clip(shape = RoundedCornerShape(16.dp))
+                                .background(color = Color.White)
+                            ){
+                            Column (
+                                modifier = Modifier.fillMaxSize().padding(8.dp)
+                            ){
+                                BuildComponentRow(
+                                    icon = Icons.Default.Memory,
+                                    label = "Processor",
+                                    value = buildItem.components?.processor?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.VideoStable,
+                                    label = "Video Card",
+                                    value = buildItem.components?.videoCard?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.SettingsInputComponent,
+                                    label = "RAM",
+                                    value = buildItem.components?.memory?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.DeveloperMode,
+                                    label = "Motherboard",
+                                    value = buildItem.components?.motherboard?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Case",
+                                    value = buildItem.components?.casing?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Power Supply",
+                                    value = buildItem.components?.powerSupply?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Internal Hard Drive",
+                                    value = buildItem.components?.internalHardDrive?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Headphone",
+                                    value = buildItem.components?.headphone?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Keyboard",
+                                    value = buildItem.components?.keyboard?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "Mouse",
+                                    value = buildItem.components?.mouse?.name
+                                )
+                                BuildComponentRow(
+                                    icon = Icons.Default.Computer,
+                                    label = "CPU Cooler",
+                                    value = buildItem.components?.cpuCooler?.name
+                                )
+                            }
 
-                        // Display processor name if available
-                        buildItem.components?.processor?.let { processor ->
-                            Text(
-                                text = "Processor: ${processor.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        // Display casing name if available
-                        buildItem.components?.casing?.let { casing ->
-                            Text(
-                                text = "Casing: ${casing.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        // Display motherboard name if available
-                        buildItem.components?.motherboard?.let { motherboard ->
-                            Text(
-                                text = "Motherboard: ${motherboard.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        // Display video card name if available
-                        buildItem.components?.videoCard?.let { videoCard ->
-                            Text(
-                                text = "Video Card: ${videoCard.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        // Display headphone name if available
-                        buildItem.components?.headphone?.let { headphone ->
-                            Text(
-                                text = "Headphone: ${headphone.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        // Display internal hard drive name if available
-                        buildItem.components?.internalHardDrive?.let { internalHardDrive ->
-                            Text(
-                                text = "Internal Hard Drive: ${internalHardDrive.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                            Log.d("BuildList", "Displaying internal hard drive name: ${internalHardDrive.name}")
-                        }
-
-                        // Display keyboard name if available
-                        buildItem.components?.keyboard?.let { keyboard ->
-                            Text(
-                                text = "Keyboard: ${keyboard.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        buildItem.components?.powerSupply?.let { powerSupply ->
-                            Text(
-                                text = "Power Supply: ${powerSupply.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        buildItem.components?.mouse?.let { mouse ->
-                            Text(
-                                text = "Mouse: ${mouse.name}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
+                            // Add more components as needed
                         }
                     }
                 }
@@ -272,6 +351,48 @@ fun BuildList(
         }
     }
 }
+
+@Composable
+fun BuildComponentRow(
+    icon: ImageVector,
+    label: String,
+    value: String?
+) {
+    value?.let {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier
+                    .size(24.dp)
+                    .alpha(0.7f),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+
+                    )
+                )
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun EditBuildDialog(
     initialTitle: String,
@@ -279,26 +400,54 @@ fun EditBuildDialog(
     onSave: (String) -> Unit
 ) {
     var title by remember { mutableStateOf(initialTitle) }
+    var isError by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
-            Text(text = "Edit Build Title")
+            Text(
+                text = "Edit Build Title",
+                style = MaterialTheme.typography.headlineSmall
+            )
         },
         text = {
             Column {
-                Text(text = "Enter the new title for your build:")
+                Text(
+                    text = "Enter the new title for your build:",
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it },
-                    label = { Text(text = "Build Title") },
-                    singleLine = true
+                    onValueChange = {
+                        title = it
+                        isError = it.isBlank()
+                    },
+                    label = { Text("Build Title") },
+                    singleLine = true,
+                    isError = isError,
+                    supportingText = {
+                        if (isError) {
+                            Text(
+                                text = "Title cannot be empty",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(title) }) {
+            TextButton(
+                onClick = {
+                    if (title.isNotBlank()) {
+                        onSave(title)
+                    } else {
+                        isError = true
+                    }
+                }
+            ) {
                 Text("Save")
             }
         },
