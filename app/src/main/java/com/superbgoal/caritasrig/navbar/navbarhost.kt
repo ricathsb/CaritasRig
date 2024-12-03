@@ -308,7 +308,7 @@ fun BottomNavigationBar(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (isSelected) Color.White else Color.Gray,
+                        tint = if (isSelected) Color.Black else Color.Gray,
                         modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
                 },
