@@ -70,7 +70,6 @@ import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.HomeScreen2
 import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.NewsArticleScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.profile.ProfileScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.AboutUsScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.SettingsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsScreen
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.BuildListItem
 import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.SharedBuildScreen
@@ -154,10 +153,7 @@ fun NavbarHost(
                 HomeScreen2(navController = navController)
             }
             composable("profile/{username}") {
-                ProfileScreen(homeViewModel = homeViewModel)
-            }
-            composable("settings") {
-                SettingsScreen(navController,appController)
+                ProfileScreen(homeViewModel = homeViewModel,appController, navController)
             }
             composable("about_us") {
                 AboutUsScreen()
@@ -235,19 +231,6 @@ fun AppTopBar(
             if (isSpecificRoute) {
                 // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
             } else if (isProfileScreen) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Icon Settings
-                    IconButton(onClick = { navigateToSettings() }) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings Icon",
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
             } else {
                 // Jika bukan di halaman profil, tampilkan icon profil
                 IconButton(onClick = { navigateToProfile(user) }) {
