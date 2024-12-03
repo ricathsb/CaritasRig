@@ -155,8 +155,10 @@ fun BuildListItem(build: SharedBuild, viewModel: SharedBuildViewModel) {
                     )
                     .padding(8.dp)
             ) {
+                val profileImageUrl = userProfile.value?.profileImageUrl
+                val defaultProfileImage = "https://firebasestorage.googleapis.com/v0/b/caritas-rig.appspot.com/o/images%2F8MneE2YJoJXt1D2oSdepZuYWrvm2?alt=media&token=dec480bb-7223-47c7-9d01-af5609bad8fe"
                 AsyncImage(
-                    model = userProfile.value?.profileImageUrl ?: "https://preview.redd.it/sorry-youre-not-a-sigma-v0-gd50wax6celd1.jpg?width=640&crop=smart&auto=webp&s=447b4b71985dcbf033cd29820a3fdbaa9ecb3932",
+                    model = if(profileImageUrl.isNullOrEmpty()) defaultProfileImage else profileImageUrl,
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .size(50.dp)
@@ -176,7 +178,13 @@ fun BuildListItem(build: SharedBuild, viewModel: SharedBuildViewModel) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
+            Text(
+                text = build.title,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                ),
+            )
             // Build Images
             LazyRow(
                 modifier = Modifier.fillMaxWidth()

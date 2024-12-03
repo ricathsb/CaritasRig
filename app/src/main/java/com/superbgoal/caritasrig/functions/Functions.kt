@@ -521,24 +521,17 @@ fun BuildCompatibilityAccordion(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Kompatibilitas Build",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                compatibilityStatus?.let {
+                    Text(
+                        text = "${it.compatibleCount}/${it.totalCount} kompatibel",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 Icon(
                     tint = Color.White,
                     imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null
-                )
-            }
-
-            compatibilityStatus?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "${it.compatibleCount}/${it.totalCount} kompatibel",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

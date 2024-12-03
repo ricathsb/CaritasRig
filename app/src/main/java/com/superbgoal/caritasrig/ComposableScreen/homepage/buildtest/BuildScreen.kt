@@ -34,6 +34,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -99,16 +100,16 @@ fun BuildScreen(
     @SuppressLint("SuspiciousIndentation")
     navController: NavController? = null
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    val showDialog by buildViewModel.showNewDialog.collectAsState()
     val isNewBuild by buildViewModel.isNewBuild.collectAsState()
     Log.d("BuildScreenn", "isNewBuild: $isNewBuild")
         if (isNewBuild) {
             buildViewModel.resetBuildTitle()
-            showDialog = true
+            buildViewModel.setNewDialogState(true)
             buildViewModel.setNewBuildState(false)
         }
     val context = LocalContext.current
-    var imagePickerDialog by remember { mutableStateOf(false) }
+    val imagePickerDialog by buildViewModel.showShareDialog.collectAsState(false)
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
@@ -168,21 +169,6 @@ fun BuildScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // Title
-            Text(
-                text = buildTitle.ifEmpty { "New Build" },
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontFamily = sairastencilone
-                ),
-                modifier = Modifier
-                    .padding(vertical = 1.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             buildData?.components?.let { BuildCompatibilityAccordion(buildComponents = it, estimatedWattage = estimatedWattage) }
 
             Surface(
@@ -190,33 +176,16 @@ fun BuildScreen(
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = Color.Green,
-                shadowElevation = 6.dp
+                color = Color.White.copy(alpha = 0.0f),
             ) {
-                Column(
+                Row(
                     modifier = Modifier.padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+
                     Row {
                         Text(
-                            text = "Estimated Wattage: ",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                        )
-                        Text(
-                            text = "$totalWattage W",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Red
-                            )
-                        )
-                    }
-                    Row {
-                        Text(
-                            text = "Total Price: ",
+                            text = "Total: ",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black
@@ -224,6 +193,20 @@ fun BuildScreen(
                         )
                         Text(
                             text = "$${totalBuildPrice}",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Green
+                            )
+                        )
+                    }
+                    Row {
+                        Icon(
+                            imageVector = Icons.Default.ElectricBolt,
+                            contentDescription = "Estimated Wattage",
+                            tint = Color.White
+                        )
+                        Text(
+                            text = "$totalWattage W",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Red
@@ -235,12 +218,12 @@ fun BuildScreen(
             }
             if (imagePickerDialog) {
                 ImagePickerDialog(
-                    onDismiss = { imagePickerDialog = false }, // Menutup dialog jika dibatalkan
+                    onDismiss = { buildViewModel.setShareDialogState(false) }, // Menutup dialog jika dibatalkan
                     onImagesSelected = { images ->
                         selectedImages = images // Menyimpan gambar yang dipilih
                         Log.d("BuildScreen", "Selected Images: $images")
                         buildViewModel.shareBuildWithOthers(selectedImages)
-                        imagePickerDialog = false
+                        buildViewModel.setShareDialogState(false)
                     }
                 )
             }
@@ -420,37 +403,6 @@ fun BuildScreen(
             }
         }
 
-        // Floating Action Button for reset
-        FloatingActionButton(
-            onClick = {
-                showDialog = true
-            },
-            containerColor = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.TextSnippet,
-                contentDescription = "Reset",
-                tint = Color.White
-            )
-        }
-        FloatingActionButton(
-            onClick = {
-                imagePickerDialog = true
-            },
-            containerColor = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Share,
-                contentDescription = "Share",
-                tint = Color.White
-            )
-        }
     }
 
     // Dialog tetap ditampilkan jika diperlukan
@@ -480,7 +432,7 @@ fun BuildScreen(
                                 context = context,
                                 buildTitle = dialogText,
                                 onSuccess = {
-                                    showDialog = false
+                                    buildViewModel.setNewDialogState(false)
                                     buildViewModel.saveBuildTitle(dialogText)
                                     buildViewModel.resetBuildData()
                                 },
@@ -499,9 +451,9 @@ fun BuildScreen(
                 TextButton(
                     onClick = {
                         if (buildViewModel.buildTitle.value?.isNotEmpty() == true) {
-                            showDialog = false
+                            buildViewModel.setNewDialogState(false)
                         } else {
-                            showDialog = false
+                            buildViewModel.setNewDialogState(false)
                             navController?.navigateUp()
                         }
                     }
@@ -909,7 +861,6 @@ fun ImagePickerDialog(
                     onImagesSelected(selectedImages)
                     onDismiss()
                 },
-                enabled = selectedImages.isNotEmpty()
             ) {
                 Text("Confirm")
             }
