@@ -19,13 +19,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Compare
+import androidx.compose.material.icons.filled.CompareArrows
+import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.DesktopWindows
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.StackedBarChart
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -286,7 +292,7 @@ fun AppTopBar(
                             Icon(
                                 imageVector = Icons.Default.Share,
                                 contentDescription = "Share",
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                         IconButton(onClick = { navigateToProfile(user) }) {
@@ -406,8 +412,8 @@ fun currentRoute(navController: NavController): String? {
 
 sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
     data object Home : NavigationItem("home", Icons.Default.Home, R.string.home.toString())
-    data object Trending : NavigationItem("compare", Icons.Default.Compare, R.string.compare.toString())
-    data object Build : NavigationItem("build", Icons.Default.DesktopWindows, R.string.build.toString())
-    data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, R.string.benchmark.toString())
-    data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, R.string.favorite.toString())
+    data object Trending : NavigationItem("compare", Icons.Default.Balance, R.string.compare.toString())
+    data object Build : NavigationItem("build", Icons.Default.Construction, R.string.build.toString())
+    data object Benchmark : NavigationItem("benchmark", Icons.Default.StackedBarChart, R.string.benchmark.toString())
+    data object Favorite : NavigationItem("favorite", Icons.Default.Star, R.string.favorite.toString())
 }

@@ -36,7 +36,9 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -227,7 +229,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.Leaderboard,
+                                imageVector = Icons.Default.Groups,
                                 contentDescription = "Explore Other's Build",
                                 tint = buttonContentColor
                             )
