@@ -95,6 +95,12 @@ fun ProfileCard(
 
 @Composable
 fun AboutUsScreen() {
+    Image(
+        painter = painterResource(id = R.drawable.component_bg),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize()
+    )
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,6 +110,7 @@ fun AboutUsScreen() {
         // Judul
         Text(
             text = "About Us",
+            color = Color.White,
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )

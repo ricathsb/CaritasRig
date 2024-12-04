@@ -34,8 +34,11 @@ import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.TextSnippet
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -97,15 +100,16 @@ fun BuildScreen(
     @SuppressLint("SuspiciousIndentation")
     navController: NavController? = null
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    val showDialog by buildViewModel.showNewDialog.collectAsState()
     val isNewBuild by buildViewModel.isNewBuild.collectAsState()
-        if (isNewBuild) {
-            buildViewModel.resetBuildTitle()
-            showDialog = true
-            buildViewModel.setNewBuildState(false)
-        }
+    Log.d("BuildScreenn", "isNewBuild: $isNewBuild")
+    if (isNewBuild) {
+        buildViewModel.resetBuildTitle()
+        buildViewModel.setNewDialogState(true)
+        buildViewModel.setNewBuildState(false)
+    }
     val context = LocalContext.current
-    var imagePickerDialog by remember { mutableStateOf(false) }
+    val imagePickerDialog by buildViewModel.showShareDialog.collectAsState(false)
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     val buildData by buildViewModel.buildData.observeAsState()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
@@ -148,10 +152,10 @@ fun BuildScreen(
     }
 
     Box(modifier = Modifier
-        .fillMaxSize(),
+        .fillMaxSize()
+        .background(color = Color.Black.copy(alpha = 0.2f)),
     )
     {
-        // Background image
         Image(
             painter = painterResource(id = R.drawable.component_bg),
             contentDescription = null,
@@ -159,195 +163,160 @@ fun BuildScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Content area
-        Column(
+        // Background image
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            // Title
-            Text(
-                text = buildTitle.ifEmpty { "New Build" },
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontFamily = sairastencilone
-                ),
+                .background(Color.Black.copy(alpha = 0.2f)) // Atur transparansi sesuai kebutuhan
+        ){
+
+            // Content area
+            Column(
                 modifier = Modifier
-                    .padding(vertical = 1.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            buildData?.components?.let { BuildCompatibilityAccordion(buildComponents = it, estimatedWattage = estimatedWattage) }
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 2.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = Color.Green,
-                shadowElevation = 6.dp
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row {
-                        Text(
-                            text = "Estimated Wattage: ",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                        )
-                        Text(
-                            text = "$totalWattage W",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Red
-                            )
-                        )
-                    }
-                    Row {
-                        Text(
-                            text = "Total Price: ",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                        )
-                        Text(
-                            text = "$${totalBuildPrice}",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Red
-                            )
-                        )
-                    }
+                buildData?.components?.let { BuildCompatibilityAccordion(buildComponents = it, estimatedWattage = estimatedWattage) }
 
-                }
-            }
-            if (imagePickerDialog) {
-                ImagePickerDialog(
-                    onDismiss = { imagePickerDialog = false }, // Menutup dialog jika dibatalkan
-                    onImagesSelected = { images ->
-                        selectedImages = images // Menyimpan gambar yang dipilih
-                        Log.d("BuildScreen", "Selected Images: $images")
-                        buildViewModel.shareBuildWithOthers(selectedImages)
-                        imagePickerDialog = false
-                    }
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        imagePickerDialog = true
-                    },
-                ) {
-                    Text(text = "Upload Build")
-                }
-
-                Button(
-                    onClick = {
-                        if (navController != null) {
-                            navController.navigate("shared_build_screen")
-                        }
-                    },
-                ) {
-                    Text(text = "Shared Build")
-                }
-            }
-
-            if (loading) {
-                // Full-screen loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(60.dp)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    state = lazyListState,
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth()
+                        .padding(vertical = 1.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color.White.copy(alpha = 0.0f),
                 ) {
-                    // Activity mapping for navigation
-                    val routeMap = mapOf(
-                        "CPU" to "cpu_screen",
-                        "Case" to "casing_screen",
-                        "GPU" to "gpu_screen",
-                        "Motherboard" to "motherboard_screen",
-                        "RAM" to "memory_screen",
-                        "InternalHardDrive" to "internal_hard_drive_screen",
-                        "PowerSupply" to "power_supply_screen",
-                        "CPU Cooler" to "cpu_cooler_screen",
-                        "Headphone" to "headphone_screen",
-                        "Keyboard" to "keyboard_screen",
-                        "Mouse" to "mouse_screen"
+                    Row(
+                        modifier = Modifier.padding(1.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row {
+                            Text(
+                                text = "Total: ",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = "$${totalBuildPrice}",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Green
+                                )
+                            )
+                        }
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.ElectricBolt,
+                                contentDescription = "Estimated Wattage",
+                                tint = Color.White
+                            )
+                            Text(
+                                text = "$totalWattage W",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Cyan
+                                )
+                            )
+                        }
+
+                    }
+                }
+                if (imagePickerDialog) {
+                    ImagePickerDialog(
+                        onDismiss = { buildViewModel.setShareDialogState(false) }, // Menutup dialog jika dibatalkan
+                        onImagesSelected = { images ->
+                            selectedImages = images // Menyimpan gambar yang dipilih
+                            Log.d("BuildScreen", "Selected Images: $images")
+                            buildViewModel.shareBuildWithOthers(selectedImages)
+                            buildViewModel.setShareDialogState(false)
+                        }
                     )
+                }
 
-                    selectedComponents.forEach { (title) ->
-                        item {
-                            val componentDetail = when (title) {
-                                "CPU" -> buildData?.components?.processor?.let {
-                                    "${it.name}"
+                if (loading) {
+                    // Full-screen loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        state = lazyListState,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        // Activity mapping for navigation
+                        val routeMap = mapOf(
+                            "CPU" to "cpu_screen",
+                            "Case" to "casing_screen",
+                            "GPU" to "gpu_screen",
+                            "Motherboard" to "motherboard_screen",
+                            "RAM" to "memory_screen",
+                            "InternalHardDrive" to "internal_hard_drive_screen",
+                            "PowerSupply" to "power_supply_screen",
+                            "CPU Cooler" to "cpu_cooler_screen",
+                            "Headphone" to "headphone_screen",
+                            "Keyboard" to "keyboard_screen",
+                            "Mouse" to "mouse_screen"
+                        )
+
+                        selectedComponents.forEach { (title) ->
+                            item {
+                                val componentDetail = when (title) {
+                                    "CPU" -> buildData?.components?.processor?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "Case" -> buildData?.components?.casing?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "GPU" -> buildData?.components?.videoCard?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "Motherboard" -> buildData?.components?.motherboard?.let {
+                                        "${it.name}"
+                                    }
+
+                                    "RAM" -> buildData?.components?.memory?.let {
+                                        it.name
+                                    }
+
+                                    "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
+                                        it.name
+                                    }
+
+                                    "PowerSupply" -> buildData?.components?.powerSupply?.let {
+                                        it.name
+                                    }
+
+                                    "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
+                                        it.name
+                                    }
+
+                                    "Headphone" -> buildData?.components?.headphone?.let {
+                                        it.name
+                                    }
+
+                                    "Keyboard" -> buildData?.components?.keyboard?.let {
+                                        it.name
+                                    }
+
+                                    "Mouse" -> buildData?.components?.mouse?.let {
+                                        it.name
+                                    }
+
+                                    else -> null
                                 }
-
-                                "Case" -> buildData?.components?.casing?.let {
-                                    "${it.name}"
-                                }
-
-                                "GPU" -> buildData?.components?.videoCard?.let {
-                                    "${it.name}"
-                                }
-
-                                "Motherboard" -> buildData?.components?.motherboard?.let {
-                                    "${it.name}"
-                                }
-
-                                "RAM" -> buildData?.components?.memory?.let {
-                                    it.name
-                                }
-
-                                "InternalHardDrive" -> buildData?.components?.internalHardDrive?.let {
-                                    it.name
-                                }
-
-                                "PowerSupply" -> buildData?.components?.powerSupply?.let {
-                                    it.name
-                                }
-
-                                "CPU Cooler" -> buildData?.components?.cpuCooler?.let {
-                                    it.name
-                                }
-
-                                "Headphone" -> buildData?.components?.headphone?.let {
-                                    it.name
-                                }
-
-                                "Keyboard" -> buildData?.components?.keyboard?.let {
-                                    it.name
-                                }
-
-                                "Mouse" -> buildData?.components?.mouse?.let {
-                                    it.name
-                                }
-
-                                else -> null
-                            }
                                 ComponentCard(
                                     initialQuantity = buildData?.components?.memory?.quantity,
                                     title = title,
@@ -431,31 +400,17 @@ fun BuildScreen(
                                         )
                                     }
                                 )
-                            Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
-                            Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
+                                Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
+                                Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
 
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Floating Action Button for reset
-        FloatingActionButton(
-            onClick = {
-                showDialog = true
-            },
-            containerColor = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "Reset",
-                tint = Color.White
-            )
-        }
+
     }
 
     // Dialog tetap ditampilkan jika diperlukan
@@ -485,7 +440,7 @@ fun BuildScreen(
                                 context = context,
                                 buildTitle = dialogText,
                                 onSuccess = {
-                                    showDialog = false
+                                    buildViewModel.setNewDialogState(false)
                                     buildViewModel.saveBuildTitle(dialogText)
                                     buildViewModel.resetBuildData()
                                 },
@@ -504,9 +459,9 @@ fun BuildScreen(
                 TextButton(
                     onClick = {
                         if (buildViewModel.buildTitle.value?.isNotEmpty() == true) {
-                            showDialog = false
+                            buildViewModel.setNewDialogState(false)
                         } else {
-                            showDialog = false
+                            buildViewModel.setNewDialogState(false)
                             navController?.navigateUp()
                         }
                     }
@@ -540,7 +495,7 @@ fun ComponentCard(
     val displayText = if (title == "RAM") {
         "Total Price: $$totalPrice"
     } else {
-        "Current Price: $$currentPrice"
+        "Price: $$currentPrice"
     }
 
     Card(
@@ -591,7 +546,7 @@ fun ComponentCard(
                                 .clip(shape = RoundedCornerShape(8.dp))
                         )
 
-                    // Kolom Teks
+                        // Kolom Teks
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -600,9 +555,9 @@ fun ComponentCard(
                             Text(
                                 text = componentDetail,
                                 color = Color.White,
+                                maxLines = 1, // Batasi hanya satu baris
+                                overflow = TextOverflow.Ellipsis, // Tambahkan titik-titik
                                 style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 2, // Batasi hingga dua baris
-                                overflow = TextOverflow.Ellipsis, // Tambahkan titik-titik jika teks terlalu panjang
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                             Text(
@@ -748,7 +703,7 @@ fun ComponentCard(
                                     color = Color.Black,
                                     fontSize = 12.sp,
                                     maxLines = 1,
-                                    )
+                                )
                             }
                         }
 

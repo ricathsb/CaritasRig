@@ -40,8 +40,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
     private val _isNewBuild = MutableStateFlow(false)
     val isNewBuild: StateFlow<Boolean> get() = _isNewBuild
 
-    private val _isNewBuild1 = MutableStateFlow(false)
-    val isNewBuild1: StateFlow<Boolean> get() = _isNewBuild1
+    private val _showNewDialog = MutableStateFlow(false)
+    val showNewDialog: StateFlow<Boolean> get() = _showNewDialog
+    private val _showShareDialog = MutableStateFlow(false)
+    val showShareDialog: StateFlow<Boolean> get() = _showShareDialog
 
     private val _buildTitle = MutableLiveData<String>()
     val buildTitle: LiveData<String> get() = _buildTitle
@@ -73,17 +75,15 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         "Keyboard" to "No Keyboard Selected",
         "Mouse" to "No Mouse Selected"
     )
-
+    fun setNewDialogState(show: Boolean) {
+        _showNewDialog.value = show
+    }
+    fun setShareDialogState(show: Boolean) {
+        _showShareDialog.value = show
+    }
 
     fun setNewBuildState(isNew: Boolean) {
         _isNewBuild.value = isNew
-        Log.d("BuildViewModell", "New Build State Set: $isNew")
-        Log.d("BuildViewModell", "Build Title: ${_isNewBuild.value}")
-        Log.d("BuildViewModell", "Build Data: ${isNewBuild.value}")
-    }
-
-    fun setNewBuildState1(isNew: Boolean) {
-        _isNewBuild1.value = isNew
         Log.d("BuildViewModell", "New Build State Set: $isNew")
         Log.d("BuildViewModell", "Build Title: ${_isNewBuild.value}")
         Log.d("BuildViewModell", "Build Data: ${isNewBuild.value}")
@@ -479,5 +479,3 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
 
 }
-
-
