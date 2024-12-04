@@ -349,6 +349,15 @@ fun LanguageSelectionDialog(onDismiss: () -> Unit, onLanguageSelected: (String) 
             Column {
                 LanguageOption("English", "en", onDismiss, onLanguageSelected)
                 Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("Indonesia", "in", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("Japanese", "ja", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("Germany (Deutsch)", "de", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("France", "fr", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("Hindi", "hi", onDismiss, onLanguageSelected)
             }
         }
     )
