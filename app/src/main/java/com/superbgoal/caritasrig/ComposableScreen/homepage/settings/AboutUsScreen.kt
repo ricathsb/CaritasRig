@@ -15,6 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.superbgoal.caritasrig.R
@@ -24,8 +27,7 @@ fun ProfileCard(
     imageRes: Int,
     name: String,
     instagram: String,
-    github: String,
-    email: String
+    github: String
 ) {
     val context = LocalContext.current
 
@@ -59,26 +61,29 @@ fun ProfileCard(
             ) {
                 Text(text = name, style = MaterialTheme.typography.bodyLarge, fontSize = 16.sp)
 
-                // Instagram username
+                val annotatedText = buildAnnotatedString {
+                    append("Instagram: ")
+
+                    // Tambahkan teks dengan warna berbeda
+                    withStyle(style = SpanStyle(color = Color.Magenta)) {
+                        append(instagram)
+                    }
+                    append("\nGitHub: ")
+                    // Tambahkan teks dengan warna berbeda
+                    withStyle(style = SpanStyle(color = Color.Blue)) {
+                        append(github)
+                    }
+                }
+
                 Text(
-                    text = "Instagram: $instagram",
+                    text = annotatedText,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
                     modifier = Modifier.clickable {
                         val instagramIntent = Intent(
                             Intent.ACTION_VIEW,
                             Uri.parse("https://www.instagram.com/${instagram.removePrefix("@")}")
                         )
                         context.startActivity(instagramIntent)
-                    }
-                )
-
-                // GitHub username
-                Text(
-                    text = "GitHub: $github",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.clickable {
                         val githubIntent = Intent(
                             Intent.ACTION_VIEW,
                             Uri.parse("https://github.com/$github")
@@ -86,8 +91,6 @@ fun ProfileCard(
                         context.startActivity(githubIntent)
                     }
                 )
-
-                Text(text = "Email: $email", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             }
         }
     }
@@ -121,20 +124,18 @@ fun AboutUsScreen() {
         ) {
             item {
                 ProfileCard(
-                    imageRes = R.drawable.hotbaennotsigma,
-                    name = "Hotbaen Eliezer\n(Project Manager)",
-                    instagram = "@exaudi._",
-                    github = "exaudi26",
-                    email = "eliezerstmrg@gmail.com"
+                    imageRes = R.drawable.profile2,
+                    name = "Ferry Sirait \n(Project Manager)",
+                    instagram = "@ferry_srt",
+                    github = "ferrysrt"
                 )
             }
             item {
                 ProfileCard(
-                    imageRes = R.drawable.profile2,
-                    name = "Ferry Sirait \n(Designer)",
-                    instagram = "@ferry_srt",
-                    github = "ferrysrt",
-                    email = "ferrypb123pb123@gmail.com"
+                    imageRes = R.drawable.hotbaennotsigma,
+                    name = "Hotbaen Eliezer\n(Back-end)",
+                    instagram = "@exaudi._",
+                    github = "exaudi26"
                 )
             }
             item {
@@ -142,17 +143,31 @@ fun AboutUsScreen() {
                     imageRes = R.drawable.profile3,
                     name = "Richard Hasibuan \n(Back-end)",
                     instagram = "@ricathsb",
-                    github = "ricathsb",
-                    email = "ricat1907111@gmail.com"
+                    github = "ricathsb"
                 )
             }
             item {
                 ProfileCard(
                     imageRes = R.drawable.profile4,
-                    name = "Samuel Sitanggang \n(Front-end)",
+                    name = "Samuel Sitanggang \n(Back-end)",
                     instagram = "@samuel_bryan_ps",
-                    github = "SamuelSitanggang125",
-                    email = "samuelsitanggang04@gmail.com"
+                    github = "SamuelSitanggang125"
+                )
+            }
+            item {
+                ProfileCard(
+                    imageRes = R.drawable.profile5,
+                    name = "Brian Silitonga \n(Front-end)",
+                    instagram = "@gigachad_bryan",
+                    github = "BrianTzr"
+                )
+            }
+            item {
+                ProfileCard(
+                    imageRes = R.drawable.profile6,
+                    name = "Rakha Aditya \n(Front-end)",
+                    instagram = "@_rkhadt",
+                    github = "rakhaad"
                 )
             }
         }
