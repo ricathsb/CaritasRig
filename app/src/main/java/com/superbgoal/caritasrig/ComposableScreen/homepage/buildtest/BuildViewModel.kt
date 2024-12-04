@@ -117,6 +117,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
         Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build title and components have been reset.")
     }
+    fun resetBuildDataPriceAndWattage() {
+        _totalBuildPrice.value = 0.0
+        _totalWattage.value = 0.0
+    }
 
 
     fun saveBuildTitle(title: String) {

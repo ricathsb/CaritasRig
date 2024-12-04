@@ -124,12 +124,6 @@ fun NavbarHost(
                         launchSingleTop = true
                     }
                 },
-                navigateToSettings = {
-                    navController.navigate("settings") {
-                        popUpTo("home") { inclusive = false }
-                        launchSingleTop = true
-                    }
-                },
                 isProfileScreen = isProfileScreen,
                 title = title,
                 isSpecificRoute = isSpecificRoute,
@@ -211,7 +205,6 @@ fun NavbarHost(
 fun AppTopBar(
     homeViewModel: HomeViewModel = viewModel(),
     navigateToProfile: (User?) -> Unit,
-    navigateToSettings: () -> Unit,
     onBackClick: () -> Unit = {},
     isProfileScreen: Boolean = false,
     isSpecificRoute: Boolean = false,
@@ -251,19 +244,7 @@ fun AppTopBar(
                     // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
                 }
                 isProfileScreen -> {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Icon Settings
-                        IconButton(onClick = { navigateToSettings() }) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings Icon",
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
+                    // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
                 }
                 currentRoute == "build_details" -> {
                     Row(
@@ -273,7 +254,7 @@ fun AppTopBar(
                         IconButton(
                             modifier = Modifier.fillMaxHeight(),
                             onClick = {
-                                buildViewModel.setNewBuildState(true)
+                                buildViewModel.setNewDialogState(true)
                             }
                         ) {
                             Icon(
