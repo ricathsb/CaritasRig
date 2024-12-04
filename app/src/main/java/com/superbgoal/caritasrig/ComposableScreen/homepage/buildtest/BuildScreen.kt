@@ -66,6 +66,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -187,7 +188,7 @@ fun BuildScreen(
                     ) {
                         Row {
                             Text(
-                                text = "Total: ",
+                                text = "${stringResource(id = R.string.total)}: ",
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -413,15 +414,15 @@ fun BuildScreen(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { /* Do nothing to prevent dismissing the dialog */ },
-            title = { Text(text = "Enter Build Title") },
+            title = { Text(text = stringResource(id = R.string.enter_build_title)) },
             text = {
                 Column {
-                    Text(text = "Please enter a title for your build:")
+                    Text(text = "${stringResource(id = R.string.please_enter_title)}:")
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = dialogText,
                         onValueChange = { dialogText = it },
-                        placeholder = { Text(text = "Build Title") },
+                        placeholder = { Text(text = stringResource(id = R.string.build_title)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -449,7 +450,7 @@ fun BuildScreen(
                     },
                     enabled = dialogText.isNotEmpty()
                 ) {
-                    Text("OK")
+                    Text(stringResource(id = R.string.ok))
                 }
             },
             dismissButton = {
@@ -463,7 +464,7 @@ fun BuildScreen(
                         }
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -636,7 +637,7 @@ fun ComponentCard(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "Configure",
+                                        text = stringResource(id = R.string.configure),
                                         color = Color.Black,
                                         fontSize = 12.sp,
                                         maxLines = 1, // Batasi teks hanya satu baris
@@ -657,7 +658,7 @@ fun ComponentCard(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "Remove",
+                                        text = stringResource(id = R.string.remove),
                                         color = Color.Black,
                                         fontSize = 12.sp,
                                         maxLines = 1, // Batasi teks hanya satu baris
@@ -673,7 +674,7 @@ fun ComponentCard(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "No $title Selected",
+                                text = "${stringResource(id = R.string.no)} $title ${stringResource(id = R.string.selected)}",
                                 color = Color.Gray,
                                 modifier = Modifier.padding(8.dp),
                                 textAlign = TextAlign.Start
@@ -696,7 +697,7 @@ fun ComponentCard(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Add Component",
+                                    text = stringResource(id = R.string.add_component),
                                     color = Color.Black,
                                     fontSize = 12.sp,
                                     maxLines = 1,
@@ -742,7 +743,7 @@ fun PriceEditDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Edit Price for $category",
+                text = "${stringResource(id = R.string.edit_price_for)}: $category",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -753,7 +754,7 @@ fun PriceEditDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Current Price: $currentPrice",
+                    text = "${stringResource(id = R.string.edit_price_for)}: $currentPrice",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 TextField(
@@ -762,7 +763,7 @@ fun PriceEditDialog(
                         // Hanya izinkan input angka dan titik desimal
                         newPrice = it.filter { char -> char.isDigit() || char == '.' }
                     },
-                    label = { Text("New Price") },
+                    label = { Text(stringResource(id = R.string.new_price)) },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
@@ -781,12 +782,12 @@ fun PriceEditDialog(
                     }
                 }
             ) {
-                Text("Update")
+                Text(stringResource(id = R.string.update))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -811,7 +812,7 @@ fun ImagePickerDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Select Images",
+                text = stringResource(id = R.string.select_images),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -827,13 +828,13 @@ fun ImagePickerDialog(
                     onClick = { imagePickerLauncher.launch("image/*") },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Choose Images")
+                    Text(stringResource(id = R.string.choose_images))
                 }
 
                 // Tampilan preview gambar yang dipilih
                 if (selectedImages.isNotEmpty()) {
                     Text(
-                        text = "Selected Images:",
+                        text = "${stringResource(id = R.string.selected_images)}:",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     LazyRow(
@@ -853,7 +854,7 @@ fun ImagePickerDialog(
                     }
                 } else {
                     Text(
-                        text = "No images selected",
+                        text = stringResource(id = R.string.no_images_selected),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
@@ -867,12 +868,12 @@ fun ImagePickerDialog(
                     onDismiss()
                 },
             ) {
-                Text("Confirm")
+                Text(stringResource(id = R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )

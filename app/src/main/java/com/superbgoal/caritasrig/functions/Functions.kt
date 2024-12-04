@@ -63,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -207,7 +208,7 @@ fun ComponentCard(
                                 colors = ButtonDefaults.buttonColors(buttonColor),
                                 modifier = Modifier.padding(start = 16.dp)
                             ) {
-                                Text(text = "Add", color = Color.White)
+                                Text(text = stringResource(id = R.string.add), color = Color.White)
                             }
                         } else {
                             CircularProgressIndicator(
@@ -277,7 +278,7 @@ fun ComponentCard(
                             colors = ButtonDefaults.buttonColors(buttonColor),
                             modifier = Modifier.padding(start = 16.dp)
                         ) {
-                            Text(text = "Add", color = Color.White)
+                            Text(text = stringResource(id = R.string.add), color = Color.White)
                         }
                     } else {
                         CircularProgressIndicator(
@@ -552,7 +553,7 @@ fun BuildCompatibilityAccordion(
                 compatibilityStatus?.let { status ->
                     // Daftar Komponen
                     Text(
-                        text = "Detail Komponen:",
+                        text = "${stringResource(id = R.string.component_detail)}:",
                         style = MaterialTheme.typography.titleSmall,
                         color = Color.White,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -572,7 +573,7 @@ fun BuildCompatibilityAccordion(
 
                                 )
                             Text(
-                                text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
+                                text = if (detail.isCompatible) "[${stringResource(id = R.string.compatible)}]" else "[${stringResource(id = R.string.not_compatible)}]",
                                 color = if (detail.isCompatible) Color.Green else Color.Red,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -583,7 +584,7 @@ fun BuildCompatibilityAccordion(
                     if (status.recommendation.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Rekomendasi:",
+                            text = "${stringResource(id = R.string.recommendation)}:",
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(bottom = 8.dp),
                             color = Color.Green,
@@ -595,7 +596,7 @@ fun BuildCompatibilityAccordion(
                             )
                     }
                 } ?: Text(
-                    text = "Tidak ada data kompatibilitas.",
+                    text = stringResource(id = R.string.no_compability_data),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Red,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -619,6 +620,7 @@ data class CompatibilityStatus(
     val recommendation: String
 )
 
+@Composable
 fun calculateCompatibilityStatus(
     buildComponents: BuildComponents,
     estimatedWattage: Double
@@ -631,9 +633,9 @@ fun calculateCompatibilityStatus(
     val powerSupplyWattage = parseWattage(buildComponents.powerSupply?.wattage)
     val psuCompatible = buildComponents.powerSupply == null || powerSupplyWattage >= estimatedWattage
     if (buildComponents.powerSupply != null) {
-        details.add(CompatibilityDetail(powerSupplyName.ifEmpty { "Powersupply" }, psuCompatible))
+        details.add(CompatibilityDetail(powerSupplyName.ifEmpty { stringResource(id = R.string.power_supply) }, psuCompatible))
         if (!psuCompatible) {
-            recommendation += "Ganti PSU dengan wattage >= ${estimatedWattage.toInt()} "
+            recommendation += "${stringResource(id = R.string.change_psu)} ${estimatedWattage.toInt()} "
         }
     }
 
@@ -650,7 +652,7 @@ fun calculateCompatibilityStatus(
         details.add(CompatibilityDetail(motherboardName, socketCompatible))
     }
     if (!socketCompatible && buildComponents.processor != null && buildComponents.motherboard != null) {
-        recommendation += "Ganti motherboard atau processor agar socket cocok. "
+        recommendation += "${stringResource(id = R.string.change_psu)}"
     }
 
     // Memory Compatibility
@@ -661,7 +663,7 @@ fun calculateCompatibilityStatus(
     if (buildComponents.memory != null) {
         details.add(CompatibilityDetail(ramName, ramCompatible))
         if (!ramCompatible) {
-            recommendation += "Ganti RAM agar cocok dengan motherboard. "
+            recommendation += "${stringResource(id = R.string.change_ram)}"
         }
     }
 
@@ -673,7 +675,7 @@ fun calculateCompatibilityStatus(
     if (buildComponents.casing != null) {
         details.add(CompatibilityDetail(casingName, casingCompatible))
         if (!casingCompatible) {
-            recommendation += "Ganti casing agar mendukung form factor motherboard (${motherboardFormFactor}). "
+            recommendation += "${stringResource(id = R.string.change_case)} (${motherboardFormFactor}). "
         }
     }
 
@@ -685,7 +687,7 @@ fun calculateCompatibilityStatus(
     if (buildComponents.videoCard != null) {
         details.add(CompatibilityDetail(gpuName, gpuCompatible))
         if (!gpuCompatible) {
-            recommendation += "Ganti motherboard agar mendukung slot PCIe x16 untuk GPU. "
+            recommendation += "${stringResource(id = R.string.change_motherboard_forgpu)}"
         }
     }
 
@@ -763,8 +765,8 @@ fun SearchBarForComponent(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        label = { Text("Search CPU") },
-        placeholder = { Text("Search by name") },
+        label = { Text(stringResource(id = R.string.search_cpu)) },
+        placeholder = { Text(stringResource(id = R.string.search_by_name)) },
         singleLine = true,
         modifier = modifier
             .fillMaxWidth()

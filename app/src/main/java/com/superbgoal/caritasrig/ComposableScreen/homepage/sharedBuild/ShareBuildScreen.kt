@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -98,7 +99,7 @@ fun SharedBuildScreen() {
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Error: ${errorMessage.value}",
+                        text = "${stringResource(id = R.string.error)}: ${errorMessage.value}",
                         color = Color.Red,
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyLarge
@@ -168,7 +169,7 @@ fun BuildListItem(build: SharedBuild, viewModel: SharedBuildViewModel) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = userProfile.value?.username ?: "Loading...",
+                        text = userProfile.value?.username ?: stringResource(id = R.string.loading),
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF333333)
@@ -212,7 +213,7 @@ fun BuildListItem(build: SharedBuild, viewModel: SharedBuildViewModel) {
 
             // Components List
             Text(
-                text = "Build Components",
+                text = stringResource(id = R.string.build_components),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -242,7 +243,7 @@ fun BuildListItem(build: SharedBuild, viewModel: SharedBuildViewModel) {
             ) {
                 Icon(Icons.Default.Save, contentDescription = "Save Build")
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Save Build", color = Color.White)
+                Text(stringResource(id = R.string.save_build), color = Color.White)
             }
         }
     }

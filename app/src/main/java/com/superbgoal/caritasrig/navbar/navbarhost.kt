@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.navbar
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -103,17 +104,30 @@ fun NavbarHost(
             val isSpecificRoute = specificRoutes.contains(currentRoute)
 
             val title = when (currentRoute) {
-                "profile/{username}" -> "Profile"
-                "home" -> "Home"
-                "settings" -> "Settings"
-                "about_us" -> "About Us"
+                "profile/{username}" -> stringResource(id = R.string.profile)
+                "home" -> stringResource(id = R.string.home)
+                "settings" -> stringResource(id = R.string.settings)
+                "about_us" -> stringResource(id = R.string.about_us)
                 "profile_settings" -> stringResource(id = R.string.profile_settings)
-                "compare" -> "Compare"
-                "build" -> "Build"
-                "benchmark" -> "Benchmark"
-                "favorite" -> "Favorite Component"
-                "build_details" -> {buildTitle.ifEmpty { "New Build" }}
-                else -> "CaritasRig"
+                "compare" -> stringResource(id = R.string.compare)
+                "build" -> stringResource(id = R.string.build)
+                "benchmark" -> stringResource(id = R.string.benchmark)
+                "favorite" -> stringResource(id = R.string.favorite_component)
+                "build_details" -> { buildTitle.ifEmpty { stringResource(id = R.string.new_build) } }
+                "cpu_screen" -> stringResource(id = R.string.cpu)
+                "casing_screen" -> stringResource(id = R.string.casing)
+                "cpu_cooler_screen" -> stringResource(id = R.string.cpu_cooler)
+                "gpu_screen" -> stringResource(id = R.string.gpu)
+                "motherboard_screen" -> stringResource(id = R.string.motherboard)
+                "internal_hard_drive_screen" -> stringResource(id = R.string.internal_hard_drive)
+                "power_supply_screen" -> stringResource(id = R.string.power_supply)
+                "headphone_screen" -> stringResource(id = R.string.headphone)
+                "keyboard_screen" -> stringResource(id = R.string.keyboard)
+                "mouse_screen" -> stringResource(id = R.string.mouse)
+                "memory_screen" -> stringResource(id = R.string.memory)
+                "news_article_screen" -> stringResource(id = R.string.news_article)
+                "shared_build_screen" -> stringResource(id = R.string.shared_build)
+                else -> stringResource(id = R.string.caritasrig)
             }
             Log.d("NavbarHost", "Current Route: $currentRoute")
 
@@ -353,7 +367,7 @@ fun BottomNavigationBar(
                 icon = {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.title,
+                        contentDescription = null,
                         tint = if (isSelected) Color.Black else Color.Gray,
                         modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
@@ -366,7 +380,7 @@ fun BottomNavigationBar(
                 },
                 label = {
                     Text(
-                        text = item.title,
+                        text = stringResource(id = item.title.toInt()),
                         fontSize = 10.sp,
                         color = if (isSelected) Color.White else Color.Gray
                     )
@@ -390,13 +404,10 @@ fun currentRoute(navController: NavController): String? {
     return navBackStackEntry?.destination?.route
 }
 
-
-
 sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
-    data object Home : NavigationItem("home", Icons.Default.Home, "Home")
-    data object Trending : NavigationItem("compare", Icons.Default.Compare, "Compare")
-    data object Build : NavigationItem("build", Icons.Default.DesktopWindows, "Build")
-    data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
-    data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")
+    data object Home : NavigationItem("home", Icons.Default.Home, R.string.home.toString())
+    data object Trending : NavigationItem("compare", Icons.Default.Compare, R.string.compare.toString())
+    data object Build : NavigationItem("build", Icons.Default.DesktopWindows, R.string.build.toString())
+    data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, R.string.benchmark.toString())
+    data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, R.string.favorite.toString())
 }
-

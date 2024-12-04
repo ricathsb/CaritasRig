@@ -63,6 +63,7 @@ import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -224,14 +225,14 @@ fun EmptyStateComposable() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No builds available",
+                text = stringResource(id = R.string.no_builds_available),
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Start by creating your first PC build",
+                text = stringResource(id = R.string.start_creating),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
@@ -413,14 +414,14 @@ fun EditBuildDialog(
         onDismissRequest = onDismissRequest,
         title = {
             Text(
-                text = "Edit Build Title",
+                text = stringResource(id = R.string.edit_build_title),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
         text = {
             Column {
                 Text(
-                    text = "Enter the new title for your build:",
+                    text = stringResource(id = R.string.enter_new_build_title),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -430,13 +431,13 @@ fun EditBuildDialog(
                         title = it
                         isError = it.isBlank()
                     },
-                    label = { Text("Build Title") },
+                    label = { Text(stringResource(id = R.string.build_title)) },
                     singleLine = true,
                     isError = isError,
                     supportingText = {
                         if (isError) {
                             Text(
-                                text = "Title cannot be empty",
+                                text = stringResource(id = R.string.title_cannot_be_empty),
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
@@ -455,12 +456,12 @@ fun EditBuildDialog(
                     }
                 }
             ) {
-                Text("Save")
+                Text(stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )

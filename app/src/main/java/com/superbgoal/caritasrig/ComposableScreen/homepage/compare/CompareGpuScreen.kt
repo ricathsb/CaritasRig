@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -108,7 +109,7 @@ fun GPUComparisonScreen() {
                     OutlinedTextField(
                         value = searchText,
                         onValueChange = { searchText = it },
-                        placeholder = { Text("Search GPU") },
+                        placeholder = { Text(stringResource(id = R.string.search_gpu)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 13.dp, vertical = 15.dp)
@@ -177,7 +178,7 @@ fun GPUComparisonScreen() {
                             )
 
                             PerformanceBar(
-                                label = "G2D Mark",
+                                label = stringResource(id = R.string.g2d_mark),
                                 processor1Score = selectedGPUs[0].G2Dmark,
                                 processor2Score = selectedGPUs[1].G2Dmark
                             )
@@ -185,7 +186,7 @@ fun GPUComparisonScreen() {
                             Spacer(modifier = Modifier.height(8.dp))
 
                             PerformanceBar(
-                                label = "G3D Mark",
+                                label = stringResource(id = R.string.g3d_mark),
                                 processor1Score = selectedGPUs[0].G3Dmark,
                                 processor2Score = selectedGPUs[1].G3Dmark
                             )
@@ -269,7 +270,7 @@ fun RadarChartGpu(gpu1: GpuBenchmark, gpu2: GpuBenchmark) {
                 .height(500.dp)
                 .fillMaxWidth(),
             radarLabels = listOf(
-                "G3DMark", "G2DMark", "Value", "TDP", "Power Performance"
+                stringResource(id = R.string.g3d_mark), stringResource(id = R.string.g2d_mark), stringResource(id = R.string.value), stringResource(id = R.string.tdp), stringResource(id = R.string.power_performance)
             ),
             labelsStyle = TextStyle(
                 color = Color.White,

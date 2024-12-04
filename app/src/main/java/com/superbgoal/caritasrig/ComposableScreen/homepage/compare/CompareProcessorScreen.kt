@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -109,7 +110,7 @@ fun ProcessorComparisonScreen() {
                     OutlinedTextField(
                         value = searchText,
                         onValueChange = { searchText = it },
-                        placeholder = { Text("Search Processor") },
+                        placeholder = { Text(stringResource(id = R.string.search_processor)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 13.dp, vertical = 15.dp)
@@ -179,7 +180,7 @@ fun ProcessorComparisonScreen() {
                             )
 
                             PerformanceBar(
-                                label = "Single-Core Score",
+                                label = stringResource(id = R.string.singlecore_score),
                                 processor1Score = selectedProcessors[0].single_core_score,
                                 processor2Score = selectedProcessors[1].single_core_score
                             )
@@ -187,7 +188,7 @@ fun ProcessorComparisonScreen() {
                             Spacer(modifier = Modifier.height(8.dp))
 
                             PerformanceBar(
-                                label = "Multi-Core Score",
+                                label = stringResource(id = R.string.multicore_score),
                                 processor1Score = selectedProcessors[0].multi_core_score,
                                 processor2Score = selectedProcessors[1].multi_core_score
                             )
@@ -271,8 +272,8 @@ fun RadarChartProcessor(processor1: Processor, processor2: Processor) {
                 .height(500.dp)
                 .fillMaxWidth(),
             radarLabels = listOf(
-                "Core Count", "Core Clock", "Boost Clock",
-                "TDP", "Single Core Score", "Multi Core Score"
+                stringResource(id = R.string.core_count), stringResource(id = R.string.core_count), stringResource(id = R.string.boost_clock),
+                stringResource(id = R.string.tdp), stringResource(id = R.string.singlecore_score), stringResource(id = R.string.multicore_score)
             ),
             labelsStyle = TextStyle(
                 color = Color.White

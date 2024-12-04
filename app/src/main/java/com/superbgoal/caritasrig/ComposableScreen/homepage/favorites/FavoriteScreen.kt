@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,7 +75,7 @@ fun FavoriteScreen(navController: NavController) {
         ) {
             // Stylish Header
             Text(
-                text = "My Favorites",
+                text = stringResource(id = R.string.my_favorite),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = Color.White,
                     fontWeight = FontWeight.Bold
@@ -141,7 +142,7 @@ fun FavoriteScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No favorites added yet.\nExplore components to start your collection!",
+                        text = stringResource(id = R.string.no_favorites_added),
                         textAlign = TextAlign.Center,
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyLarge,
@@ -346,7 +347,7 @@ fun ListFavoriteComponents(
 ) {
     if (components.isNotEmpty()) {
         Text(
-            text = "$title Components",
+            text = "$title ${stringResource(id = R.string.components)}",
             style = MaterialTheme.typography.titleLarge.copy(
                 color = Color.White,
                 fontWeight = FontWeight.Bold

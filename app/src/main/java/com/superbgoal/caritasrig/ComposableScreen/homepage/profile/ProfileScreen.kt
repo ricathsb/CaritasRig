@@ -136,14 +136,14 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                             // Full Name and Username
                             Column() {
                                 Text(
-                                    text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
+                                    text = "${currentUser?.firstName ?: context.getString(R.string.first_name)} ${currentUser?.lastName ?: context.getString(R.string.last_name)}",
                                     style = MaterialTheme.typography.h5,
                                     fontWeight = FontWeight.Normal,
                                     color = Color.White
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "@${currentUser?.username ?: "username"}",
+                                    text = "@${currentUser?.username ?: context.getString(R.string.username)}",
                                     style = MaterialTheme.typography.body1,
                                     color = Color(0xFFBB86FC)
                                 )
@@ -156,7 +156,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                             Column {
                                 // Display Total Builds
                                 Text(
-                                    text = "Total Builds: ${totalBuilds.value}",
+                                    text = "${stringResource(id = R.string.total_builds)}: ${totalBuilds.value}",
                                     style = MaterialTheme.typography.body1,
                                     color = Color.White
                                 )
@@ -164,7 +164,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
 
                                 // Display Favorite Data
                                 Text(
-                                    text = "Total Favorites: ${totalFavorites.value}",
+                                    text = "${stringResource(id = R.string.total_favorites)}: ${totalFavorites.value}",
                                     style = MaterialTheme.typography.body1,
                                     color = Color.White
                                 )
@@ -187,7 +187,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                                         descriptionStyle = TextStyle(color = Color.White),
                                         textRatioStyle = TextStyle(color = Color.White),
                                         pieChartData = pieChartData,
-                                        centerTitle = "Favorites",
+                                        centerTitle = stringResource(id = R.string.favorite),
                                         centerTitleStyle = TextStyle(
                                             color = Color(0xFFBB86FC),
                                             fontWeight = FontWeight.Bold
@@ -229,7 +229,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
 
                                 // Teks
                                 Text(
-                                    text = if (isExpanded.value) "Hide" else "Show",
+                                    text = if (isExpanded.value) stringResource(id = R.string.hide) else stringResource(id = R.string.show),
                                     style = MaterialTheme.typography.button,
                                     color = Color.White
                                 )
@@ -276,7 +276,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                         color = Color.Gray, // Warna garis
                         thickness = 1.dp
                     )
-                    SettingOption("About Us") {
+                    SettingOption(stringResource(R.string.about_us)) {
                         navController.navigate("about_us")
                     }
                     Divider(
@@ -349,17 +349,6 @@ fun LanguageSelectionDialog(onDismiss: () -> Unit, onLanguageSelected: (String) 
             Column {
                 LanguageOption("English", "en", onDismiss, onLanguageSelected)
                 Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("Indonesian", "in", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("Germany", "de", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("France", "fr", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("Spanish", "es", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("Japanese", "ja", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("China", "zh", onDismiss, onLanguageSelected)
             }
         }
     )
