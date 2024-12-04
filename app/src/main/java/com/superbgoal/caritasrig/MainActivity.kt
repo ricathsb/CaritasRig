@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun CaritasRigApp() {
-        val loginViewModel : LoginViewModel = viewModel()
         val navController = rememberNavController()
         val startDestination = remember { mutableStateOf<String?>(null) }
         val context = LocalContext.current
@@ -89,7 +88,6 @@ class MainActivity : ComponentActivity() {
                 Log.d("CaritasRigApp", "Start Destination: ${startDestination.value}")
                 composable("login") {
                     LoginScreen(navController,
-                        loginViewModel = loginViewModel
                     )
                 }
                 composable("signup") {
@@ -123,7 +121,6 @@ class MainActivity : ComponentActivity() {
             callback(destination)
         }
     }
-
 }
 
 
