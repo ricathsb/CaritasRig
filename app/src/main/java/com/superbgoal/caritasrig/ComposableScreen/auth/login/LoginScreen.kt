@@ -61,13 +61,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.superbgoal.caritasrig.R
 import com.superbgoal.caritasrig.functions.auth.AuthResponse
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
-fun LoginScreen(navController : NavController) {
+fun LoginScreen(navController : NavController,
+) {
     val loginViewModel: LoginViewModel = viewModel()
     val offsetY by loginViewModel.offsetY.collectAsState()
     val animatedOffsetY by animateFloatAsState(

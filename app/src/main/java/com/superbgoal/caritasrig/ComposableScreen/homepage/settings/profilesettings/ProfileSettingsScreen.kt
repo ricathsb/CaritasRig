@@ -34,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -88,9 +89,9 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSettingsScreen(
+    viewModel: ProfileSettingsViewModel,
+    homeViewModel: HomeViewModel
 ) {
-    val viewModel : ProfileSettingsViewModel = viewModel()
-    val homeViewModel : HomeViewModel = viewModel()
     val firstname by viewModel.firstname.collectAsState()
     val lastname by viewModel.lastname.collectAsState()
     val username by viewModel.username.collectAsState()
@@ -157,8 +158,6 @@ fun ProfileSettingsScreen(
             contentAlignment = Alignment.Center
         ) {
             ProfileIcon(imageUri, imageUrl)
-
-            // Icon add/remove overlay
             Box(
                 modifier = Modifier
                     .pointerInput(Unit) {
@@ -177,10 +176,6 @@ fun ProfileSettingsScreen(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                // ProfileIcon rendering (tidak perlu try-catch jika hanya rendering UI)
-                ProfileIcon(imageUri, imageUrl)
-
-                // Icon add/remove overlay
                 Box(
                     modifier = Modifier
                         .offset(x = 50.dp, y = 50.dp)
@@ -195,24 +190,13 @@ fun ProfileSettingsScreen(
                             shape = CircleShape
                         )
                         .clickable {
-                            try {
-                                if (imageUri != null) {
-                                    // Hapus gambar
-                                    viewModel.updateImageUri(null)
-                                } else {
-                                    // Pilih gambar baru
-                                    imagePickerLauncher.launch("image/*")
-                                }
-                            } catch (e: Exception) {
-                                Log.e("AddRemoveIcon", "Unhandled exception during add/remove image: ${e.message}", e)
-                            }
                         }
                         .zIndex(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (imageUri != null) Icons.Default.Remove else Icons.Default.Add,
-                        contentDescription = if (imageUri != null) stringResource(id = R.string.remove_photo_profile) else stringResource(id = R.string.add_photo_profile),
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Add/Remove Image",
                         tint = Color.Black,
                         modifier = Modifier.size(24.dp)
                     )
@@ -380,42 +364,26 @@ fun ProfileSettingsScreen(
 
 @Composable
 fun ProfileIcon(imageUri: Uri?, imageUrl: String?) {
-    when {
-        imageUri != null -> {
-            Log.d("RegisterProfileIcon", "Image URI: $imageUri")
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUri)
-                    .transformations(CircleCropTransformation())
-                    .build(),
-                contentDescription = "Selected image",
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-            )
-        }
-        imageUrl != null -> {
-            // Jika imageUrl ada, tampilkan gambar dari URL
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .transformations(CircleCropTransformation())
-                    .build(),
-                contentDescription = "Image from URL",
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-            )
-        }
-        else -> {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Default Icon",
-                modifier = Modifier.size(150.dp),
-                tint = Color.White
-            )
-        }
+    if (imageUri != null) {
+        Log.d("RegisterProfileIcon", "Image URI: $imageUri")
+        AsyncImage(
+            model = imageUri,
+            contentDescription = "Selected image",
+            modifier = Modifier
+                .size(150.dp)
+                .clip(CircleShape)
+        )
+    } else {
+        Log.d("RegisterProfileIcon", "Default profile image")
+        AsyncImage(
+            model = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgDyR8ueTlFnqdhxAnJ3F8VvNiDm5pkNkteg&s",
+            contentDescription = "Image from URL",
+            modifier = Modifier
+                .size(150.dp)
+                .clip(CircleShape)
+        )
     }
+
 }
 
 

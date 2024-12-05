@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Logitech G502 Hero",
+        "price": 39.99,
+        "tracking_method": "Optical",
+        "connection_type": "Wired",
+        "max_dpi": 25600,
+        "hand_orientation": "Right",
+        "color": "Black",
+        "ImageUrl": "https://logodownload.org/wp-content/uploads/2018/03/logitech-logo-01.png"
+    },
+    {
+        "name": "Razer DeathAdder Essential",
+        "price": 21.99,
+        "tracking_method": "Optical",
+        "connection_type": "Wired",
+        "max_dpi": 6400,
+        "hand_orientation": "Right",
+        "color": "White",
+        "ImageUrl": "https://logodownload.org/wp-content/uploads/2018/03/logitech-logo-01.png"
+    },
+    {
+        "name": "FinalMouse Air58 Ninja",
+        "price": 574.99,
+        "tracking_method": "Optical",
+        "connection_type": "Wired",
+        "max_dpi": 3200,
+        "hand_orientation": "Right",
+        "color": "Blue",
+        "ImageUrl": "https://shop.x-raypad.com/wp-content/uploads/2019/12/finalmouse-logo.png"
+    }
+]

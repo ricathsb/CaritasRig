@@ -3,7 +3,6 @@
 package com.superbgoal.caritasrig.functions
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
@@ -25,7 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.DismissDirection
@@ -34,7 +32,6 @@ import androidx.compose.material.DismissValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
@@ -49,8 +46,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +63,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -206,7 +208,7 @@ fun ComponentCard(
                                 colors = ButtonDefaults.buttonColors(buttonColor),
                                 modifier = Modifier.padding(start = 16.dp)
                             ) {
-                                Text(text = "Add", color = Color.White)
+                                Text(text = stringResource(id = R.string.add), color = Color.White)
                             }
                         } else {
                             CircularProgressIndicator(
@@ -276,7 +278,7 @@ fun ComponentCard(
                             colors = ButtonDefaults.buttonColors(buttonColor),
                             modifier = Modifier.padding(start = 16.dp)
                         ) {
-                            Text(text = "Add", color = Color.White)
+                            Text(text = stringResource(id = R.string.add), color = Color.White)
                         }
                     } else {
                         CircularProgressIndicator(
@@ -521,24 +523,17 @@ fun BuildCompatibilityAccordion(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Kompatibilitas Build",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                compatibilityStatus?.let {
+                    Text(
+                        text = "${it.compatibleCount}/${it.totalCount} kompatibel",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 Icon(
                     tint = Color.White,
                     imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null
-                )
-            }
-
-            compatibilityStatus?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "${it.compatibleCount}/${it.totalCount} kompatibel",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
@@ -558,7 +553,7 @@ fun BuildCompatibilityAccordion(
                 compatibilityStatus?.let { status ->
                     // Daftar Komponen
                     Text(
-                        text = "Detail Komponen:",
+                        text = "${stringResource(id = R.string.component_detail)}:",
                         style = MaterialTheme.typography.titleSmall,
                         color = Color.White,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -578,7 +573,7 @@ fun BuildCompatibilityAccordion(
 
                                 )
                             Text(
-                                text = if (detail.isCompatible) "[compatible]" else "[tidak compatible]",
+                                text = if (detail.isCompatible) "[${stringResource(id = R.string.compatible)}]" else "[${stringResource(id = R.string.not_compatible)}]",
                                 color = if (detail.isCompatible) Color.Green else Color.Red,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -589,7 +584,7 @@ fun BuildCompatibilityAccordion(
                     if (status.recommendation.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Rekomendasi:",
+                            text = "${stringResource(id = R.string.recommendation)}:",
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(bottom = 8.dp),
                             color = Color.Green,
@@ -601,7 +596,7 @@ fun BuildCompatibilityAccordion(
                             )
                     }
                 } ?: Text(
-                    text = "Tidak ada data kompatibilitas.",
+                    text = stringResource(id = R.string.no_compability_data),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Red,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -625,6 +620,7 @@ data class CompatibilityStatus(
     val recommendation: String
 )
 
+@Composable
 fun calculateCompatibilityStatus(
     buildComponents: BuildComponents,
     estimatedWattage: Double
@@ -637,9 +633,9 @@ fun calculateCompatibilityStatus(
     val powerSupplyWattage = parseWattage(buildComponents.powerSupply?.wattage)
     val psuCompatible = buildComponents.powerSupply == null || powerSupplyWattage >= estimatedWattage
     if (buildComponents.powerSupply != null) {
-        details.add(CompatibilityDetail(powerSupplyName.ifEmpty { "Powersupply" }, psuCompatible))
+        details.add(CompatibilityDetail(powerSupplyName.ifEmpty { stringResource(id = R.string.power_supply) }, psuCompatible))
         if (!psuCompatible) {
-            recommendation += "Ganti PSU dengan wattage lebih tinggi. "
+            recommendation += "${stringResource(id = R.string.change_psu)} ${estimatedWattage.toInt()} "
         }
     }
 
@@ -656,7 +652,7 @@ fun calculateCompatibilityStatus(
         details.add(CompatibilityDetail(motherboardName, socketCompatible))
     }
     if (!socketCompatible && buildComponents.processor != null && buildComponents.motherboard != null) {
-        recommendation += "Ganti motherboard atau processor agar socket cocok. "
+        recommendation += "${stringResource(id = R.string.change_psu)}"
     }
 
     // Memory Compatibility
@@ -667,7 +663,7 @@ fun calculateCompatibilityStatus(
     if (buildComponents.memory != null) {
         details.add(CompatibilityDetail(ramName, ramCompatible))
         if (!ramCompatible) {
-            recommendation += "Ganti RAM agar cocok dengan motherboard. "
+            recommendation += "${stringResource(id = R.string.change_ram)}"
         }
     }
 
@@ -679,11 +675,23 @@ fun calculateCompatibilityStatus(
     if (buildComponents.casing != null) {
         details.add(CompatibilityDetail(casingName, casingCompatible))
         if (!casingCompatible) {
-            recommendation += "Ganti casing agar mendukung form factor motherboard (${motherboardFormFactor}). "
+            recommendation += "${stringResource(id = R.string.change_case)} (${motherboardFormFactor}). "
         }
     }
 
-    // Jika tidak ada komponen yang dipilih, kembalikan null
+    // GPU Compatibility with PCIe Slots (Added for GPU)
+    val gpuName = buildComponents.videoCard?.name.orEmpty()
+    val gpuRequiredSlots = 1 // Assume GPU requires 1 x16 slot
+    val motherboardPcieX16Slots = buildComponents.motherboard?.pcieX16Slots ?: 0
+    val gpuCompatible = buildComponents.videoCard == null || motherboardPcieX16Slots >= gpuRequiredSlots
+    if (buildComponents.videoCard != null) {
+        details.add(CompatibilityDetail(gpuName, gpuCompatible))
+        if (!gpuCompatible) {
+            recommendation += "${stringResource(id = R.string.change_motherboard_forgpu)}"
+        }
+    }
+
+    // If no components are selected, return null
     if (details.isEmpty()) {
         return null
     }
@@ -699,6 +707,7 @@ fun calculateCompatibilityStatus(
         recommendation = recommendation.trim()
     )
 }
+
 
 
 
@@ -753,28 +762,50 @@ fun SearchBarForComponent(
     modifier: Modifier = Modifier,
     onFilterClick: () -> Unit
 ) {
-    TextField(
+    OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        label = { androidx.compose.material.Text("Search CPU") },
-        placeholder = { androidx.compose.material.Text("Search by name") },
+        label = { Text(stringResource(id = R.string.search_cpu)) },
+        placeholder = { Text(stringResource(id = R.string.search_by_name)) },
         singleLine = true,
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         leadingIcon = {
-            androidx.compose.material.Icon(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "Search"
+                contentDescription = "Search",
+                tint = MaterialTheme.colorScheme.onSurface
             )
         },
         trailingIcon = {
-            androidx.compose.material.IconButton(onClick = onFilterClick) {
-                androidx.compose.material.Icon(
+            IconButton(onClick = onFilterClick) {
+                Icon(
                     painter = painterResource(id = R.drawable.ic_filter),
-                    contentDescription = "Filter"
+                    contentDescription = "Filter",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-        }
+        },
+        shape = RoundedCornerShape(12.dp)
     )
+}
+@Composable
+fun DefaultSearchBar() {
+    var searchText by remember { mutableStateOf(TextFieldValue("")) }
+    var isSearchActive by remember { mutableStateOf(false) }
+
+    SearchBar(
+        query = searchText.text,
+        onQueryChange = { query -> searchText = TextFieldValue(query) },
+        onSearch = { /* Handle search action */ },
+        active = isSearchActive,
+        onActiveChange = { isSearchActive = it },
+        placeholder = { Text("Search") },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text("No suggestions yet!")
+    }
 }
 
 fun calculateTotalWattage(it: BuildComponents): Double {

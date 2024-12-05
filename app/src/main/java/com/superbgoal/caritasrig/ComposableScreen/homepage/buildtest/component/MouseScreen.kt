@@ -51,7 +51,7 @@ fun MouseScreen(navController: NavController) {
     val mice: List<Mouse> = remember {
         loadItemsFromResources(
             context = context,
-            resourceId = R.raw.mouse // Ensure this JSON file exists in resources
+            resourceId = R.raw.mouse_with_imageurl // Ensure this JSON file exists in resources
         )
     }
 
@@ -160,6 +160,8 @@ fun MouseList(mice: List<Mouse>, navController: NavController) {
                 details = "Type: ${mouseItem.name} | DPI: ${mouseItem.maxDpi} | Color: ${mouseItem.color}",
                 component = mouseItem,
                 isLoading = isLoading.value, // Pass loading state to card
+                price = mouseItem.price,
+                imageUrl = mouseItem.imageUrl,
                 onFavClick = {
                     // Handle favorite click
                     savedFavorite(mouse = mouseItem, context = context)

@@ -20,7 +20,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 fun NewsArticleScreen() {
     var isLoading by remember { mutableStateOf(true) }
 
-    val articleUrl = ArticleUrlSingleton.getArticleUrl()
+    val articleUrl = ArticleUrlSingletons.getArticleUrl()
 
     if (articleUrl.isNullOrEmpty()) {
         Text("No article URL available")

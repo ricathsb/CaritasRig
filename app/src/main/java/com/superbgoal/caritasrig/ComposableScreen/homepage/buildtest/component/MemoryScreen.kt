@@ -393,13 +393,27 @@ fun MemoryList(
                 price = memoryItem.price,
                 imageUrl = parseImageUrl(memoryItem.imageUrl),
                 title = memoryItem.name,
-                details = buildString {
-                    append("Price: $${memoryItem.price}\n")
-                    append("Speed: ${memoryItem.speed} MHz\n")
-                    append("Modules: ${memoryItem.modules} GB\n")
-                    append("Socket: DDR${memoryItem.speed}\n")
-                },
-                isLoading = isLoading.value,
+                details = """
+    Name: ${memoryItem.name}
+    Price: $${memoryItem.price}
+    Manufacturer: ${memoryItem.manufacturer}
+    Part #: ${memoryItem.partNumber}
+    Speed: ${memoryItem.speed}
+    Form Factor: ${memoryItem.formFactor}
+    Modules: ${memoryItem.modules}
+    Price / GB: ${memoryItem.pricePerGb}
+    Color: ${memoryItem.color}
+    First Word Latency: ${memoryItem.firstWordLatency}
+    CAS Latency: ${memoryItem.casLatency}
+    Voltage: ${memoryItem.voltage}
+    Timing: ${memoryItem.timing}
+    ECC / Registered: ${memoryItem.eccRegistered}
+    Heat Spreader: ${memoryItem.heatSpreader}
+    Specs Number: ${memoryItem.specsNumber}
+    Architecture: ${memoryItem.arsitektur}
+""".trimIndent(),
+
+                        isLoading = isLoading.value,
                 onFavClick = {
                     savedFavorite(memory = memoryItem, context = context)
                 },
