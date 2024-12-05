@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.navbar
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -18,13 +19,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Compare
+import androidx.compose.material.icons.filled.CompareArrows
+import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.DesktopWindows
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.StackedBarChart
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -83,11 +90,11 @@ import com.superbgoal.caritasrig.data.model.User
 
 @Composable
 fun NavbarHost(
-    homeViewModel: HomeViewModel = viewModel(),
-    buildViewModel: BuildViewModel = viewModel(),
-    profileSettingsViewModel : ProfileSettingsViewModel = viewModel(),
     appController: NavController,
-    ) {
+) {
+    val homeViewModel: HomeViewModel = viewModel()
+    val buildViewModel: BuildViewModel = viewModel()
+    val profileViewModel: ProfileSettingsViewModel = viewModel()
     val navController = rememberNavController()
     val buildTitle by buildViewModel.buildTitle.observeAsState("")
     var selectedItem by remember { mutableIntStateOf(0) }
@@ -103,29 +110,36 @@ fun NavbarHost(
             val isSpecificRoute = specificRoutes.contains(currentRoute)
 
             val title = when (currentRoute) {
-                "profile/{username}" -> "Profile"
-                "home" -> "Home"
-                "settings" -> "Settings"
-                "about_us" -> "About Us"
+                "profile/{username}" -> stringResource(id = R.string.profile)
+                "home" -> stringResource(id = R.string.home)
+                "settings" -> stringResource(id = R.string.settings)
+                "about_us" -> stringResource(id = R.string.about_us)
                 "profile_settings" -> stringResource(id = R.string.profile_settings)
-                "compare" -> "Compare"
-                "build" -> "Build"
-                "benchmark" -> "Benchmark"
-                "favorite" -> "Favorite Component"
-                "build_details" -> {buildTitle.ifEmpty { "New Build" }}
-                else -> "CaritasRig"
+                "compare" -> stringResource(id = R.string.compare)
+                "build" -> stringResource(id = R.string.build)
+                "benchmark" -> stringResource(id = R.string.benchmark)
+                "favorite" -> stringResource(id = R.string.favorite_component)
+                "build_details" -> { buildTitle.ifEmpty { stringResource(id = R.string.new_build) } }
+                "cpu_screen" -> stringResource(id = R.string.cpu)
+                "casing_screen" -> stringResource(id = R.string.casing)
+                "cpu_cooler_screen" -> stringResource(id = R.string.cpu_cooler)
+                "gpu_screen" -> stringResource(id = R.string.gpu)
+                "motherboard_screen" -> stringResource(id = R.string.motherboard)
+                "internal_hard_drive_screen" -> stringResource(id = R.string.internal_hard_drive)
+                "power_supply_screen" -> stringResource(id = R.string.power_supply)
+                "headphone_screen" -> stringResource(id = R.string.headphone)
+                "keyboard_screen" -> stringResource(id = R.string.keyboard)
+                "mouse_screen" -> stringResource(id = R.string.mouse)
+                "memory_screen" -> stringResource(id = R.string.memory)
+                "news_article_screen" -> stringResource(id = R.string.news_article)
+                "shared_build_screen" -> stringResource(id = R.string.shared_build)
+                else -> stringResource(id = R.string.caritasrig)
             }
             Log.d("NavbarHost", "Current Route: $currentRoute")
 
             AppTopBar(
                 navigateToProfile = { user ->
                     navController.navigate("profile/${user?.username ?: "unknown"}") {
-                        popUpTo("home") { inclusive = false }
-                        launchSingleTop = true
-                    }
-                },
-                navigateToSettings = {
-                    navController.navigate("settings") {
                         popUpTo("home") { inclusive = false }
                         launchSingleTop = true
                     }
@@ -163,7 +177,7 @@ fun NavbarHost(
                 HomeScreen2(navController = navController,buildViewModel)
             }
             composable("profile/{username}") {
-                ProfileScreen(homeViewModel = homeViewModel,appController, navController)
+                ProfileScreen(homeViewModel = homeViewModel,appController=appController,navController=navController)
             }
             composable("about_us") {
                 AboutUsScreen()
@@ -172,7 +186,7 @@ fun NavbarHost(
                 ComparisonScreen()
             }
             composable("build") {
-                BuildListScreen(navController, buildViewModel)
+                BuildListScreen(navController,buildViewModel)
             }
             composable("benchmark") {
                 BenchmarkScreen(navController)
@@ -198,10 +212,7 @@ fun NavbarHost(
             composable("memory_screen") { MemoryScreen(navController) }
             composable("news_article_screen") { NewsArticleScreen()}
             composable("profile_settings"){
-                ProfileSettingsScreen (
-                    viewModel = profileSettingsViewModel,
-                    homeViewModel = homeViewModel
-                )
+                ProfileSettingsScreen (homeViewModel = homeViewModel, viewModel = profileViewModel)
             }
             composable("shared_build_screen"){
                 SharedBuildScreen()
@@ -214,7 +225,6 @@ fun NavbarHost(
 fun AppTopBar(
     homeViewModel: HomeViewModel = viewModel(),
     navigateToProfile: (User?) -> Unit,
-    navigateToSettings: () -> Unit,
     onBackClick: () -> Unit = {},
     isProfileScreen: Boolean = false,
     isSpecificRoute: Boolean = false,
@@ -254,19 +264,7 @@ fun AppTopBar(
                     // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
                 }
                 isProfileScreen -> {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Icon Settings
-                        IconButton(onClick = { navigateToSettings() }) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings Icon",
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
+                    // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
                 }
                 currentRoute == "build_details" -> {
                     Row(
@@ -276,7 +274,7 @@ fun AppTopBar(
                         IconButton(
                             modifier = Modifier.fillMaxHeight(),
                             onClick = {
-                                buildViewModel.setNewBuildState(true)
+                                buildViewModel.setNewDialogState(true)
                             }
                         ) {
                             Icon(
@@ -294,7 +292,7 @@ fun AppTopBar(
                             Icon(
                                 imageVector = Icons.Default.Share,
                                 contentDescription = "Share",
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                         IconButton(onClick = { navigateToProfile(user) }) {
@@ -338,29 +336,6 @@ fun AppTopBar(
                                 modifier = Modifier.size(35.dp)
                             )
                         }
-
-            if (isSpecificRoute) {
-                // Tidak menampilkan aksi tambahan pada specific route (bisa diubah jika diperlukan)
-            } else if (isProfileScreen) {
-            } else {
-                // Jika bukan di halaman profil, tampilkan icon profil
-                IconButton(onClick = { navigateToProfile(user) }) {
-                    if (user?.profileImageUrl != null) {
-                        AsyncImage(
-                            model = user?.profileImageUrl,
-                            contentDescription = "Profile",
-                            modifier = Modifier
-                                .size(35.dp)
-                                .clip(CircleShape),
-                            placeholder = painterResource(id = R.drawable.baseline_person_24),
-                            error = painterResource(id = R.drawable.baseline_person_24)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Default Profile Icon",
-                            modifier = Modifier.size(35.dp)
-                        )
                     }
                 }
             }
@@ -370,8 +345,6 @@ fun AppTopBar(
         elevation = 4.dp
     )
 }
-
-
 
 @Composable
 fun BottomNavigationBar(
@@ -400,7 +373,7 @@ fun BottomNavigationBar(
                 icon = {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.title,
+                        contentDescription = null,
                         tint = if (isSelected) Color.Black else Color.Gray,
                         modifier = Modifier.size(if (isSelected) 30.dp else 24.dp)
                     )
@@ -413,7 +386,7 @@ fun BottomNavigationBar(
                 },
                 label = {
                     Text(
-                        text = item.title,
+                        text = stringResource(id = item.title.toInt()),
                         fontSize = 10.sp,
                         color = if (isSelected) Color.White else Color.Gray
                     )
@@ -437,16 +410,10 @@ fun currentRoute(navController: NavController): String? {
     return navBackStackEntry?.destination?.route
 }
 
-
-
 sealed class NavigationItem(val route: String, val icon: ImageVector, val title: String) {
-    data object Home : NavigationItem("home", Icons.Default.Home, "Home")
-    data object Trending : NavigationItem("compare", Icons.Default.Compare, "Compare")
-    data object Build : NavigationItem("build", Icons.Default.DesktopWindows, "Build")
-    data object Benchmark : NavigationItem("benchmark", Icons.Default.BarChart, "Benchmark")
-    data object Favorite : NavigationItem("favorite", Icons.Default.Favorite, "Favorite")
+    data object Home : NavigationItem("home", Icons.Default.Home, R.string.home.toString())
+    data object Trending : NavigationItem("compare", Icons.Default.Balance, R.string.compare.toString())
+    data object Build : NavigationItem("build", Icons.Default.Construction, R.string.build.toString())
+    data object Benchmark : NavigationItem("benchmark", Icons.Default.StackedBarChart, R.string.benchmark.toString())
+    data object Favorite : NavigationItem("favorite", Icons.Default.Star, R.string.favorite.toString())
 }
-
-
-
-

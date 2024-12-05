@@ -36,8 +36,8 @@ fun ComparisonScreen() {
     val coroutineScope = rememberCoroutineScope()
 
     val tabTitles = listOf("Processor", "GPU")
-    val tabBackgroundColor = colorResource(id = R.color.brown1)
-    val tabSelectedColor = Color.Black
+    val tabBackgroundColor = Color(0xFF2C2B30)
+    val tabSelectedColor = Color.White
     val tabUnselectedColor = Color.White
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -89,7 +89,7 @@ fun LegendItem(color: Color, name: String) {
                 .background(color, shape = CircleShape)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = name, style = TextStyle(fontSize = 12.sp))
+        Text(text = name, style = TextStyle(fontSize = 12.sp), color = Color.White)
     }
 }
 

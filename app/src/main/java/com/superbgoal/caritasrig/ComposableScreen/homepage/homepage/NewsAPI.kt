@@ -36,7 +36,9 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -59,6 +61,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -139,7 +142,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                     )
 
                     Text(
-                        text = "Pick Parts.",
+                        text = stringResource(id = R.string.pick_parts),
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = Color.White,
                         fontSize = 20.sp,
@@ -147,7 +150,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                         fontFamily = sairastencilone
                     )
                     Text(
-                        text = "Build Your PC.",
+                        text = stringResource(id = R.string.build_your_pc),
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = Color.White,
                         fontSize = 20.sp,
@@ -155,7 +158,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                         fontFamily = sairastencilone
                     )
                     Text(
-                        text = "Compare.",
+                        text = stringResource(id = R.string.compare),
                         modifier = Modifier.padding(bottom = 4.dp),
                         color = Color.White,
                         fontSize = 20.sp,
@@ -163,7 +166,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                         fontFamily = sairastencilone
                     )
                     Text(
-                        text = "Benchmark.",
+                        text = stringResource(id = R.string.benchmark),
                         modifier = Modifier.padding(bottom = 16.dp),
                         color = Color.White,
                         fontSize = 20.sp,
@@ -206,7 +209,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Add Your Build",
+                                text = stringResource(id = R.string.add_your_build),
                                 color = buttonContentColor
                             )
                         }
@@ -226,13 +229,13 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.Leaderboard,
+                                imageVector = Icons.Default.Groups,
                                 contentDescription = "Explore Other's Build",
                                 tint = buttonContentColor
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Explore Other's Build",
+                                text = stringResource(id = R.string.explore_others_build),
                                 color = buttonContentColor
                             )
                         }
@@ -257,7 +260,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "TECH NEWS",
+                        text = stringResource(id = R.string.tech_news),
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .padding(bottom = 16.dp),
@@ -281,7 +284,7 @@ fun HomeScreen2(navController: NavController, buildViewModel: BuildViewModel) {
                             .onFocusChanged { focusState ->
                                 isFocused = focusState.isFocused
                             },
-                        placeholder = { Text("Search articles...", color = Color.White) },
+                        placeholder = { Text(stringResource(id = R.string.search_articles), color = Color.White) },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = TextFieldDefaults.textFieldColors(

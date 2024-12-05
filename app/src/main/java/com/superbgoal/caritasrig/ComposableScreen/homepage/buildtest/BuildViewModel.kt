@@ -42,7 +42,6 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _showNewDialog = MutableStateFlow(false)
     val showNewDialog: StateFlow<Boolean> get() = _showNewDialog
-
     private val _showShareDialog = MutableStateFlow(false)
     val showShareDialog: StateFlow<Boolean> get() = _showShareDialog
 
@@ -117,6 +116,10 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
         _componentDetail.value = null
 
         Log.d("com.superbgoal.caritasrig.activity.homepage.buildtest.BuildViewModel", "Build title and components have been reset.")
+    }
+    fun resetBuildDataPriceAndWattage() {
+        _totalBuildPrice.value = 0.0
+        _totalWattage.value = 0.0
     }
 
 
@@ -480,5 +483,3 @@ class BuildViewModel(application: Application) : AndroidViewModel(application) {
 
 
 }
-
-

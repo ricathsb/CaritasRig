@@ -2,6 +2,7 @@ package com.superbgoal.caritasrig.ComposableScreen.homepage.profile
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -71,7 +73,14 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
         modifier = Modifier
             .fillMaxSize()
             .background(overallBackgroundColor)
+            .padding(0.dp)
     ) {
+        Image(
+        painter = painterResource(id = R.drawable.component_bg),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize()
+    )
         // Use LazyColumn to make the entire screen scrollable
         LazyColumn(
             modifier = Modifier
@@ -125,16 +134,16 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                             Spacer(modifier = Modifier.width(16.dp))
 
                             // Full Name and Username
-                            Column {
+                            Column() {
                                 Text(
-                                    text = "${currentUser?.firstName ?: "First Name"} ${currentUser?.lastName ?: "Last Name"}",
+                                    text = "${currentUser?.firstName ?: context.getString(R.string.first_name)} ${currentUser?.lastName ?: context.getString(R.string.last_name)}",
                                     style = MaterialTheme.typography.h5,
                                     fontWeight = FontWeight.Normal,
                                     color = Color.White
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "@${currentUser?.username ?: "username"}",
+                                    text = "@${currentUser?.username ?: context.getString(R.string.username)}",
                                     style = MaterialTheme.typography.body1,
                                     color = Color(0xFFBB86FC)
                                 )
@@ -147,7 +156,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                             Column {
                                 // Display Total Builds
                                 Text(
-                                    text = "Total Builds: ${totalBuilds.value}",
+                                    text = "${stringResource(id = R.string.total_builds)}: ${totalBuilds.value}",
                                     style = MaterialTheme.typography.body1,
                                     color = Color.White
                                 )
@@ -155,7 +164,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
 
                                 // Display Favorite Data
                                 Text(
-                                    text = "Total Favorites: ${totalFavorites.value}",
+                                    text = "${stringResource(id = R.string.total_favorites)}: ${totalFavorites.value}",
                                     style = MaterialTheme.typography.body1,
                                     color = Color.White
                                 )
@@ -178,7 +187,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                                         descriptionStyle = TextStyle(color = Color.White),
                                         textRatioStyle = TextStyle(color = Color.White),
                                         pieChartData = pieChartData,
-                                        centerTitle = "Favorites",
+                                        centerTitle = stringResource(id = R.string.favorite),
                                         centerTitleStyle = TextStyle(
                                             color = Color(0xFFBB86FC),
                                             fontWeight = FontWeight.Bold
@@ -220,7 +229,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
 
                                 // Teks
                                 Text(
-                                    text = if (isExpanded.value) "Hide" else "Show",
+                                    text = if (isExpanded.value) stringResource(id = R.string.hide) else stringResource(id = R.string.show),
                                     style = MaterialTheme.typography.button,
                                     color = Color.White
                                 )
@@ -247,7 +256,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                 Column(
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                     horizontalAlignment = Alignment.Start,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().background(color = Color.Black.copy(alpha = 0.3f))
                 ) {
                     Divider(
                         color = Color.Gray, // Warna garis
@@ -267,7 +276,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                         color = Color.Gray, // Warna garis
                         thickness = 1.dp
                     )
-                    SettingOption("About Us") {
+                    SettingOption(stringResource(R.string.about_us)) {
                         navController.navigate("about_us")
                     }
                     Divider(
@@ -320,12 +329,12 @@ fun SettingOption(text: String, onClick: () -> Unit) {
         Text(
             text = text,
             style = MaterialTheme.typography.body1,
-            color = Color.Black
+            color = Color.White
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_right),
             contentDescription = null,
-            tint = Color.Black
+            tint = Color.White
         )
     }
 }
@@ -340,17 +349,15 @@ fun LanguageSelectionDialog(onDismiss: () -> Unit, onLanguageSelected: (String) 
             Column {
                 LanguageOption("English", "en", onDismiss, onLanguageSelected)
                 Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("Indonesian", "in", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("Germany", "de", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("France", "fr", onDismiss, onLanguageSelected)
-                Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("Spanish", "es", onDismiss, onLanguageSelected)
+                LanguageOption("Indonesia", "in", onDismiss, onLanguageSelected)
                 Spacer(modifier = Modifier.height(8.dp))
                 LanguageOption("Japanese", "ja", onDismiss, onLanguageSelected)
                 Spacer(modifier = Modifier.height(8.dp))
-                LanguageOption("China", "zh", onDismiss, onLanguageSelected)
+                LanguageOption("Germany (Deutsch)", "de", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("France", "fr", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("Hindi", "hi", onDismiss, onLanguageSelected)
             }
         }
     )
