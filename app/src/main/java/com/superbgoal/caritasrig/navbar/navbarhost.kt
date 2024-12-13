@@ -1,11 +1,9 @@
 package com.superbgoal.caritasrig.navbar
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,19 +18,11 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Balance
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Compare
-import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.Construction
-import androidx.compose.material.icons.filled.DesktopWindows
-import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.StackedBarChart
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -60,32 +50,31 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.superbgoal.caritasrig.R
-import com.superbgoal.caritasrig.ComposableScreen.homepage.benchmark.BenchmarkScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.BuildListScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.BuildScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.BuildViewModel
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.CasingScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.CpuCoolerScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.CpuScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.HeadphoneScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.InternalHardDriveScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.KeyboardScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.MemoryScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.MotherboardScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.MouseScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.PowerSupplyScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.buildtest.component.VideoCardScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.compare.ComparisonScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.favorites.FavoriteScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.home.HomeViewModel
-import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.HomeScreen2
-import com.superbgoal.caritasrig.ComposableScreen.homepage.homepage.NewsArticleScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.profile.ProfileScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.AboutUsScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsScreen
-import com.superbgoal.caritasrig.ComposableScreen.homepage.settings.profilesettings.ProfileSettingsViewModel
-import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.BuildListItem
-import com.superbgoal.caritasrig.ComposableScreen.homepage.sharedBuild.SharedBuildScreen
+import com.superbgoal.caritasrig.screen.homepage.benchmark.BenchmarkScreen
+import com.superbgoal.caritasrig.screen.homepage.build.BuildListScreen
+import com.superbgoal.caritasrig.screen.homepage.build.BuildScreen
+import com.superbgoal.caritasrig.screen.homepage.build.BuildViewModel
+import com.superbgoal.caritasrig.screen.homepage.build.component.CasingScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.CpuCoolerScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.CpuScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.HeadphoneScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.InternalHardDriveScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.KeyboardScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.MemoryScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.MotherboardScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.MouseScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.PowerSupplyScreen
+import com.superbgoal.caritasrig.screen.homepage.build.component.VideoCardScreen
+import com.superbgoal.caritasrig.screen.homepage.compare.ComparisonScreen
+import com.superbgoal.caritasrig.screen.homepage.favorites.FavoriteScreen
+import com.superbgoal.caritasrig.screen.homepage.home.HomeViewModel
+import com.superbgoal.caritasrig.screen.homepage.homepage.HomeScreen2
+import com.superbgoal.caritasrig.screen.homepage.homepage.NewsArticleScreen
+import com.superbgoal.caritasrig.screen.homepage.profile.ProfileScreen
+import com.superbgoal.caritasrig.screen.homepage.settings.AboutUsScreen
+import com.superbgoal.caritasrig.screen.homepage.settings.profilesettings.ProfileSettingsScreen
+import com.superbgoal.caritasrig.screen.homepage.settings.profilesettings.ProfileSettingsViewModel
+import com.superbgoal.caritasrig.screen.homepage.sharedBuild.SharedBuildScreen
 import com.superbgoal.caritasrig.data.model.User
 
 @Composable
@@ -192,7 +181,7 @@ fun NavbarHost(
                 BenchmarkScreen(navController)
             }
             composable("favorite") {
-                FavoriteScreen(navController)
+                FavoriteScreen()
             }
             composable(
                 route = "build_details",

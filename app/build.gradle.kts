@@ -110,6 +110,9 @@ dependencies {
     implementation (libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.hilt.navigation.fragment)
     implementation (libs.androidx.lifecycle.viewmodel.ktx.v251)
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+
 
 // Kotlin Coroutine support for ViewModel
     implementation (libs.kotlinx.coroutines.android)

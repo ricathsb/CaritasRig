@@ -6,6 +6,7 @@ androidImageCropperVersion = "4.6.0"
 chart = "Beta-0.0.5"
 coilNetworkOkhttp = "3.0.0-rc02"
 composeCropper = "Tag)"
+converterGson = "2.9.0"
 credentials = "1.3.0"
 credentialsManagerVersion = "1.3.0"
 easycrop = "0.1.1"
@@ -40,6 +41,7 @@ firebaseStorageKtx = "21.0.1"
 composeMaterial = "1.4.0"
 material3 = "1.3.0"
 materialIconsCore = "1.7.4"
+retrofit = "2.9.0"
 runtimeLivedata = "1.7.5"
 appcompat = "1.6.1"
 ucrop = "2.2.8-native"
@@ -61,6 +63,7 @@ androidx-material = { module = "androidx.compose.material:material", version.ref
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 chart = { module = "io.github.thechance101:chart" }
 compose-cropper = { module = "com.github.SmartToolFactory:Compose-Cropper", version.ref = "composeCropper" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 easycrop = { module = "io.github.mr0xf00:easycrop", version.ref = "easycrop" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
@@ -101,6 +104,7 @@ firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 thechance101-chart = { module = "io.github.thechance101:chart", version.ref = "chart" }
 ucrop-v228native = { module = "com.github.yalantis:ucrop", version.ref = "ucrop" }
 vanniktech-android-image-cropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropperVersion" }

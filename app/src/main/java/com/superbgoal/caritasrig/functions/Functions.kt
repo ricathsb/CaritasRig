@@ -3,6 +3,7 @@
 package com.superbgoal.caritasrig.functions
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
@@ -70,10 +71,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.superbgoal.caritasrig.R
+import com.superbgoal.caritasrig.api.Kurs
+import com.superbgoal.caritasrig.api.RetrofitClient
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildComponents
+import com.superbgoal.caritasrig.screen.homepage.homepage.constant
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.Locale
 import kotlin.math.ceil
 
 @Composable
@@ -477,8 +485,12 @@ fun EditOrDeleteBackground(
     }
 }
 
-fun calculateTotalPrice(it: BuildComponents): Double {
-    val totalPrice = listOfNotNull(
+fun calculateTotalPrice(it: BuildComponents, currency: String = "IDR"): Double {
+    runBlocking {
+        Kurs.initializeRates()
+    }
+
+    val totalPriceUSD = listOfNotNull(
         it.processor?.price,
         it.casing?.price,
         it.videoCard?.price,
@@ -492,18 +504,31 @@ fun calculateTotalPrice(it: BuildComponents): Double {
         it.mouse?.price
     ).sumOf { price -> price ?: 0.0 }
 
-    return ceil(totalPrice) // Membulatkan ke atas
+    val rate = Kurs.getRate(currency)
+    val totalPriceConverted = rate?.let {
+        ceil(totalPriceUSD * it) // Konversi ke mata uang yang ditentukan dan bulatkan ke atas
+    } ?: run {
+        Log.e("Kurs", "Kurs tidak ditemukan atau tidak dapat diperbarui.")
+        totalPriceUSD
+    }
+
+    return totalPriceConverted
 }
 
 @Composable
 fun BuildCompatibilityAccordion(
     buildComponents: BuildComponents,
-    estimatedWattage: Double
+    estimatedWattage: Double,
+    isComponentNull: Boolean // Menambahkan parameter isComponentNull
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
-    // Menghitung status kompatibilitas
-    val compatibilityStatus = calculateCompatibilityStatus(buildComponents, estimatedWattage)
+    // Menghitung status kompatibilitas jika komponen tidak null
+    val compatibilityStatus = if (!isComponentNull) {
+        calculateCompatibilityStatus(buildComponents, estimatedWattage)
+    } else {
+        null // Jika isComponentNull true, tidak ada data kompatibilitas
+    }
 
     Card(
         modifier = Modifier
@@ -523,12 +548,22 @@ fun BuildCompatibilityAccordion(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                compatibilityStatus?.let {
+                if (isComponentNull) {
+                    // Menampilkan "0/0 kompatibel" jika komponen null
                     Text(
-                        text = "${it.compatibleCount}/${it.totalCount} kompatibel",
+                        text = "0/0 kompatibel",
                         color = Color.White,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                } else {
+                    // Menampilkan data kompatibilitas jika komponen tidak null
+                    compatibilityStatus?.let {
+                        Text(
+                            text = "${it.compatibleCount}/${it.totalCount} kompatibel",
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
                 Icon(
                     tint = Color.White,
@@ -543,67 +578,70 @@ fun BuildCompatibilityAccordion(
     if (isExpanded) {
         Box(
             modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.25f)).clip(shape = RoundedCornerShape(8.dp))
-
-        ){
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                compatibilityStatus?.let { status ->
-                    // Daftar Komponen
+                if (isComponentNull) {
+                    // Menampilkan pesan jika komponen null
                     Text(
-                        text = "${stringResource(id = R.string.component_detail)}:",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = Color.White,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        text = stringResource(id = R.string.no_compability_data),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Red,
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
-                    status.details.forEach { detail ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = detail.componentName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White,
-
+                } else {
+                    // Menampilkan data kompatibilitas jika komponen tidak null
+                    compatibilityStatus?.let { status ->
+                        // Daftar Komponen
+                        Text(
+                            text = "${stringResource(id = R.string.component_detail)}:",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = Color.White,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        status.details.forEach { detail ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = detail.componentName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.White
                                 )
+                                Text(
+                                    text = if (detail.isCompatible) "[${stringResource(id = R.string.compatible)}]" else "[${stringResource(id = R.string.not_compatible)}]",
+                                    color = if (detail.isCompatible) Color.Green else Color.Red,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+
+                        // Rekomendasi
+                        if (status.recommendation.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = if (detail.isCompatible) "[${stringResource(id = R.string.compatible)}]" else "[${stringResource(id = R.string.not_compatible)}]",
-                                color = if (detail.isCompatible) Color.Green else Color.Red,
-                                style = MaterialTheme.typography.bodyMedium
+                                text = "${stringResource(id = R.string.recommendation)}:",
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                color = Color.Green,
+                            )
+                            Text(
+                                text = status.recommendation,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Red,
                             )
                         }
                     }
-
-                    // Rekomendasi
-                    if (status.recommendation.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "${stringResource(id = R.string.recommendation)}:",
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(bottom = 8.dp),
-                            color = Color.Green,
-                            )
-                        Text(
-                            text = status.recommendation,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Red,
-                            )
-                    }
-                } ?: Text(
-                    text = stringResource(id = R.string.no_compability_data),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Red,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                }
             }
         }
-
     }
 }
 
