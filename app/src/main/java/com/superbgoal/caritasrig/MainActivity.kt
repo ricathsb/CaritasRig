@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.superbgoal.caritasrig.api.Kurs
 import com.superbgoal.caritasrig.screen.auth.login.LoginScreen
 import com.superbgoal.caritasrig.screen.auth.register.RegisterScreen
 import com.superbgoal.caritasrig.screen.auth.register.RegisterViewModel
@@ -21,12 +22,24 @@ import com.superbgoal.caritasrig.screen.auth.signup.SignUpScreen
 import com.superbgoal.caritasrig.screen.auth.signup.SignUpViewModel
 import com.superbgoal.caritasrig.navbar.NavbarHost
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Kurs.initializeRates()
+                Log.d("Kurs", "Kurs initialized")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("Kurs", "Error initializing Kurs: ${e.message}")
+            }
+        }
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         setContent {

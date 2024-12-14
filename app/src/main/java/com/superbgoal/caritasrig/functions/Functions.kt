@@ -486,10 +486,7 @@ fun EditOrDeleteBackground(
 }
 
 fun calculateTotalPrice(it: BuildComponents, currency: String = "IDR"): Double {
-    runBlocking {
-        Kurs.initializeRates()
-    }
-
+    // Hitung total harga dalam USD
     val totalPriceUSD = listOfNotNull(
         it.processor?.price,
         it.casing?.price,
@@ -504,16 +501,20 @@ fun calculateTotalPrice(it: BuildComponents, currency: String = "IDR"): Double {
         it.mouse?.price
     ).sumOf { price -> price ?: 0.0 }
 
-    val rate = Kurs.getRate(currency)
+    // Ambil kurs mata uang dari Kurs
+    val rate = Kurs.getRate("IDR")
+
+    // Konversi ke mata uang yang ditentukan
     val totalPriceConverted = rate?.let {
-        ceil(totalPriceUSD * it) // Konversi ke mata uang yang ditentukan dan bulatkan ke atas
+        ceil(totalPriceUSD * it) // Bulatkan ke atas
     } ?: run {
-        Log.e("Kurs", "Kurs tidak ditemukan atau tidak dapat diperbarui.")
+        Log.e("Kurs", "Kurs untuk mata uang $currency tidak ditemukan.")
         totalPriceUSD
     }
 
     return totalPriceConverted
 }
+
 
 @Composable
 fun BuildCompatibilityAccordion(
