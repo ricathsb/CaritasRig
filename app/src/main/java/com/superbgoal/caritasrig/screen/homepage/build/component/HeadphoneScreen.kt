@@ -38,6 +38,7 @@ import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Headphones
 import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -72,46 +73,6 @@ fun HeadphoneScreen(navController: NavController) {
 
         // Main content with TopAppBar and HeadphoneList
         Column {
-            TopAppBar(
-                backgroundColor = Color.Transparent,
-                contentColor = Color.White,
-                elevation = 0.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
-                title = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 10.dp)
-                    ) {
-                        Text(
-                            text = "Part Pick",
-                            style = MaterialTheme.typography.h4,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Headphones",
-                            style = MaterialTheme.typography.subtitle1,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.navigateUp() },
-                        modifier = Modifier.padding(start = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-
-            // Search Bar
             androidx.compose.material.TextField(
                 value = searchText,
                 onValueChange = { searchText = it },
@@ -161,6 +122,8 @@ fun HeadphoneList(headphones: List<Headphones>, navController: NavController) {
                 onFavClick = {
                     savedFavorite(headphones = headphone, context = context)
                 },
+                priceConvert = convertPrice(headphone.price, context),
+                context = context,
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

@@ -164,6 +164,7 @@
     <string name="change_motherboard_forgpu">Change Motherboard to support PCIe x16 for GPU</string>
     <string name="search_by_name">Search By Name</string>
     <string name="search_cpu">Search CPU</string>
+    <string name="changeCurrency">Change Currency</string>
     <!--    NavbarHost-->
 
 

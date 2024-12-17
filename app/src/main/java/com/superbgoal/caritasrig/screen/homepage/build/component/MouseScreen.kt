@@ -41,6 +41,7 @@ import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Mouse
 import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -75,46 +76,6 @@ fun MouseScreen(navController: NavController) {
 
         // Main content with TopAppBar and Mouse List
         Column {
-            TopAppBar(
-                backgroundColor = Color.Transparent,
-                contentColor = Color.White,
-                elevation = 0.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
-                title = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 10.dp)
-                    ) {
-                        Text(
-                            text = "Part Pick",
-                            style = MaterialTheme.typography.h4,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Mice",
-                            style = MaterialTheme.typography.subtitle1,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.navigateUp() },
-                        modifier = Modifier.padding(start = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-
-            // Search Bar
             TextField(
                 value = searchText,
                 onValueChange = { searchText = it },
@@ -161,6 +122,8 @@ fun MouseList(mice: List<Mouse>, navController: NavController) {
                 component = mouseItem,
                 isLoading = isLoading.value, // Pass loading state to card
                 price = mouseItem.price,
+                priceConvert = convertPrice(mouseItem.price,context),
+                context = context,
                 imageUrl = mouseItem.imageUrl,
                 onFavClick = {
                     // Handle favorite click

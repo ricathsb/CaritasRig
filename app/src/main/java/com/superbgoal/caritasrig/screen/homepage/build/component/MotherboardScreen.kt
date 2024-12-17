@@ -52,6 +52,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.MotherboardBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
@@ -345,6 +346,8 @@ fun MotherboardList(
                 context = context,
                 component = motherboard,
                 isLoading = isLoading.value,
+                priceConvert = convertPrice(motherboard.price,context),
+
                 details = """
                         Name: ${motherboard.name}
                         Price: $${motherboard.price}

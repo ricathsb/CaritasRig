@@ -45,6 +45,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.InternalHardDriveBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
@@ -208,20 +209,22 @@ fun InternalHardDriveList(
                 price = hardDrive.price,
                 imageUrl = parseImageUrl(hardDrive.imageUrl),
                 title = hardDrive.name,
+                priceConvert = convertPrice(hardDrive.price, context),
+                context = context,
                 details = """
-    Name: ${hardDrive.name}
-    Price: $${hardDrive.price}
-    Manufacturer: ${hardDrive.manufacturer}
-    Part #: ${hardDrive.partNumber}
-    Capacity: ${hardDrive.capacity}
-    Price / GB: ${hardDrive.pricePerGB}
-    Type: ${hardDrive.type}
-    Cache: ${hardDrive.cache}
-    Form Factor: ${hardDrive.formFactor}
-    Interface: ${hardDrive.interfaceType}
-    NVME: ${hardDrive.nvme}
-    Architecture: ${hardDrive.arsitektur}
-""".trimIndent(),
+                            Name: ${hardDrive.name}
+                            Price: $${hardDrive.price}
+                            Manufacturer: ${hardDrive.manufacturer}
+                            Part #: ${hardDrive.partNumber}
+                            Capacity: ${hardDrive.capacity}
+                            Price / GB: ${hardDrive.pricePerGB}
+                            Type: ${hardDrive.type}
+                            Cache: ${hardDrive.cache}
+                            Form Factor: ${hardDrive.formFactor}
+                            Interface: ${hardDrive.interfaceType}
+                            NVME: ${hardDrive.nvme}
+                            Architecture: ${hardDrive.arsitektur}
+                        """.trimIndent(),
                 component = hardDrive,
                 isLoading = isLoading.value,
                 onFavClick = {

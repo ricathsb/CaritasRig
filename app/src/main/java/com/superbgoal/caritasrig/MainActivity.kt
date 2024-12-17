@@ -22,6 +22,8 @@ import com.superbgoal.caritasrig.screen.auth.signup.SignUpScreen
 import com.superbgoal.caritasrig.screen.auth.signup.SignUpViewModel
 import com.superbgoal.caritasrig.navbar.NavbarHost
 import com.superbgoal.caritasrig.functions.auth.AuthenticationManager
+import com.superbgoal.caritasrig.screen.homepage.profile.getSavedLanguage
+import com.superbgoal.caritasrig.screen.homepage.profile.setLocale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,6 +47,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             CaritasRigApp()
         }
+
+        val savedLanguage = getSavedLanguage(this)
+        setLocale(this, savedLanguage)
     }
 
     override fun onPause() {

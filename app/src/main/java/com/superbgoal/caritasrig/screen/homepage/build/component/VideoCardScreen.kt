@@ -52,6 +52,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.GpuBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
@@ -193,6 +194,8 @@ fun VideoCardList(
             ComponentCard(
                 title = videoCard.name,
                 price = videoCard.price,
+                priceConvert = convertPrice(videoCard.price, context),
+                context = context,
                 details = """
                         Name: ${videoCard.name}
                         Price: $${videoCard.price}

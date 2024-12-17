@@ -87,7 +87,9 @@ import com.superbgoal.caritasrig.functions.BuildCompatibilityAccordion
 import com.superbgoal.caritasrig.functions.calculatePSU
 import com.superbgoal.caritasrig.functions.calculateTotalPrice
 import com.superbgoal.caritasrig.functions.calculateTotalWattage
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.editRamQuantity
+import com.superbgoal.caritasrig.functions.getCurrencySymbol
 import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveBuildTitle
 
@@ -120,7 +122,7 @@ fun BuildScreen(
     val sairastencilone = FontFamily(Font(R.font.sairastencilone))
     val totalWattage by buildViewModel.totalWattage.observeAsState(0.0)
     val estimatedWattage = calculatePSU(totalWattage)
-    buildData?.components?.let { calculateTotalPrice(it) }?.let { buildViewModel.setBuildPrice(it) }
+    buildData?.components?.let { calculateTotalPrice(it, context = context) }?.let { buildViewModel.setBuildPrice(it) }
     buildData?.components?.let { calculateTotalWattage(it) }?.let { buildViewModel.setBuildWattage(it) }
 
 
@@ -226,7 +228,7 @@ fun BuildScreen(
                                 )
                             )
                             Text(
-                                text = "$${totalBuildPrice}",
+                                text = "${getCurrencySymbol(context)}${formatWithThousandsSeparator(totalBuildPrice)}",
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Green
@@ -426,7 +428,8 @@ fun BuildScreen(
                                                 }
                                             }
                                         )
-                                    }
+                                    },
+                                    context = context
                                 )
                                 Log.d("tadd", "ComponentCard rendered for title: ${buildData?.components?.processor?.price}")
                                 Log.e("BuildActivity", "Unknown component type: ${buildData?.components?.processor?.imageUrl}")
@@ -516,15 +519,19 @@ fun ComponentCard(
     onUpdatePrice: (String) -> Unit,
     loading: Boolean = false,
     onQuantityChange: ((Int) -> Unit)? = null,
-    imageComponent: String
+    imageComponent: String,
+    context: Context
 ) {
     // Inisialisasi quantity menggunakan initialQuantity
     var quantity by rememberSaveable { mutableStateOf(initialQuantity) }
     var showDialog by remember { mutableStateOf(false) }
+    val safeTotalPrice = totalPrice?.toDoubleOrNull() ?: 0.0
+    val safeCurrentPrice = currentPrice.toDoubleOrNull() ?: 0.0
+    val totalPriceText = formatTotalPrice(safeTotalPrice, currentPrice.toDouble(), context)
     val displayText = if (title == "RAM") {
-        "Total Price: $$totalPrice"
+        "Total Price: $totalPriceText"
     } else {
-        "Price: $$currentPrice"
+        "Price: ${getCurrencySymbol(context)}${convertPrice(safeCurrentPrice, context)}"
     }
 
     Card(
@@ -657,7 +664,9 @@ fun ComponentCard(
                             Button(
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                                 onClick = { showDialog = true },
-                                modifier = Modifier.fillMaxWidth().padding(1.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(1.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
@@ -677,7 +686,9 @@ fun ComponentCard(
                             }
                             Button(
                                 onClick = onRemove,
-                                modifier = Modifier.fillMaxWidth().padding(1.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(1.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -908,4 +919,19 @@ fun ImagePickerDialog(
             }
         }
     )
+}
+
+fun formatTotalPrice(totalPrice: Double?, currentPrice: Double, context: Context): String {
+    // Gunakan currentPrice jika totalPrice null atau kosong
+    val safeTotalPrice = if (totalPrice == null || totalPrice == 0.0) currentPrice else totalPrice
+    // Dapatkan simbol mata uang
+    val currencySymbol = getCurrencySymbol(context)
+    // Konversi harga
+    val formattedPrice = convertPrice(safeTotalPrice, context)
+    return "$currencySymbol$formattedPrice"
+}
+
+fun formatWithThousandsSeparator(number: Double): String {
+    // Format angka dengan titik sebagai pemisah ribuan
+    return String.format("%,.0f", number).replace(',', '.')
 }

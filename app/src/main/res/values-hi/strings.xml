@@ -164,5 +164,6 @@
     <string name="change_motherboard_forgpu">GPU के लिए PCIe x16 का समर्थन करने के लिए मदरबोर्ड बदलें</string>
     <string name="search_by_name">नाम से खोजें</string>
     <string name="search_cpu">CPU खोजें</string>
+    <string name="changeCurrency">मुद्रा बदलें</string>
 
 </resources>

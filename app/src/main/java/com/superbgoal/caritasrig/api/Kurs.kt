@@ -1,5 +1,6 @@
 package com.superbgoal.caritasrig.api
 
+import android.content.Context
 import com.superbgoal.caritasrig.screen.homepage.homepage.constant
 import android.util.Log
 
@@ -30,8 +31,10 @@ object Kurs {
         }
     }
 
-    // Fungsi untuk mengambil kurs suatu mata uang
-    fun getRate(currencyCode: String): Double? {
+    // Fungsi untuk mengambil kurs berdasarkan currency di Shared Preferences
+    fun getRate(context: Context): Double? {
+        val sharedPreferences = context.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+        val currencyCode = sharedPreferences.getString("selected_currency", "USD")
         val rate = rates[currencyCode]
         if (rate == null) {
             Log.e(TAG, "Kurs untuk $currencyCode tidak ditemukan. Pastikan initializeRates() sudah dipanggil.")
@@ -40,15 +43,8 @@ object Kurs {
         }
         return rate
     }
-
-    // Fungsi untuk mengambil semua rates sebagai Map
-    fun getAllRates(): Map<String, Double> {
-        if (rates.isEmpty()) {
-            Log.e(TAG, "Rates belum diinisialisasi. Pastikan initializeRates() sudah dipanggil.")
-        }
-        return rates
-    }
 }
+
 
 
 

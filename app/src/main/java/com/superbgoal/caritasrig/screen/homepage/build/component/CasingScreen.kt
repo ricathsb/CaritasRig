@@ -40,6 +40,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.CasingBuild
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
@@ -61,11 +62,32 @@ fun CasingScreen(navController: NavController) {
     // State for pagination
     val itemsPerPage = 10
     val currentPage = remember { mutableStateOf(0) }
-    var totalPages = remember { mutableStateOf((filteredCasings.size / itemsPerPage) + if (filteredCasings.size % itemsPerPage == 0) 0 else 1) }
+    val totalPages = remember { mutableStateOf(1) }
 
     // State for filter values
     var selectedType by remember { mutableStateOf("All") }
     var selectedColor by remember { mutableStateOf("All") }
+
+    // Helper to update filtered data and pagination
+    fun updateFilteredCasings() {
+        filteredCasings = casings.filter { casing ->
+            val isMatchingType = selectedType == "All" || casing.type.lowercase().contains(selectedType.lowercase())
+            val isMatchingColor = selectedColor == "All" || casing.color.lowercase() == selectedColor.lowercase()
+            val isMatchingSearch = casing.name.contains(searchQuery, ignoreCase = true)
+            isMatchingType && isMatchingColor && isMatchingSearch
+        }
+
+        // Update totalPages safely
+        totalPages.value = maxOf(
+            1,
+            (filteredCasings.size / itemsPerPage) + if (filteredCasings.size % itemsPerPage == 0) 0 else 1
+        )
+
+        // Reset currentPage to 0 if no items match
+        if (filteredCasings.isEmpty() || currentPage.value >= totalPages.value) {
+            currentPage.value = 0
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -89,23 +111,7 @@ fun CasingScreen(navController: NavController) {
                     query = searchQuery,
                     onQueryChange = { query ->
                         searchQuery = query
-                        // Apply search and filter simultaneously
-                        filteredCasings = casings.filter { casing ->
-                            val isMatchingType = selectedType == "All" || casing.type.lowercase().contains(selectedType.lowercase())
-                            val isMatchingColor = selectedColor == "All" || casing.color.lowercase() == selectedColor.lowercase()
-                            val isMatchingSearch = casing.name.contains(query, ignoreCase = true)
-
-                            // Only show casings that match both the search query and filter criteria
-                            isMatchingType && isMatchingColor && isMatchingSearch
-                        }
-
-                        // Update totalPages after filtering
-                        totalPages.value = (filteredCasings.size / itemsPerPage) + if (filteredCasings.size % itemsPerPage == 0) 0 else 1
-
-                        // Adjust currentPage if it's greater than totalPages after filtering
-                        if (currentPage.value >= totalPages.value) {
-                            currentPage.value = totalPages.value - 1
-                        }
+                        updateFilteredCasings()
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -145,29 +151,16 @@ fun CasingScreen(navController: NavController) {
                     onColorChange = { newColor -> selectedColor = newColor },
                     onApply = { newType, newColor ->
                         showFilterDialog = false
-                        // Re-filter casings based on the selected filter
-                        filteredCasings = casings.filter { casing ->
-                            val casingTypeLower = casing.type.lowercase()
-                            val selectedTypeLower = newType.lowercase()
-
-                            // Apply the selected filters (type and color)
-                            (newType == "All" || casingTypeLower.contains(selectedTypeLower)) &&
-                                    (newColor == "All" || casing.color.lowercase() == newColor.lowercase())
-                        }
-
-                        // Update totalPages after applying the filter
-                        totalPages.value = (filteredCasings.size / itemsPerPage) + if (filteredCasings.size % itemsPerPage == 0) 0 else 1
-
-                        // Adjust currentPage if it's greater than totalPages after filtering
-                        if (currentPage.value >= totalPages.value) {
-                            currentPage.value = totalPages.value - 1
-                        }
+                        selectedType = newType
+                        selectedColor = newColor
+                        updateFilteredCasings()
                     }
                 )
             }
         }
     }
 }
+
 
 @Composable
 fun CasingFilterDialog(
@@ -258,8 +251,9 @@ fun CasingList(
             // Use ComponentCard for each casing
             ComponentCard(
                 imageUrl = parseImageUrl(casing.imageUrl),
-                price = casing.price,
+                priceConvert = convertPrice(priceUSD = casing.price, context = context),
                 title = casing.name,
+                context = context,
                 details = """
                             Name: ${casing.name}
                             Price: $${casing.price}

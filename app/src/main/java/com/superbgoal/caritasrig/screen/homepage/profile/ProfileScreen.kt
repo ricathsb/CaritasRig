@@ -1,6 +1,7 @@
 package com.superbgoal.caritasrig.screen.homepage.profile
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -49,6 +50,7 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
     // State for controlling the visibility of additional details
     val isExpanded = remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
+    var showDialogCurrency by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -251,7 +253,6 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                 }
             }
 
-            // Settings Options
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(0.dp),
@@ -269,6 +270,15 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
                         color = Color.Gray, // Warna garis
                         thickness = 1.dp
                     )
+
+                    SettingOption(stringResource(id = R.string.changeCurrency)) {
+                        showDialogCurrency = true
+                    }
+                    Divider(
+                        color = Color.Gray, // Warna garis
+                        thickness = 1.dp
+                    )
+
                     SettingOption(stringResource(R.string.profile_settings)) {
                         navController.navigate("profile_settings")
                     }
@@ -304,6 +314,19 @@ fun ProfileScreen(homeViewModel: HomeViewModel, appController: NavController, na
             }
         }
     }
+
+    if (showDialogCurrency) {
+        CurrencySelectionDialog(
+            onDismiss = { showDialogCurrency = false },
+            onCurrencySelected = { selectedCurrency ->
+                // Simpan currency ke Shared Preferences
+                val sharedPreferences = context.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+                sharedPreferences.edit().putString("selected_currency", selectedCurrency).apply()
+                Toast.makeText(context, "Currency set to: $selectedCurrency", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
 
     if (showDialog) {
         LanguageSelectionDialog(
@@ -408,3 +431,36 @@ fun getSavedLanguage(context: Context): String {
     val prefs = context.getSharedPreferences("settings_prefs", Context.MODE_PRIVATE)
     return prefs.getString("app_language", "en") ?: "en"
 }
+
+@Composable
+fun CurrencySelectionDialog(
+    onDismiss: () -> Unit,
+    onCurrencySelected: (String) -> Unit
+) {
+    val currencies = listOf("USD", "IDR", "EUR", "JPY", "INR", "CNY")
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Select Currency")
+        },
+        text = {
+            Column {
+                currencies.forEach { currency ->
+                    TextButton(onClick = {
+                        onCurrencySelected(currency)
+                        onDismiss() // Tutup dialog setelah memilih
+                    }) {
+                        Text(text = currency)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+

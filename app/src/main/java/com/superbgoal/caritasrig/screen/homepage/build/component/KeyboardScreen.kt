@@ -41,6 +41,7 @@ import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.Keyboard
 import com.superbgoal.caritasrig.functions.ComponentCard
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.saveComponent
 import com.superbgoal.caritasrig.functions.savedFavorite
 
@@ -75,47 +76,6 @@ fun KeyboardScreen(navController: NavController) {
         )
 
         Column {
-            TopAppBar(
-                backgroundColor = Color.Transparent,
-                contentColor = Color.White,
-                elevation = 0.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
-                title = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 10.dp)
-                    ) {
-                        Text(
-                            text = "Part Pick",
-                            style = MaterialTheme.typography.h4,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Keyboards",
-                            style = MaterialTheme.typography.subtitle1,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        },
-                        modifier = Modifier.padding(start = 20.dp, top = 10.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-
             // Search Bar
             TextField(
                 value = searchText,
@@ -168,6 +128,8 @@ fun KeyboardList(keyboards: List<Keyboard>, navController: NavController) {
                 onFavClick = {
                     savedFavorite(keyboard = keyboardItem, context = context)
                 },
+                priceConvert = convertPrice(keyboardItem.price, context),
+                context = context,
                 onAddClick = {
                     // Start loading when the add button is clicked
                     isLoading.value = true

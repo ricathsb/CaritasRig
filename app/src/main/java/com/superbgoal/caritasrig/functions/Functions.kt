@@ -4,6 +4,7 @@ package com.superbgoal.caritasrig.functions
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
@@ -63,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -130,6 +132,7 @@ fun ComponentCard(
     title: String? = "",
     details: String? = null,
     price: Double? = null,
+    priceConvert : String? = "",
     context: Context? = null,
     component: Any? = null,
     imageUrl: String? = null,
@@ -187,7 +190,11 @@ fun ComponentCard(
                     Spacer(modifier = Modifier.height(8.dp))
                     // Harga atau informasi tambahan
                     Text(
-                        text = price?.let { "Price: $${it}" } ?: "Price: $100",
+                        text = priceConvert?.let { "Price: ${context?.let { it1 ->
+                            getCurrencySymbol(
+                                it1
+                            )
+                        }}${it}" } ?: "Price: $100",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White,
                         textAlign = TextAlign.Center,
@@ -271,7 +278,11 @@ fun ComponentCard(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = price?.let { "Price: $${it}" } ?: "Price: $100",
+                            text = priceConvert?.let { "Price: ${context?.let { it1 ->
+                                getCurrencySymbol(
+                                    it1
+                                )
+                            }}${it}" } ?: "Price: $100",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White
                         )
@@ -485,7 +496,7 @@ fun EditOrDeleteBackground(
     }
 }
 
-fun calculateTotalPrice(it: BuildComponents, currency: String = "IDR"): Double {
+fun calculateTotalPrice(it: BuildComponents, context: Context): Double {
     // Hitung total harga dalam USD
     val totalPriceUSD = listOfNotNull(
         it.processor?.price,
@@ -502,13 +513,12 @@ fun calculateTotalPrice(it: BuildComponents, currency: String = "IDR"): Double {
     ).sumOf { price -> price ?: 0.0 }
 
     // Ambil kurs mata uang dari Kurs
-    val rate = Kurs.getRate("IDR")
+    val rate = Kurs.getRate(context)
 
     // Konversi ke mata uang yang ditentukan
     val totalPriceConverted = rate?.let {
         ceil(totalPriceUSD * it) // Bulatkan ke atas
     } ?: run {
-        Log.e("Kurs", "Kurs untuk mata uang $currency tidak ditemukan.")
         totalPriceUSD
     }
 
@@ -552,7 +562,7 @@ fun BuildCompatibilityAccordion(
                 if (isComponentNull) {
                     // Menampilkan "0/0 kompatibel" jika komponen null
                     Text(
-                        text = "0/0 kompatibel",
+                        text = "0/0 ${stringResource(id = R.string.compatible)}",
                         color = Color.White,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -560,7 +570,7 @@ fun BuildCompatibilityAccordion(
                     // Menampilkan data kompatibilitas jika komponen tidak null
                     compatibilityStatus?.let {
                         Text(
-                            text = "${it.compatibleCount}/${it.totalCount} kompatibel",
+                            text = "${it.compatibleCount}/${it.totalCount} ${stringResource(id = R.string.compatible)}",
                             color = Color.White,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -912,6 +922,40 @@ fun parseImageUrl(imageUrl: String?): String {
         return  "https:${imageUrl?.replace("https:", "")}"
 }
 
+fun getCurrencySymbol(context: Context): String {
+    val sharedPreferences = context.getSharedPreferences("BuildPrefs", Context.MODE_PRIVATE)
+    val currencyCode = sharedPreferences.getString("selected_currency", "USD")
+    return when (currencyCode) {
+        "USD" -> "$"
+        "IDR" -> "Rp"
+        "EUR" -> "€"
+        "JPY" -> "¥"
+        "INR" -> "₹"
+        "CNY" -> "元"
+        else -> "$"
+    }
+}
+
+fun convertPrice(priceUSD: Double?, context: Context): String {
+    // Jika priceUSD null, atur nilai default 0.0
+    val safePriceUSD = priceUSD ?: 0.0
+
+    // Ambil kurs mata uang dari Kurs
+    val rate = Kurs.getRate(context)
+
+    // Konversi harga berdasarkan kurs
+    val convertedPrice = rate?.let {
+        ceil(safePriceUSD * it) // Bulatkan ke atas
+    } ?: run {
+        Log.e("Kurs", "Kurs tidak ditemukan, mengembalikan harga dalam USD.")
+        safePriceUSD
+    }
+
+    // Format angka dengan titik sebagai pemisah ribuan
+    val formattedPrice = String.format("%,.0f", convertedPrice).replace(',', '.')
+
+    return formattedPrice
+}
 
 
 

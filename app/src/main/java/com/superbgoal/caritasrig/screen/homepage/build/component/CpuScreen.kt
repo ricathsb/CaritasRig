@@ -43,6 +43,7 @@ import com.superbgoal.caritasrig.data.model.buildmanager.BuildManager
 import com.superbgoal.caritasrig.data.model.component.ProcessorTrial
 import com.superbgoal.caritasrig.functions.ComponentCard
 import com.superbgoal.caritasrig.functions.SearchBarForComponent
+import com.superbgoal.caritasrig.functions.convertPrice
 import com.superbgoal.caritasrig.functions.loadItemsFromResources
 import com.superbgoal.caritasrig.functions.parseImageUrl
 import com.superbgoal.caritasrig.functions.saveComponent
@@ -186,6 +187,8 @@ fun ProcessorList(
                 imageUrl = parseImageUrl(processor.imageUrl),
                 title = processor.name,
                 price = processor.price,
+                priceConvert = convertPrice(processor.price,context),
+                context = context,
                 details = """
                     Cores: ${processor.coreCount} cores
                     L3 Cache: ${processor.l3Cache} GHz
