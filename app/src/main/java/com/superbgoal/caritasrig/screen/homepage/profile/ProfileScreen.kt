@@ -381,6 +381,8 @@ fun LanguageSelectionDialog(onDismiss: () -> Unit, onLanguageSelected: (String) 
                 LanguageOption("France", "fr", onDismiss, onLanguageSelected)
                 Spacer(modifier = Modifier.height(8.dp))
                 LanguageOption("Hindi", "hi", onDismiss, onLanguageSelected)
+                Spacer(modifier = Modifier.height(8.dp))
+                LanguageOption("Chinese", "zh", onDismiss, onLanguageSelected)
             }
         }
     )
@@ -442,7 +444,7 @@ fun CurrencySelectionDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "Select Currency")
+            Text(text = stringResource(R.string.select_currency))
         },
         text = {
             Column {

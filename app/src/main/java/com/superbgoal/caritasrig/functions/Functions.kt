@@ -931,7 +931,7 @@ fun getCurrencySymbol(context: Context): String {
         "EUR" -> "€"
         "JPY" -> "¥"
         "INR" -> "₹"
-        "CNY" -> "元"
+        "CNY" -> ""
         else -> "$"
     }
 }

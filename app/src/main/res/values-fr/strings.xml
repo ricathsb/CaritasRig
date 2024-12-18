@@ -170,5 +170,6 @@
     <string name="search_by_name">Rechercher par nom</string>
     <string name="search_cpu">Rechercher un CPU</string>
     <string name="changeCurrency">Changer de devise</string>
+    <string name="select_currency">Sélectionner la devise</string>
 
 </resources>

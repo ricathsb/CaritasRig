@@ -165,5 +165,6 @@
     <string name="search_by_name">नाम से खोजें</string>
     <string name="search_cpu">CPU खोजें</string>
     <string name="changeCurrency">मुद्रा बदलें</string>
+    <string name="select_currency">" मुद्रा चुनें"</string>
 
 </resources>

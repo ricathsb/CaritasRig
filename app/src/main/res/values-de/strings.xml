@@ -165,4 +165,5 @@
     <string name="search_by_name">Nach Name suchen</string>
     <string name="search_cpu">CPU suchen</string>
     <string name="changeCurrency">Währung ändern</string>
+    <string name="select_currency">Währung auswählen</string>
 </resources>

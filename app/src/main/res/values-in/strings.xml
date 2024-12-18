@@ -165,5 +165,6 @@
     <string name="search_by_name">Cari Berdasarkan Nama</string>
     <string name="search_cpu">Cari CPU</string>
     <string name="changeCurrency">Ubah Mata Uang</string>
+    <string name="select_currency">Pilih Mata Uang</string>
     <!-- NavbarHost -->
 </resources>

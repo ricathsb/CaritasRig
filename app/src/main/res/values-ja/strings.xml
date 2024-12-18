@@ -165,4 +165,5 @@
     <string name="search_by_name">名前で検索</string>
     <string name="search_cpu">CPUを検索</string>
     <string name="changeCurrency">通貨を変更</string>
+    <string name="select_currency">通貨を選択</string>
 </resources>
