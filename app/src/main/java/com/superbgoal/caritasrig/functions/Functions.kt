@@ -719,14 +719,24 @@ fun calculateCompatibilityStatus(
     // Motherboard and Case Compatibility (Form Factor)
     val casingName = buildComponents.casing?.name.orEmpty()
     val motherboardFormFactor = buildComponents.motherboard?.formFactor
-    val casingSupportedSizes = buildComponents.casing?.motherboardFormFactor.orEmpty()
-    val casingCompatible = buildComponents.casing == null || buildComponents.motherboard == null || motherboardFormFactor.toString() in casingSupportedSizes
+    val casingSupportedSizes = buildComponents.casing?.motherboardFormFactor
+        ?.split(",")
+        ?.map { it.trim() }
+        ?: emptyList()
+
+    val casingCompatible = if (buildComponents.casing != null && buildComponents.motherboard != null) {
+        motherboardFormFactor.toString() in casingSupportedSizes
+    } else {
+        false
+    }
+
     if (buildComponents.casing != null) {
         details.add(CompatibilityDetail(casingName, casingCompatible))
         if (!casingCompatible) {
             recommendation += "${stringResource(id = R.string.change_case)} (${motherboardFormFactor}). "
         }
     }
+
 
     // GPU Compatibility with PCIe Slots (Added for GPU)
     val gpuName = buildComponents.videoCard?.name.orEmpty()
