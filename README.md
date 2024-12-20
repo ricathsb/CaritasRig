@@ -51,11 +51,18 @@ Caritas Rig adalah aplikasi Android yang dirancang untuk membantu pengguna memil
 - Richard Fajar Christian (221401122) - Back-end Developer
 - Samuel Bryan P. Sitanggang (221401122) - Back-end Developer
 
-## Instalasi
+## Cara Buka Projek
 1. Clone repository ini.
 2. Buka proyek di Android Studio.
 3. Tambahkan file `google-services.json` ke folder `app`.
 4. Build dan jalankan aplikasi di perangkat Android Anda.
+
+## Cara Instalasi
+1. Pilih pada bagian release
+2. Pilih versi terbaru
+3. Unduh aplikasi.
+4. Pasang dan jalankan di perangkat android anda.
+   
 
 ## Kontribusi
 Kontribusi sangat diterima! Silakan buat issue atau pull request untuk perbaikan dan fitur baru.
