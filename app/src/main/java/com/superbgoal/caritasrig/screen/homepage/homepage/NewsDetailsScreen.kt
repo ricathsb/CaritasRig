@@ -18,7 +18,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun NewsArticleScreen() {
-    var isLoading by remember { mutableStateOf(true) }
+    var isLoading by remember { mutableStateOf(false) }
 
     val articleUrl = ArticleUrlSingletons.getArticleUrl()
 
